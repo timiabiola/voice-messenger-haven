@@ -293,15 +293,6 @@ const Microphone = () => {
                     <Pause className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
                   </button>
                 )}
-                <button 
-                  className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors ${
-                    isProcessing ? 'opacity-50 cursor-not-allowed' : ''
-                  }`}
-                  onClick={handleSendRecording}
-                  disabled={isProcessing}
-                >
-                  <Send className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                </button>
               </>
             )}
           </div>
