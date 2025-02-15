@@ -12,12 +12,14 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className={`mx-auto bg-white min-h-screen flex flex-col ${isMobile ? 'w-full' : 'max-w-3xl'}`}>
-      <Header />
-      <main className="flex-1 pt-16 pb-20">
-        {children}
-      </main>
-      <BottomNav />
+    <div className="relative bg-white min-h-screen">
+      <div className={`mx-auto ${isMobile ? 'w-full' : 'max-w-3xl'}`}>
+        <Header />
+        <main className="flex-1 min-h-screen">
+          {children}
+        </main>
+        <BottomNav />
+      </div>
     </div>
   );
 };

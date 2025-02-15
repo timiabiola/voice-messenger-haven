@@ -21,7 +21,7 @@ export const CategoryTabs = ({ currentCategory, setCurrentCategory, counts }: Ca
   ];
 
   return (
-    <div className="grid grid-cols-4 border-b fixed top-14 w-full max-w-md bg-white z-10">
+    <div className="grid grid-cols-4 border-b fixed top-14 left-0 right-0 bg-white z-10 max-w-3xl mx-auto">
       {categories.map((category) => (
         <button
           key={category.id}
