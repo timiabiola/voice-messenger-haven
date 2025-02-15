@@ -33,35 +33,98 @@ export type Database = {
         }
         Relationships: []
       }
+      contact_groups: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       contacts: {
         Row: {
+          avatar_url: string | null
           category: string | null
           created_at: string | null
           email: string | null
           id: string
+          last_seen: string | null
           name: string
           phone: string | null
+          status: Database["public"]["Enums"]["contact_status"] | null
           updated_at: string | null
         }
         Insert: {
+          avatar_url?: string | null
           category?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
+          last_seen?: string | null
           name: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["contact_status"] | null
           updated_at?: string | null
         }
         Update: {
+          avatar_url?: string | null
           category?: string | null
           created_at?: string | null
           email?: string | null
           id?: string
+          last_seen?: string | null
           name?: string
           phone?: string | null
+          status?: Database["public"]["Enums"]["contact_status"] | null
           updated_at?: string | null
         }
         Relationships: []
+      }
+      contacts_groups: {
+        Row: {
+          contact_id: string
+          created_at: string
+          group_id: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          group_id: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          group_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_groups_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "contact_groups"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages: {
         Row: {
@@ -179,7 +242,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      contact_status: "online" | "offline" | "away"
     }
     CompositeTypes: {
       [_ in never]: never
