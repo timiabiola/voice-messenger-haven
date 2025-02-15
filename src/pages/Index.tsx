@@ -1,41 +1,39 @@
 
 import { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import CategoryTabs from "@/components/layout/CategoryTabs";
+import CategoryTabs from '@/components/layout/CategoryTabs';
+import EmptyState from '@/components/layout/EmptyState';
 
 const Index = () => {
   const [currentCategory, setCurrentCategory] = useState('inbox');
-  const counts = {
-    new: 3,
-    inbox: 12,
-    saved: 5,
-    trash: 2,
-  };
+  const [messages] = useState({
+    new: [],
+    inbox: [],
+    saved: Array(309).fill({}),
+    trash: [],
+  });
 
   return (
-    <>
-      <CategoryTabs 
+    <div className="pt-14 pb-16">
+      <CategoryTabs
         currentCategory={currentCategory}
         setCurrentCategory={setCurrentCategory}
-        counts={counts}
+        counts={{
+          new: messages.new.length,
+          inbox: messages.inbox.length,
+          saved: messages.saved.length,
+          trash: messages.trash.length,
+        }}
       />
-      <div className="min-h-screen bg-gradient-to-b from-background to-secondary pt-14">
-        <div className="container mx-auto px-4 py-8 animate-fade-in">
-          <Card className="glass-panel p-6 rounded-2xl">
-            <h1 className="text-3xl font-bold text-center mb-4">Voice Messenger</h1>
-            <p className="text-center text-muted-foreground mb-6">
-              Connect through voice messages with crystal-clear quality
-            </p>
-            <div className="flex justify-center">
-              <Button className="px-6 py-4 text-base">
-                Start Recording
-              </Button>
-            </div>
-          </Card>
-        </div>
+      
+      <div className="mt-28 px-4">
+        {messages[currentCategory as keyof typeof messages]?.length === 0 ? (
+          <EmptyState />
+        ) : (
+          // MessageList component would go here
+          <div>{/* Message list content */}</div>
+        )}
       </div>
-    </>
+    </div>
   );
 };
 
