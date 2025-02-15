@@ -93,6 +93,71 @@ export type Database = {
         }
         Relationships: []
       }
+      voice_message_recipients: {
+        Row: {
+          created_at: string
+          id: string
+          recipient_id: string
+          voice_message_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          recipient_id: string
+          voice_message_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          recipient_id?: string
+          voice_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_message_recipients_voice_message_id_fkey"
+            columns: ["voice_message_id"]
+            isOneToOne: false
+            referencedRelation: "voice_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_messages: {
+        Row: {
+          audio_url: string
+          created_at: string
+          duration: number
+          id: string
+          is_private: boolean | null
+          is_urgent: boolean | null
+          subject: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          duration: number
+          id?: string
+          is_private?: boolean | null
+          is_urgent?: boolean | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          duration?: number
+          id?: string
+          is_private?: boolean | null
+          is_urgent?: boolean | null
+          subject?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
