@@ -23,7 +23,7 @@ export const Header = () => {
 
   return (
     <header className="bg-[#2196F3] text-white p-4 fixed top-0 w-full z-10">
-      <div className="flex justify-between items-center max-w-3xl mx-auto">
+      <div className="flex justify-between items-center">
         <button 
           className="flex items-center"
           onClick={handleBack}
