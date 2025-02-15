@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -169,7 +168,6 @@ const Microphone = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="h-16 flex items-center justify-between px-4 bg-white border-b fixed top-0 left-0 right-0 z-10">
         <button 
           className="text-gray-600 hover:text-gray-800"
@@ -189,9 +187,7 @@ const Microphone = () => {
         </button>
       </header>
 
-      {/* Main Content */}
       <div className={`flex-1 p-4 space-y-4 mt-16 ${isMobile ? 'mb-20' : 'mb-8'}`}>
-        {/* Recipients */}
         <div className="space-y-2 max-w-2xl mx-auto">
           <label className="text-sm text-gray-600">To:</label>
           <div className="flex items-center space-x-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
@@ -204,7 +200,6 @@ const Microphone = () => {
           </div>
         </div>
 
-        {/* Subject */}
         <div className="space-y-2 max-w-2xl mx-auto">
           <label className="text-sm text-gray-600">Subject:</label>
           <input 
@@ -217,7 +212,6 @@ const Microphone = () => {
           />
         </div>
 
-        {/* Message Options */}
         <div className="flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
           <button 
             className={`flex items-center space-x-2 p-2 rounded-lg ${
@@ -241,9 +235,7 @@ const Microphone = () => {
           </button>
         </div>
 
-        {/* Recording Interface */}
         <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-8">
-          {/* Recording Visualization */}
           <div className={`${isMobile ? 'w-48 h-48' : 'w-64 h-64'} rounded-full bg-blue-50 flex items-center justify-center`}>
             <div className={`${isMobile ? 'w-32 h-32' : 'w-44 h-44'} rounded-full bg-blue-100 flex items-center justify-center ${
               isRecording && !isPaused ? 'animate-pulse' : ''
@@ -254,12 +246,10 @@ const Microphone = () => {
             </div>
           </div>
 
-          {/* Recording Time */}
           <div className="text-3xl font-medium text-gray-700">
             {formatTime(recordingTime)}
           </div>
 
-          {/* Recording Controls */}
           <div className="flex items-center space-x-6">
             {!isRecording ? (
               <button 
@@ -278,16 +268,31 @@ const Microphone = () => {
                 >
                   <Trash2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 </button>
-                <button 
-                  className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                  onClick={isPaused ? handleResumeRecording : handlePauseRecording}
-                  disabled={isProcessing}
-                >
-                  {isPaused ? 
-                    <Play className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} /> : 
+                {isPaused ? (
+                  <>
+                    <button 
+                      className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
+                      onClick={handleResumeRecording}
+                      disabled={isProcessing}
+                    >
+                      <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
+                    </button>
+                    <button 
+                      className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors`}
+                      disabled={isProcessing}
+                    >
+                      <Play className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
+                    </button>
+                  </>
+                ) : (
+                  <button 
+                    className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
+                    onClick={handlePauseRecording}
+                    disabled={isProcessing}
+                  >
                     <Pause className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-                  }
-                </button>
+                  </button>
+                )}
                 <button 
                   className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors ${
                     isProcessing ? 'opacity-50 cursor-not-allowed' : ''
