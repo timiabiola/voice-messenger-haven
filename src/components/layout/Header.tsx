@@ -6,7 +6,7 @@ export const Header = () => {
   const navigate = useNavigate();
 
   const handleBack = () => {
-    navigate(-1);
+    navigate('/');
   };
 
   return (
@@ -17,7 +17,7 @@ export const Header = () => {
           onClick={handleBack}
         >
           <ChevronLeft size={24} />
-          <span className="ml-2">Select</span>
+          <span className="ml-2">Back</span>
         </button>
       </div>
     </header>
