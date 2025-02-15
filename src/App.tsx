@@ -60,100 +60,102 @@ const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/" element={<Index />} />
-          <Route
-            path="/select-left"
-            element={
-              <PrivateRoute>
-                <SelectLeft />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/icons-for-app-features-center-right"
-            element={
-              <PrivateRoute>
-                <IconsForAppFeatures />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/view-mode"
-            element={
-              <PrivateRoute>
-                <ViewMode />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/microphone"
-            element={
-              <PrivateRoute>
-                <Microphone />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/contacts"
-            element={
-              <PrivateRoute>
-                <Contacts />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/bookmarks"
-            element={
-              <PrivateRoute>
-                <Bookmarks />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/new-0"
-            element={
-              <PrivateRoute>
-                <New />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/inbox-0"
-            element={
-              <PrivateRoute>
-                <Inbox />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/saved-309"
-            element={
-              <PrivateRoute>
-                <Saved />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/trash-0"
-            element={
-              <PrivateRoute>
-                <Trash />
-              </PrivateRoute>
-            }
-          />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/" element={<Index />} />
+            <Route
+              path="/select-left"
+              element={
+                <PrivateRoute>
+                  <SelectLeft />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/icons-for-app-features-center-right"
+              element={
+                <PrivateRoute>
+                  <IconsForAppFeatures />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/view-mode"
+              element={
+                <PrivateRoute>
+                  <ViewMode />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/microphone"
+              element={
+                <PrivateRoute>
+                  <Microphone />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/contacts"
+              element={
+                <PrivateRoute>
+                  <Contacts />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/bookmarks"
+              element={
+                <PrivateRoute>
+                  <Bookmarks />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/new-0"
+              element={
+                <PrivateRoute>
+                  <New />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/inbox-0"
+              element={
+                <PrivateRoute>
+                  <Inbox />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/saved-309"
+              element={
+                <PrivateRoute>
+                  <Saved />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/trash-0"
+              element={
+                <PrivateRoute>
+                  <Trash />
+                </PrivateRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
