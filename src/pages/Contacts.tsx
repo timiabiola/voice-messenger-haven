@@ -1,17 +1,10 @@
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Search, 
-  Plus, 
-  Phone, 
-  MessageSquare,
-  Video,
-  Star,
-  Users,
-} from 'lucide-react'
+import { Search } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns';
 
 type Contact = {
@@ -30,8 +23,8 @@ type ContactGroup = {
 }
 
 const Contacts = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedContact, setSelectedContact] = useState<string | null>(null)
 
   // Fetch contacts
   const { data: contacts, isLoading } = useQuery({
@@ -80,6 +73,10 @@ const Contacts = () => {
     }
   }
 
+  const handleContactClick = (contact: Contact) => {
+    navigate('/microphone', { state: { selectedContact: contact } });
+  };
+
   return (
     <AppLayout>
       {/* Main Content */}
@@ -108,7 +105,7 @@ const Contacts = () => {
                 <div 
                   key={contact.id}
                   className="flex items-center p-4 hover:bg-gray-50 cursor-pointer border-b"
-                  onClick={() => setSelectedContact(contact.id)}
+                  onClick={() => handleContactClick(contact)}
                 >
                   <div className="relative">
                     <img
@@ -151,28 +148,6 @@ const Contacts = () => {
             </div>
           </div>
         </div>
-
-        {/* Contact Actions Menu - Shows when contact is selected */}
-        {selectedContact && (
-          <div className="fixed bottom-16 left-0 right-0 bg-white border-t p-4 animate-slide-in">
-            <div className="grid grid-cols-4 gap-4">
-              {[
-                { icon: <Phone className="w-6 h-6" />, label: 'Call' },
-                { icon: <MessageSquare className="w-6 h-6" />, label: 'Message' },
-                { icon: <Video className="w-6 h-6" />, label: 'Video' },
-                { icon: <Star className="w-6 h-6" />, label: 'Favorite' }
-              ].map((action, i) => (
-                <button
-                  key={i}
-                  className="flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-gray-50"
-                >
-                  {action.icon}
-                  <span className="text-sm">{action.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
     </AppLayout>
   )
