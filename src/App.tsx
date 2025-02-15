@@ -3,7 +3,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 // Pages
 import Index from "./pages/Index";
@@ -18,6 +20,7 @@ import Inbox from "./pages/Inbox";
 import Saved from "./pages/Saved";
 import Trash from "./pages/Trash";
 import NotFound from "./pages/NotFound";
+import Auth from "./pages/Auth";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -29,6 +32,34 @@ const queryClient = new QueryClient({
   },
 });
 
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const [session, setSession] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(!!session);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (session === null) {
+    return null; // Loading state
+  }
+
+  if (!session) {
+    return <Navigate to="/auth" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -36,17 +67,88 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          <Route path="/auth" element={<Auth />} />
           <Route path="/" element={<Index />} />
-          <Route path="/select-left" element={<SelectLeft />} />
-          <Route path="/icons-for-app-features-center-right" element={<IconsForAppFeatures />} />
-          <Route path="/view-mode" element={<ViewMode />} />
-          <Route path="/microphone" element={<Microphone />} />
-          <Route path="/contacts" element={<Contacts />} />
-          <Route path="/bookmarks" element={<Bookmarks />} />
-          <Route path="/new-0" element={<New />} />
-          <Route path="/inbox-0" element={<Inbox />} />
-          <Route path="/saved-309" element={<Saved />} />
-          <Route path="/trash-0" element={<Trash />} />
+          <Route
+            path="/select-left"
+            element={
+              <PrivateRoute>
+                <SelectLeft />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/icons-for-app-features-center-right"
+            element={
+              <PrivateRoute>
+                <IconsForAppFeatures />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/view-mode"
+            element={
+              <PrivateRoute>
+                <ViewMode />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/microphone"
+            element={
+              <PrivateRoute>
+                <Microphone />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/contacts"
+            element={
+              <PrivateRoute>
+                <Contacts />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/bookmarks"
+            element={
+              <PrivateRoute>
+                <Bookmarks />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/new-0"
+            element={
+              <PrivateRoute>
+                <New />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/inbox-0"
+            element={
+              <PrivateRoute>
+                <Inbox />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/saved-309"
+            element={
+              <PrivateRoute>
+                <Saved />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/trash-0"
+            element={
+              <PrivateRoute>
+                <Trash />
+              </PrivateRoute>
+            }
+          />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

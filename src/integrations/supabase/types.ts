@@ -66,6 +66,7 @@ export type Database = {
           phone: string | null
           status: Database["public"]["Enums"]["contact_status"] | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -78,6 +79,7 @@ export type Database = {
           phone?: string | null
           status?: Database["public"]["Enums"]["contact_status"] | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -90,6 +92,7 @@ export type Database = {
           phone?: string | null
           status?: Database["public"]["Enums"]["contact_status"] | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -153,6 +156,33 @@ export type Database = {
           is_selected?: boolean | null
           title?: string | null
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          updated_at?: string
         }
         Relationships: []
       }

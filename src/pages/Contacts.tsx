@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -15,6 +14,7 @@ type Contact = {
   avatar_url: string | null;
   status: 'online' | 'offline' | 'away';
   last_seen: string;
+  user_id: string;
 }
 
 type ContactGroup = {
@@ -30,9 +30,13 @@ const Contacts = () => {
   const { data: contacts, isLoading } = useQuery({
     queryKey: ['contacts', searchQuery],
     queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       let query = supabase
         .from('contacts')
         .select('*')
+        .eq('user_id', user.id)
         
       if (searchQuery) {
         query = query.ilike('name', `%${searchQuery}%`)
