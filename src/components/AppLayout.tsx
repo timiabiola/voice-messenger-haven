@@ -1,5 +1,6 @@
 
 import React from 'react';
+import Header from './layout/Header';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -8,7 +9,10 @@ interface AppLayoutProps {
 const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <main className="max-w-md mx-auto min-h-screen bg-white relative">
-      {children}
+      <Header />
+      <div className="pt-16">
+        {children}
+      </div>
     </main>
   );
 };
