@@ -69,6 +69,7 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          is_selected: boolean | null
           title: string | null
           updated_at: string | null
         }
@@ -77,6 +78,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_selected?: boolean | null
           title?: string | null
           updated_at?: string | null
         }
@@ -85,6 +87,7 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_selected?: boolean | null
           title?: string | null
           updated_at?: string | null
         }
@@ -95,7 +98,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      toggle_message_selection: {
+        Args: {
+          message_id: string
+        }
+        Returns: {
+          category: string
+          content: string | null
+          created_at: string | null
+          id: string
+          is_selected: boolean | null
+          title: string | null
+          updated_at: string | null
+        }
+      }
     }
     Enums: {
       [_ in never]: never
