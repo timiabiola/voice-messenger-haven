@@ -11,9 +11,11 @@ import {
   Lock,
   AlertTriangle
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Microphone = () => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -58,9 +60,9 @@ const Microphone = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
+      <header className="h-16 flex items-center justify-between px-4 bg-white border-b fixed top-0 left-0 right-0 z-10">
         <button 
           className="text-gray-600 hover:text-gray-800"
           onClick={() => navigate(-1)}
@@ -77,9 +79,9 @@ const Microphone = () => {
       </header>
 
       {/* Main Content */}
-      <div className="flex-1 p-4 space-y-4">
+      <div className={`flex-1 p-4 space-y-4 mt-16 ${isMobile ? 'mb-20' : 'mb-8'}`}>
         {/* Recipients */}
-        <div className="space-y-2">
+        <div className="space-y-2 max-w-2xl mx-auto">
           <label className="text-sm text-gray-600">To:</label>
           <div className="flex items-center space-x-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
             <input 
@@ -91,7 +93,7 @@ const Microphone = () => {
         </div>
 
         {/* Subject */}
-        <div className="space-y-2">
+        <div className="space-y-2 max-w-2xl mx-auto">
           <label className="text-sm text-gray-600">Subject:</label>
           <input 
             type="text"
@@ -103,7 +105,7 @@ const Microphone = () => {
         </div>
 
         {/* Message Options */}
-        <div className="flex space-x-4">
+        <div className="flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
           <button 
             className={`flex items-center space-x-2 p-2 rounded-lg ${
               isUrgent ? 'bg-red-100 text-red-600' : 'bg-white text-gray-600'
@@ -125,13 +127,13 @@ const Microphone = () => {
         </div>
 
         {/* Recording Interface */}
-        <div className="flex-1 flex flex-col items-center justify-center space-y-8">
+        <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-8">
           {/* Recording Visualization */}
-          <div className="w-48 h-48 rounded-full bg-blue-50 flex items-center justify-center">
-            <div className={`w-32 h-32 rounded-full bg-blue-100 flex items-center justify-center ${
+          <div className={`${isMobile ? 'w-48 h-48' : 'w-64 h-64'} rounded-full bg-blue-50 flex items-center justify-center`}>
+            <div className={`${isMobile ? 'w-32 h-32' : 'w-44 h-44'} rounded-full bg-blue-100 flex items-center justify-center ${
               isRecording && !isPaused ? 'animate-pulse' : ''
             }`}>
-              <Mic className={`w-16 h-16 ${
+              <Mic className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} ${
                 isRecording ? 'text-red-500' : 'text-blue-500'
               }`} />
             </div>
@@ -146,29 +148,32 @@ const Microphone = () => {
           <div className="flex items-center space-x-6">
             {!isRecording ? (
               <button 
-                className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700"
+                className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
                 onClick={handleStartRecording}
               >
-                <Mic className="w-8 h-8" />
+                <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
               </button>
             ) : (
               <>
                 <button 
-                  className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700"
+                  className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors`}
                   onClick={handleStopRecording}
                 >
-                  <Trash2 className="w-6 h-6" />
+                  <Trash2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 </button>
                 <button 
-                  className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700"
+                  className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
                   onClick={isPaused ? handleResumeRecording : handlePauseRecording}
                 >
-                  {isPaused ? <Play className="w-8 h-8" /> : <Pause className="w-8 h-8" />}
+                  {isPaused ? 
+                    <Play className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} /> : 
+                    <Pause className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
+                  }
                 </button>
                 <button 
-                  className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700"
+                  className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors`}
                 >
-                  <Send className="w-6 h-6" />
+                  <Send className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
                 </button>
               </>
             )}
