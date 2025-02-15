@@ -1,10 +1,20 @@
-import React, { useState } from 'react'
+
+import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns';
+
+type Profile = {
+  id: string;
+  full_name: string | null;
+  avatar_url: string | null;
+  email: string;
+  created_at: string;
+  updated_at: string;
+}
 
 type Contact = {
   id: string;
@@ -26,60 +36,47 @@ const Contacts = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('')
 
-  // Fetch contacts
-  const { data: contacts, isLoading } = useQuery({
-    queryKey: ['contacts', searchQuery],
+  // Fetch all profiles
+  const { data: profiles, isLoading } = useQuery({
+    queryKey: ['profiles', searchQuery],
     queryFn: async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('No user found');
-
       let query = supabase
-        .from('contacts')
+        .from('profiles')
         .select('*')
-        .eq('user_id', user.id)
-        
+      
       if (searchQuery) {
-        query = query.ilike('name', `%${searchQuery}%`)
+        query = query.ilike('full_name', `%${searchQuery}%`)
       }
       
-      const { data, error } = await query.order('name')
+      const { data, error } = await query.order('full_name')
       
       if (error) throw error
-      return data as Contact[]
+      return data as Profile[]
     }
   })
 
-  // Fetch contact groups
-  const { data: groups } = useQuery({
-    queryKey: ['contact_groups'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('contact_groups')
-        .select('*')
-      
-      if (error) throw error
-      return data as ContactGroup[]
+  // Setup realtime subscription
+  useEffect(() => {
+    const channel = supabase
+      .channel('profiles-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Realtime update:', payload);
+          // The useQuery hook will automatically revalidate the data
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
     }
-  })
-
-  const formatLastSeen = (date: string) => {
-    return formatDistanceToNow(new Date(date), { addSuffix: true })
-  }
-
-  const getStatusColor = (status: Contact['status']) => {
-    switch (status) {
-      case 'online':
-        return 'bg-green-500'
-      case 'away':
-        return 'bg-yellow-500'
-      default:
-        return 'bg-gray-500'
-    }
-  }
-
-  const handleContactClick = (contact: Contact) => {
-    navigate('/microphone', { state: { selectedContact: contact } });
-  };
+  }, [])
 
   return (
     <AppLayout>
@@ -91,7 +88,7 @@ const Contacts = () => {
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
-              placeholder="Search contacts..."
+              placeholder="Search users..."
               className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -99,41 +96,40 @@ const Contacts = () => {
           </div>
         </div>
 
-        {/* Contacts List */}
+        {/* Users List */}
         <div className="flex-1 overflow-y-auto">
           <div className="relative">
             {isLoading ? (
-              <div className="p-4 text-center text-gray-500">Loading contacts...</div>
-            ) : contacts && contacts.length > 0 ? (
-              contacts.map(contact => (
+              <div className="p-4 text-center text-gray-500">Loading users...</div>
+            ) : profiles && profiles.length > 0 ? (
+              profiles.map(profile => (
                 <div 
-                  key={contact.id}
+                  key={profile.id}
                   className="flex items-center p-4 hover:bg-gray-50 cursor-pointer border-b"
-                  onClick={() => handleContactClick(contact)}
+                  onClick={() => navigate('/microphone', { state: { selectedProfile: profile } })}
                 >
                   <div className="relative">
                     <img
-                      src={contact.avatar_url || '/placeholder.svg'}
-                      alt={contact.name}
+                      src={profile.avatar_url || '/placeholder.svg'}
+                      alt={profile.full_name || 'User'}
                       className="w-12 h-12 rounded-full object-cover"
                     />
-                    <div className={`absolute bottom-0 right-0 w-3 h-3 ${getStatusColor(contact.status)} rounded-full border-2 border-white`} />
                   </div>
                   
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium">{contact.name}</h3>
+                      <h3 className="font-medium">{profile.full_name || 'Anonymous User'}</h3>
                       <span className="text-sm text-gray-500">
-                        {formatLastSeen(contact.last_seen)}
+                        {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">{contact.phone}</p>
+                    <p className="text-sm text-gray-500">{profile.email}</p>
                   </div>
                 </div>
               ))
             ) : (
               <div className="p-4 text-center text-gray-500">
-                No contacts found
+                No users found
               </div>
             )}
 
