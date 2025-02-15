@@ -4,7 +4,7 @@ import {
   Home,
   Search,
   PlusCircle,
-  BookmarkSimple,
+  Bookmark,
   Mic
 } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export const BottomNav = () => {
         <PlusCircle className="w-6 h-6" />
       </Link>
       <Link to="/bookmarks" className="text-gray-600 hover:text-blue-600">
-        <BookmarkSimple className="w-6 h-6" />
+        <Bookmark className="w-6 h-6" />
       </Link>
     </div>
   );
