@@ -14,10 +14,9 @@ import IconsForAppFeatures from "./pages/IconsForAppFeatures";
 import ViewMode from "./pages/ViewMode";
 import Microphone from "./pages/Microphone";
 import Contacts from "./pages/Contacts";
-import Bookmarks from "./pages/Bookmarks";
+import Saved from "./pages/Saved";
 import New from "./pages/New";
 import Inbox from "./pages/Inbox";
-import Saved from "./pages/Saved";
 import Trash from "./pages/Trash";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
@@ -111,10 +110,10 @@ const App = () => {
               }
             />
             <Route
-              path="/bookmarks"
+              path="/saved"
               element={
                 <PrivateRoute>
-                  <Bookmarks />
+                  <Saved />
                 </PrivateRoute>
               }
             />
@@ -131,14 +130,6 @@ const App = () => {
               element={
                 <PrivateRoute>
                   <Inbox />
-                </PrivateRoute>
-              }
-            />
-            <Route
-              path="/saved-309"
-              element={
-                <PrivateRoute>
-                  <Saved />
                 </PrivateRoute>
               }
             />

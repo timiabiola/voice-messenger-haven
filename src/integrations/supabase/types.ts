@@ -186,6 +186,48 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_items: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string
+          id: string
+          is_flagged: boolean | null
+          is_read: boolean | null
+          sender_id: string | null
+          tag: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_flagged?: boolean | null
+          is_read?: boolean | null
+          sender_id?: string | null
+          tag?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          is_flagged?: boolean | null
+          is_read?: boolean | null
+          sender_id?: string | null
+          tag?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_message_recipients: {
         Row: {
           created_at: string
