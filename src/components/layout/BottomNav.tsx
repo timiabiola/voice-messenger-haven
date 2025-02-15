@@ -19,7 +19,7 @@ export const BottomNav = () => {
       <Link to="/contacts" className="nav-item">
         <Users className="w-6 h-6" />
       </Link>
-      <Link to="/bookmarks" className="nav-item">
+      <Link to="/saved" className="nav-item">
         <Bookmark className="w-6 h-6" />
       </Link>
     </div>
