@@ -10,7 +10,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <main className="max-w-md mx-auto min-h-screen bg-white relative">
       <Header />
-      <div className="pt-16">
+      <div className="pt-28">
         {children}
       </div>
     </main>
