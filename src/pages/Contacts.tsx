@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -132,20 +131,6 @@ const Contacts = () => {
                 No users found
               </div>
             )}
-
-            {/* Alphabet Index - Right side */}
-            <div className="absolute right-1 top-0 bottom-0">
-              <div className="flex flex-col justify-center h-full">
-                {'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter) => (
-                  <button
-                    key={letter}
-                    className="text-xs text-[#2196F3] py-1 hover:text-blue-800"
-                  >
-                    {letter}
-                  </button>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </div>
