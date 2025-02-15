@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import AppLayout from '@/components/AppLayout';
 import CategoryTabs from '@/components/layout/CategoryTabs';
@@ -14,23 +15,25 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <CategoryTabs
-        currentCategory={currentCategory}
-        setCurrentCategory={setCurrentCategory}
-        counts={{
-          new: messages.new.length,
-          inbox: messages.inbox.length,
-          saved: messages.saved.length,
-          trash: messages.trash.length,
-        }}
-      />
-      
-      <div className="mt-28 px-4">
-        {messages[currentCategory as keyof typeof messages]?.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div>{/* Message list content */}</div>
-        )}
+      <div className="flex flex-col h-full w-full">
+        <CategoryTabs
+          currentCategory={currentCategory}
+          setCurrentCategory={setCurrentCategory}
+          counts={{
+            new: messages.new.length,
+            inbox: messages.inbox.length,
+            saved: messages.saved.length,
+            trash: messages.trash.length,
+          }}
+        />
+        
+        <div className="mt-4 px-4">
+          {messages[currentCategory as keyof typeof messages]?.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <div>{/* Message list content */}</div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );
