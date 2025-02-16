@@ -157,7 +157,6 @@ const Microphone = () => {
 
       console.log('Voice message created:', messageData);
 
-      // Use the new safe_recipient_insert function for each recipient
       for (const recipient of recipients) {
         console.log('Adding recipient:', recipient.id);
         const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
