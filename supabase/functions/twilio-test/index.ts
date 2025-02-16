@@ -8,6 +8,8 @@ const corsHeaders = {
 
 serve(async (req) => {
   console.log("Twilio test function was invoked");  // 1. Confirm invocation
+  console.log("Request URL:", req.url); // Log the actual URL being hit
+  console.log("Request method:", req.method); // Log the HTTP method
   
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -16,14 +18,22 @@ serve(async (req) => {
   }
 
   try {
-    console.log("Loading Twilio credentials..."); // 2. Credential loading
-    // Load Twilio credentials from environment variables
+    // Check environment variables first
+    console.log("Checking environment variables..."); // 2. Environment check
+    console.log("TWILIO_ACCOUNT_SID is", Deno.env.get("TWILIO_ACCOUNT_SID") ? "present" : "missing");
+    console.log("TWILIO_AUTH_TOKEN is", Deno.env.get("TWILIO_AUTH_TOKEN") ? "present" : "missing");
+    
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID")
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN")
     
     if (!accountSid || !authToken) {
-      console.error("Missing Twilio credentials:", { accountSid: !!accountSid, authToken: !!authToken });
-      throw new Error('Missing Twilio credentials')
+      const errorDetails = {
+        accountSid: accountSid ? "present" : "missing",
+        authToken: authToken ? "present" : "missing",
+        envKeys: Object.keys(Deno.env.toObject()) // Log available environment keys
+      };
+      console.error("Missing Twilio credentials. Environment details:", errorDetails);
+      throw new Error('Missing Twilio credentials. Check Edge Function configuration.')
     }
 
     console.log("Credentials loaded successfully"); // 3. Credentials loaded
@@ -35,6 +45,10 @@ serve(async (req) => {
     const url = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Recordings.json`
 
     console.log('Preparing to send request to Twilio API:', { url }); // 4. Pre-request
+    console.log('Request headers:', {
+      Authorization: 'Basic ' + auth.substring(0, 5) + '...', // Log partial auth for safety
+      'Content-Type': 'application/x-www-form-urlencoded'
+    });
 
     const response = await fetch(url, {
       method: "GET",
@@ -44,8 +58,9 @@ serve(async (req) => {
       }
     })
 
-    // Log response status for debugging
+    // Log response status and headers for debugging
     console.log("Twilio API response status:", response.status); // 5. Response received
+    console.log("Twilio API response headers:", Object.fromEntries(response.headers.entries()));
 
     // Attempt to parse response JSON
     const data = await response.json()
@@ -53,13 +68,24 @@ serve(async (req) => {
 
     if (!response.ok) {
       // Twilio returned an error; log it for further diagnosis
-      console.error("Twilio API error response:", { status: response.status, data });
-      throw new Error(`Twilio API error: ${response.status}`)
+      console.error("Twilio API error response:", { 
+        status: response.status,
+        statusText: response.statusText,
+        data 
+      });
+      throw new Error(`Twilio API error: ${response.status} - ${data?.message || 'Unknown error'}`)
     }
 
     console.log("Successfully processed Twilio API response"); // 7. Success
     return new Response(
-      JSON.stringify({ success: true, data }),
+      JSON.stringify({ 
+        success: true, 
+        data,
+        environment: {
+          hasTwilioAccountSid: !!accountSid,
+          hasTwilioAuthToken: !!authToken
+        }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
 
@@ -68,10 +94,16 @@ serve(async (req) => {
       name: error.name,
       message: error.message,
       stack: error.stack,
-      cause: error.cause
+      cause: error.cause,
+      endpoint: req.url,
+      method: req.method
     });
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        endpoint: req.url,
+        method: req.method
+      }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
