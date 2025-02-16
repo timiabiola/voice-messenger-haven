@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import twilio from "https://esm.sh/twilio@4.19.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -190,7 +189,7 @@ serve(async (req) => {
     if (status === 'ringing') {
       console.log('Handling incoming call, generating TwiML response')
 
-      // Create a simple TwiML response without using the Twilio library
+      // Create a simple TwiML response using XML string
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
           <Say>Please leave your message after the beep.</Say>
