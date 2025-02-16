@@ -57,7 +57,7 @@ const Microphone = () => {
         }
       };
 
-      mediaRecorder.start(100); // Collect data every 100ms
+      mediaRecorder.start(100);
       setIsRecording(true);
       setIsPaused(false);
       setRecordingTime(0);
@@ -111,22 +111,33 @@ const Microphone = () => {
         return;
       }
 
+      // Create audio blob and file
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const fileName = `voice_message_${Date.now()}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
 
+      console.log('Uploading file:', fileName);
+      
+      // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('voice_messages')
         .upload(fileName, file);
 
       if (uploadError) {
+        console.error('Storage upload error:', uploadError);
         throw new Error('Failed to upload voice message');
       }
 
+      console.log('File uploaded successfully:', uploadData);
+
+      // Get public URL
       const { data: { publicUrl: audioUrl } } = supabase.storage
         .from('voice_messages')
         .getPublicUrl(fileName);
 
+      console.log('Got public URL:', audioUrl);
+
+      // Insert voice message
       const { data: messageData, error: dbError } = await supabase
         .from('voice_messages')
         .insert({
@@ -142,9 +153,13 @@ const Microphone = () => {
         .single();
 
       if (dbError) {
+        console.error('Database insert error:', dbError);
         throw new Error('Failed to save voice message');
       }
 
+      console.log('Voice message created:', messageData);
+
+      // Create recipient records
       const recipientRecords = recipients.map(recipient => ({
         voice_message_id: messageData.id,
         recipient_id: recipient.id,
@@ -156,6 +171,7 @@ const Microphone = () => {
         .insert(recipientRecords);
 
       if (recipientError) {
+        console.error('Recipient insert error:', recipientError);
         throw new Error('Failed to add recipients');
       }
 
@@ -163,7 +179,7 @@ const Microphone = () => {
       navigate('/');
     } catch (error) {
       console.error('Error sending voice message:', error);
-      toast.error('Failed to send voice message');
+      toast.error('Failed to send voice message. Please try again.');
     } finally {
       setIsProcessing(false);
       handleStopRecording();
