@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -174,16 +175,10 @@ export default function Notes() {
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
-        <aside className="hidden md:flex w-64 flex-col glass-panel rounded-lg mr-4">
-          <div className="p-4">
+        <aside className="hidden md:flex w-64 flex-col glass-panel rounded-lg mr-4 relative">
+          <div className="p-4 flex-1">
             <div className="flex items-center justify-between mb-6">
               <h2 className="font-semibold text-foreground">Notes</h2>
-              <button 
-                className="p-2 hover:bg-accent/10 rounded-full"
-                onClick={handleCreateFolder}
-              >
-                <Plus className="w-5 h-5 text-primary" />
-              </button>
             </div>
 
             <div className="space-y-4">
@@ -246,6 +241,17 @@ export default function Notes() {
                 </div>
               ))}
             </div>
+          </div>
+          
+          {/* Add New Folder Button */}
+          <div className="p-4 border-t border-border">
+            <button 
+              onClick={handleCreateFolder}
+              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground w-full p-2 rounded-lg hover:bg-accent/10 transition-colors"
+            >
+              <Plus className="w-4 h-4" />
+              <span>New Folder</span>
+            </button>
           </div>
         </aside>
 
