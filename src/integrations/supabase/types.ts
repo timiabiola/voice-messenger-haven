@@ -405,6 +405,7 @@ export type Database = {
           is_private: boolean | null
           is_urgent: boolean | null
           phone_number: string | null
+          sender_id: string | null
           subject: string | null
           title: string | null
           twilio_sid: string | null
@@ -419,6 +420,7 @@ export type Database = {
           is_private?: boolean | null
           is_urgent?: boolean | null
           phone_number?: string | null
+          sender_id?: string | null
           subject?: string | null
           title?: string | null
           twilio_sid?: string | null
@@ -433,6 +435,7 @@ export type Database = {
           is_private?: boolean | null
           is_urgent?: boolean | null
           phone_number?: string | null
+          sender_id?: string | null
           subject?: string | null
           title?: string | null
           twilio_sid?: string | null
