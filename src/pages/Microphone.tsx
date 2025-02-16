@@ -1,33 +1,15 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { 
-  Mic, 
-  X, 
-  Send, 
-  Pause, 
-  Play, 
-  Trash2, 
-  Lock,
-  AlertTriangle,
-  ChevronLeft,
-  Search,
-  UserPlus
-} from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-
-type Profile = {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string;
-  avatar_url: string | null;
-};
+import { Header } from '@/components/voice-message/Header';
+import { Recipients, type Profile } from '@/components/voice-message/Recipients';
+import { MessageOptions } from '@/components/voice-message/MessageOptions';
+import { RecordingControls } from '@/components/voice-message/RecordingControls';
 
 const Microphone = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
@@ -38,14 +20,10 @@ const Microphone = () => {
   const [recipients, setRecipients] = useState<Profile[]>([]);
   const [subject, setSubject] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Profile[]>([]);
-  const [showResults, setShowResults] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Initialize with selected profile if coming from contacts
   useEffect(() => {
     const selectedProfile = location.state?.selectedProfile;
     if (selectedProfile) {
@@ -62,55 +40,6 @@ const Microphone = () => {
     }
     return () => clearInterval(interval);
   }, [isRecording, isPaused]);
-
-  const searchUsers = async (query: string) => {
-    if (!query) {
-      setSearchResults([]);
-      return;
-    }
-
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
-        .limit(5);
-
-      if (error) throw error;
-      setSearchResults(data || []);
-    } catch (error) {
-      console.error('Error searching users:', error);
-      toast.error('Failed to search users');
-    }
-  };
-
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      if (searchQuery) {
-        searchUsers(searchQuery);
-      }
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
-
-  const addRecipient = (profile: Profile) => {
-    if (!recipients.find(r => r.id === profile.id)) {
-      setRecipients([...recipients, profile]);
-    }
-    setSearchQuery('');
-    setShowResults(false);
-  };
-
-  const removeRecipient = (profileId: string) => {
-    setRecipients(recipients.filter(r => r.id !== profileId));
-  };
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
 
   const handleStartRecording = async () => {
     try {
@@ -173,7 +102,6 @@ const Microphone = () => {
     setIsProcessing(true);
 
     try {
-      // Get current user
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('Not authenticated');
@@ -213,7 +141,6 @@ const Microphone = () => {
         throw new Error('Failed to save voice message');
       }
 
-      // Create recipient records
       const recipientRecords = recipients.map(recipient => ({
         voice_message_id: messageData.id,
         recipient_id: recipient.id
@@ -228,7 +155,7 @@ const Microphone = () => {
       }
 
       toast.success('Voice message sent successfully');
-      navigate('/');
+      window.location.href = '/';
     } catch (error) {
       console.error('Error sending voice message:', error);
       toast.error('Failed to send voice message');
@@ -241,177 +168,40 @@ const Microphone = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      <header className="h-16 flex items-center justify-between px-4 bg-white border-b fixed top-0 left-0 right-0 z-10">
-        <button 
-          className="p-2 hover:bg-gray-100 rounded-full"
-          onClick={() => navigate('/')}
-        >
-          <ChevronLeft className="w-6 h-6 text-gray-600" />
-        </button>
-        <h1 className="text-lg font-semibold">New Voice Message</h1>
-        <button 
-          className={`text-blue-600 font-medium ${
-            !isRecording || isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:text-blue-700'
-          }`}
-          disabled={!isRecording || isProcessing}
-          onClick={handleSendRecording}
-        >
-          Send
-        </button>
-      </header>
+      <Header 
+        isRecording={isRecording}
+        isProcessing={isProcessing}
+        onSend={handleSendRecording}
+      />
 
       <div className={`flex-1 p-4 space-y-4 mt-16 ${isMobile ? 'mb-20' : 'mb-8'}`}>
-        <div className="space-y-2 max-w-2xl mx-auto relative">
-          <label className="text-sm text-gray-600">To:</label>
-          <div className="flex flex-wrap items-center gap-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
-            {recipients.map((recipient) => (
-              <div 
-                key={recipient.id}
-                className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded"
-              >
-                <span className="text-sm">
-                  {recipient.first_name || recipient.email}
-                </span>
-                <button
-                  onClick={() => removeRecipient(recipient.id)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-            <div className="flex-1 min-w-[200px]">
-              <input 
-                type="text"
-                placeholder="Search users..."
-                className="w-full outline-none"
-                value={searchQuery}
-                onChange={(e) => {
-                  setSearchQuery(e.target.value);
-                  setShowResults(true);
-                }}
-                disabled={isProcessing}
-              />
-            </div>
-          </div>
-          {showResults && searchResults.length > 0 && (
-            <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1">
-              {searchResults.map((profile) => (
-                <button
-                  key={profile.id}
-                  className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                  onClick={() => addRecipient(profile)}
-                >
-                  <UserPlus className="w-4 h-4 text-gray-500" />
-                  <span>
-                    {profile.first_name} {profile.last_name}
-                  </span>
-                  <span className="text-sm text-gray-500">
-                    ({profile.email})
-                  </span>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Recipients 
+          recipients={recipients}
+          onAddRecipient={(profile) => setRecipients([...recipients, profile])}
+          onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
+          isProcessing={isProcessing}
+        />
 
-        <div className="space-y-2 max-w-2xl mx-auto">
-          <label className="text-sm text-gray-600">Subject:</label>
-          <input 
-            type="text"
-            placeholder="Add a subject..."
-            className="w-full p-2 bg-white rounded-lg border focus:border-blue-500 outline-none"
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            disabled={isProcessing}
-          />
-        </div>
+        <MessageOptions 
+          subject={subject}
+          onSubjectChange={setSubject}
+          isUrgent={isUrgent}
+          onUrgentChange={setIsUrgent}
+          isPrivate={isPrivate}
+          onPrivateChange={setIsPrivate}
+          isProcessing={isProcessing}
+        />
 
-        <div className="flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
-          <button 
-            className={`flex items-center space-x-2 p-2 rounded-lg ${
-              isUrgent ? 'bg-red-100 text-red-600' : 'bg-white text-gray-600'
-            }`}
-            onClick={() => setIsUrgent(!isUrgent)}
-            disabled={isProcessing}
-          >
-            <AlertTriangle className="w-5 h-5" />
-            <span>Urgent</span>
-          </button>
-          <button 
-            className={`flex items-center space-x-2 p-2 rounded-lg ${
-              isPrivate ? 'bg-blue-100 text-blue-600' : 'bg-white text-gray-600'
-            }`}
-            onClick={() => setIsPrivate(!isPrivate)}
-            disabled={isProcessing}
-          >
-            <Lock className="w-5 h-5" />
-            <span>Private</span>
-          </button>
-        </div>
-
-        <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-8">
-          <div className={`${isMobile ? 'w-48 h-48' : 'w-64 h-64'} rounded-full bg-blue-50 flex items-center justify-center`}>
-            <div className={`${isMobile ? 'w-32 h-32' : 'w-44 h-44'} rounded-full bg-blue-100 flex items-center justify-center ${
-              isRecording && !isPaused ? 'animate-pulse' : ''
-            }`}>
-              <Mic className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} ${
-                isRecording ? 'text-red-500' : 'text-blue-500'
-              }`} />
-            </div>
-          </div>
-
-          <div className="text-3xl font-medium text-gray-700">
-            {formatTime(recordingTime)}
-          </div>
-
-          <div className="flex items-center space-x-6">
-            {!isRecording ? (
-              <button 
-                className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                onClick={handleStartRecording}
-                disabled={isProcessing}
-              >
-                <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-              </button>
-            ) : (
-              <>
-                <button 
-                  className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-red-600 rounded-full flex items-center justify-center text-white hover:bg-red-700 transition-colors`}
-                  onClick={handleStopRecording}
-                  disabled={isProcessing}
-                >
-                  <Trash2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                </button>
-                {isPaused ? (
-                  <>
-                    <button 
-                      className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                      onClick={handleResumeRecording}
-                      disabled={isProcessing}
-                    >
-                      <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-                    </button>
-                    <button 
-                      className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors`}
-                      disabled={isProcessing}
-                    >
-                      <Play className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                    </button>
-                  </>
-                ) : (
-                  <button 
-                    className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                    onClick={handlePauseRecording}
-                    disabled={isProcessing}
-                  >
-                    <Pause className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-                  </button>
-                )}
-              </>
-            )}
-          </div>
-        </div>
+        <RecordingControls 
+          isRecording={isRecording}
+          isPaused={isPaused}
+          isProcessing={isProcessing}
+          recordingTime={recordingTime}
+          onStartRecording={handleStartRecording}
+          onStopRecording={handleStopRecording}
+          onPauseRecording={handlePauseRecording}
+          onResumeRecording={handleResumeRecording}
+        />
       </div>
     </div>
   );
