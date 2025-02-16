@@ -532,7 +532,30 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      rls_log_admin_view: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          operation: string | null
+          policy_name: string | null
+          table_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          operation?: string | null
+          policy_name?: string | null
+          table_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          operation?: string | null
+          policy_name?: string | null
+          table_name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       safe_recipient_insert: {
