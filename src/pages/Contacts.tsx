@@ -9,7 +9,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 type Profile = {
   id: string;
-  full_name: string | null;
+  first_name: string | null;
+  last_name: string | null;
   avatar_url: string | null;
   email: string;
   created_at: string;
@@ -47,8 +48,7 @@ const Contacts = () => {
         .select('*')
       
       if (searchQuery) {
-        query = query.ilike('full_name', `%${searchQuery}%`)
-          .or(`email.ilike.%${searchQuery}%`)
+        query = query.or(`first_name.ilike.%${searchQuery}%,last_name.ilike.%${searchQuery}%,email.ilike.%${searchQuery}%`)
       }
       
       const { data, error } = await query
@@ -85,6 +85,12 @@ const Contacts = () => {
     }
   }, [])
 
+  const getFullName = (profile: Profile) => {
+    const firstName = profile.first_name || '';
+    const lastName = profile.last_name || '';
+    return `${firstName} ${lastName}`.trim() || 'Anonymous User';
+  };
+
   return (
     <AppLayout>
       {/* Main Content */}
@@ -118,14 +124,14 @@ const Contacts = () => {
                   <div className="relative">
                     <img
                       src={profile.avatar_url || '/placeholder.svg'}
-                      alt={profile.full_name || 'User'}
+                      alt={getFullName(profile)}
                       className="w-12 h-12 rounded-full object-cover"
                     />
                   </div>
                   
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium">{profile.full_name || 'Anonymous User'}</h3>
+                      <h3 className="font-medium">{getFullName(profile)}</h3>
                       <span className="text-sm text-gray-500">
                         {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                       </span>
