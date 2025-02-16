@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -111,14 +110,12 @@ const Microphone = () => {
         return;
       }
 
-      // Create audio blob and file
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const fileName = `voice_message_${Date.now()}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
 
       console.log('Uploading file:', fileName);
       
-      // Upload to storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('voice_messages')
         .upload(fileName, file);
@@ -130,14 +127,12 @@ const Microphone = () => {
 
       console.log('File uploaded successfully:', uploadData);
 
-      // Get public URL
       const { data: { publicUrl: audioUrl } } = supabase.storage
         .from('voice_messages')
         .getPublicUrl(fileName);
 
       console.log('Got public URL:', audioUrl);
 
-      // Insert voice message
       const { data: messageData, error: dbError } = await supabase
         .from('voice_messages')
         .insert({
@@ -159,7 +154,6 @@ const Microphone = () => {
 
       console.log('Voice message created:', messageData);
 
-      // Create recipient records
       const recipientRecords = recipients.map(recipient => ({
         voice_message_id: messageData.id,
         recipient_id: recipient.id,
@@ -167,7 +161,7 @@ const Microphone = () => {
       }));
 
       const { error: recipientError } = await supabase
-        .from('voice_message_recipients')
+        .from('voice_message_recipients_test')
         .insert(recipientRecords);
 
       if (recipientError) {
