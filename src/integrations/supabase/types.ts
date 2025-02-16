@@ -454,26 +454,26 @@ export type Database = {
       }
       voice_message_recipients_test: {
         Row: {
-          created_at: string
+          created_at: string | null
           id: string
           is_default: boolean | null
-          recipient_id: string
+          recipient_id: string | null
           sender_id: string | null
           voice_message_id: string | null
         }
         Insert: {
-          created_at?: string
-          id?: string
+          created_at?: string | null
+          id: string
           is_default?: boolean | null
-          recipient_id: string
+          recipient_id?: string | null
           sender_id?: string | null
           voice_message_id?: string | null
         }
         Update: {
-          created_at?: string
+          created_at?: string | null
           id?: string
           is_default?: boolean | null
-          recipient_id?: string
+          recipient_id?: string | null
           sender_id?: string | null
           voice_message_id?: string | null
         }
@@ -481,13 +481,6 @@ export type Database = {
           {
             foreignKeyName: "voice_message_recipients_test_recipient_id_fkey"
             columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "voice_message_recipients_test_sender_id_fkey"
-            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
