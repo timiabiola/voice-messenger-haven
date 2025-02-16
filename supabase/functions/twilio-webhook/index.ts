@@ -32,25 +32,36 @@ serve(async (req) => {
     if (recordingUrl) {
       console.log('Processing recording:', { recordingUrl, callSid, duration: recordingDuration })
       
-      // Download recording from Twilio using fetch
+      // Download recording from Twilio using fetch with enhanced logging
       const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!
       const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
       const auth = btoa(`${accountSid}:${authToken}`)
 
+      console.log('Attempting to download recording from:', `${recordingUrl}.mp3`)
+
       const recordingResponse = await fetch(`${recordingUrl}.mp3`, {
         headers: {
-          'Authorization': `Basic ${auth}`
+          'Authorization': `Basic ${auth}`,
         }
       })
 
+      // Log response status for debugging
+      console.log('Twilio recording download response status:', recordingResponse.status)
+
       if (!recordingResponse.ok) {
-        throw new Error('Failed to download recording from Twilio')
+        const errorData = await recordingResponse.text()
+        console.error('Twilio API error response:', errorData)
+        throw new Error(`Failed to download recording from Twilio. Status: ${recordingResponse.status}`)
       }
 
       const audioBlob = await recordingResponse.blob()
+      console.log('Successfully downloaded recording, size:', audioBlob.size)
+
       const fileName = `${callSid}.mp3`
 
-      // Upload to Supabase Storage
+      // Upload to Supabase Storage with enhanced logging
+      console.log('Attempting to upload to Supabase storage:', fileName)
+
       const { data: uploadData, error: uploadError } = await supabase
         .storage
         .from('voice_messages')
@@ -60,14 +71,19 @@ serve(async (req) => {
         })
 
       if (uploadError) {
+        console.error('Storage upload error details:', uploadError)
         throw new Error(`Failed to upload to storage: ${uploadError.message}`)
       }
+
+      console.log('File uploaded successfully to storage:', uploadData)
 
       // Get public URL for the uploaded file
       const { data: { publicUrl } } = supabase
         .storage
         .from('voice_messages')
         .getPublicUrl(fileName)
+
+      console.log('Generated public URL:', publicUrl)
 
       // Find the user associated with this phone number
       const { data: senderProfile, error: senderError } = await supabase
@@ -77,10 +93,12 @@ serve(async (req) => {
         .single()
 
       if (senderError) {
-        console.warn('Could not find user profile for phone number:', from)
+        console.warn('Could not find user profile for phone number:', from, senderError)
       }
 
-      // Create voice message record
+      // Create voice message record with enhanced logging
+      console.log('Creating voice message record...')
+
       const { data: messageData, error: dbError } = await supabase
         .from('voice_messages')
         .insert({
@@ -98,11 +116,16 @@ serve(async (req) => {
         .single()
 
       if (dbError) {
+        console.error('Database insert error details:', dbError)
         throw new Error(`Failed to update database: ${dbError.message}`)
       }
 
+      console.log('Voice message record created:', messageData)
+
       // If we found a sender, automatically add their default recipients
       if (senderProfile?.id) {
+        console.log('Processing default recipients for sender:', senderProfile.id)
+
         // Get user's default voice message recipients
         const { data: defaultRecipients, error: recipientsError } = await supabase
           .from('voice_message_recipients')
@@ -110,7 +133,11 @@ serve(async (req) => {
           .eq('sender_id', senderProfile.id)
           .eq('is_default', true)
 
-        if (!recipientsError && defaultRecipients?.length > 0) {
+        if (recipientsError) {
+          console.error('Error fetching default recipients:', recipientsError)
+        } else if (defaultRecipients?.length > 0) {
+          console.log('Found default recipients:', defaultRecipients.length)
+
           // Create recipient records for this message
           const recipientRecords = defaultRecipients.map(({ recipient_id }) => ({
             voice_message_id: messageData.id,
@@ -124,6 +151,8 @@ serve(async (req) => {
 
           if (insertError) {
             console.error('Failed to add default recipients:', insertError)
+          } else {
+            console.log('Successfully added default recipients')
           }
         }
       }
@@ -136,6 +165,8 @@ serve(async (req) => {
 
     // Handle incoming calls using TwiML
     if (status === 'ringing') {
+      console.log('Handling incoming call, generating TwiML response')
+
       // Create a simple TwiML response without using the Twilio library
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
         <Response>
