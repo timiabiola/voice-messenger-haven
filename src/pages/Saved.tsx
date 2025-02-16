@@ -178,11 +178,11 @@ const Saved = () => {
         <div className="p-4">
           <div className="flex items-center space-x-3 mb-6">
             <Bookmark className="w-8 h-8 text-blue-600" />
-            <h2 className="font-semibold">Saved</h2>
+            <h2 className="font-semibold text-black">Saved</h2>
           </div>
           
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Tags</h3>
+            <h3 className="text-sm font-medium text-black mb-2">Filter by Tags</h3>
             <TagsInput
               selectedTags={selectedTags}
               onTagSelect={handleTagSelect}
@@ -192,8 +192,8 @@ const Saved = () => {
           
           <nav className="space-y-1">
             {['Smart Views', 'Personal Tags', 'From Sender'].map((category, i) => (
-              <button key={i} className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-gray-50">
-                <span className="text-gray-700">{category}</span>
+              <button key={i} className="flex items-center space-x-3 w-full p-3 rounded-lg hover:bg-gray-50 text-black">
+                <span>{category}</span>
               </button>
             ))}
           </nav>
@@ -211,7 +211,7 @@ const Saved = () => {
             >
               <ChevronLeft className="w-6 h-6 text-gray-600" />
             </button>
-            <h1 className="text-xl font-semibold">My Messages</h1>
+            <h1 className="text-xl font-semibold text-black">My Messages</h1>
           </div>
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <Settings className="w-6 h-6 text-gray-600" />
@@ -221,7 +221,7 @@ const Saved = () => {
         {/* Tag Sections */}
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {isLoading ? (
-            <div className="text-center py-4">Loading...</div>
+            <div className="text-center py-4 text-black">Loading...</div>
           ) : (
             <>
               {/* Smart Views Section */}
@@ -230,7 +230,7 @@ const Saved = () => {
                   className="flex items-center justify-between w-full mb-2"
                   onClick={() => toggleSection('smart')}
                 >
-                  <h2 className="text-lg font-medium text-gray-900">Smart Views</h2>
+                  <h2 className="text-lg font-medium text-black">Smart Views</h2>
                   <ChevronRight className={`w-5 h-5 text-gray-400 transform transition-transform ${
                     expandedLists.includes('smart') ? 'rotate-90' : ''
                   }`} />
@@ -247,9 +247,9 @@ const Saved = () => {
                           <div className="text-blue-600">
                             {item.icon}
                           </div>
-                          <span>{item.label}</span>
+                          <span className="text-black">{item.label}</span>
                         </div>
-                        <span className="text-sm text-gray-500">| {item.count}</span>
+                        <span className="text-sm text-black">| {item.count}</span>
                       </button>
                     ))}
                   </div>
@@ -262,7 +262,7 @@ const Saved = () => {
                   className="flex items-center justify-between w-full mb-2"
                   onClick={() => toggleSection('personal')}
                 >
-                  <h2 className="text-lg font-medium text-gray-900">Personal Tags</h2>
+                  <h2 className="text-lg font-medium text-black">Personal Tags</h2>
                   <ChevronRight className={`w-5 h-5 text-gray-400 transform transition-transform ${
                     expandedLists.includes('personal') ? 'rotate-90' : ''
                   }`} />
@@ -279,9 +279,9 @@ const Saved = () => {
                           <div className="text-blue-600">
                             {item.icon}
                           </div>
-                          <span>{item.label}</span>
+                          <span className="text-black">{item.label}</span>
                         </div>
-                        <span className="text-sm text-gray-500">| {item.count}</span>
+                        <span className="text-sm text-black">| {item.count}</span>
                       </button>
                     ))}
                   </div>
@@ -294,7 +294,7 @@ const Saved = () => {
                   className="flex items-center justify-between w-full mb-2"
                   onClick={() => toggleSection('sender')}
                 >
-                  <h2 className="text-lg font-medium text-gray-900">From Sender</h2>
+                  <h2 className="text-lg font-medium text-black">From Sender</h2>
                   <ChevronRight className={`w-5 h-5 text-gray-400 transform transition-transform ${
                     expandedLists.includes('sender') ? 'rotate-90' : ''
                   }`} />
@@ -311,9 +311,9 @@ const Saved = () => {
                           <div className="text-blue-600">
                             {item.icon}
                           </div>
-                          <span>{item.label}</span>
+                          <span className="text-black">{item.label}</span>
                         </div>
-                        <span className="text-sm text-gray-500">| {item.count}</span>
+                        <span className="text-sm text-black">| {item.count}</span>
                       </button>
                     ))}
                   </div>
