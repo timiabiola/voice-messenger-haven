@@ -96,25 +96,25 @@ const Contacts = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col pt-16">
         {/* Header with Back Button */}
-        <div className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 bg-white border-b z-10">
+        <div className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 bg-background border-b z-10">
           <button 
             onClick={() => navigate('/')}
-            className="p-2 hover:bg-gray-100 rounded-full"
+            className="p-2 hover:bg-accent/10 rounded-full"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
+            <ChevronLeft className="w-6 h-6 text-foreground" />
           </button>
-          <h1 className="text-xl font-semibold">Contacts</h1>
+          <h1 className="text-xl font-semibold text-foreground">Contacts</h1>
           <div className="w-10" /> {/* Spacer for alignment */}
         </div>
 
         {/* Search Bar */}
-        <div className="p-4 bg-white mt-16">
+        <div className="p-4 bg-background mt-16">
           <div className="relative">
-            <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+            <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search users..."
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -125,12 +125,12 @@ const Contacts = () => {
         <div className="flex-1 overflow-y-auto">
           <div className="relative">
             {isLoading ? (
-              <div className="p-4 text-center text-gray-500">Loading users...</div>
+              <div className="p-4 text-center text-muted-foreground">Loading users...</div>
             ) : profiles && profiles.length > 0 ? (
               profiles.map(profile => (
                 <div 
                   key={profile.id}
-                  className="flex items-center p-4 hover:bg-gray-50 cursor-pointer border-b"
+                  className="flex items-center p-4 hover:bg-accent/10 cursor-pointer border-b border-border"
                   onClick={() => navigate('/microphone', { state: { selectedProfile: profile } })}
                 >
                   <div className="relative">
@@ -143,17 +143,17 @@ const Contacts = () => {
                   
                   <div className="ml-4 flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-medium">{getFullName(profile)}</h3>
-                      <span className="text-sm text-gray-500">
+                      <h3 className="font-medium text-foreground">{getFullName(profile)}</h3>
+                      <span className="text-sm text-muted-foreground">
                         {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500">{profile.email}</p>
+                    <p className="text-sm text-muted-foreground">{profile.email}</p>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="p-4 text-center text-gray-500">
+              <div className="p-4 text-center text-muted-foreground">
                 {searchQuery ? 'No users found matching your search' : 'No users found'}
               </div>
             )}

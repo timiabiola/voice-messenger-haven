@@ -12,7 +12,7 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <div className="relative bg-white min-h-screen w-full">
+    <div className="relative bg-background min-h-screen w-full">
       <Header />
       <main className="flex-1 min-h-screen">
         {children}
