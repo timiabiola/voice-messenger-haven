@@ -277,7 +277,15 @@ export default function Notes() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-y-auto p-4">
+          <div className="flex-1 overflow-y-auto p-4 relative">
+            <button
+              onClick={handleCreateNote}
+              className="absolute top-6 left-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg"
+              title="Create new note"
+            >
+              <Plus className="w-5 h-5 text-primary-foreground" />
+            </button>
+
             {isLoading ? (
               <div className="text-center text-muted-foreground">Loading...</div>
             ) : filteredNotes.length === 0 ? (
@@ -285,7 +293,7 @@ export default function Notes() {
                 {searchQuery ? 'No notes found' : 'No notes yet'}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-4 mt-16">
                 {filteredNotes.map(note => (
                   <div 
                     key={note.id}
