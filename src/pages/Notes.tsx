@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
-import { Search, Plus, Folder, File, ChevronRight, MoreVertical } from 'lucide-react';
+import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 
@@ -283,7 +283,7 @@ export default function Notes() {
               className="absolute top-6 left-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg"
               title="Create new note"
             >
-              <Plus className="w-5 h-5 text-primary-foreground" />
+              <PencilLine className="w-5 h-5 text-primary-foreground" />
             </button>
 
             {isLoading ? (
