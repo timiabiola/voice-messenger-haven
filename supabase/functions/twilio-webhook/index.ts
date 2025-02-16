@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import * as twilio from "https://esm.sh/twilio@4.19.0"
+import { twiml } from "npm:twilio@4.19.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,15 +29,13 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabase = createClient(supabaseUrl, supabaseKey)
 
-    // Initialize Twilio client
-    const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!
-    const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
-    const client = new twilio.Twilio(accountSid, authToken)
-
     if (recordingUrl) {
       console.log('Processing recording:', { recordingUrl, callSid, duration: recordingDuration })
       
       // Download recording from Twilio
+      const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!
+      const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
+      
       const recordingResponse = await fetch(`${recordingUrl}.mp3`, {
         headers: {
           Authorization: 'Basic ' + btoa(`${accountSid}:${authToken}`)
@@ -95,9 +93,10 @@ serve(async (req) => {
 
     // Handle incoming calls
     if (status === 'ringing') {
-      const twiml = new twilio.twiml.VoiceResponse()
-      twiml.say('Please leave your message after the beep.')
-      twiml.record({
+      const VoiceResponse = twiml.VoiceResponse
+      const response = new VoiceResponse()
+      response.say('Please leave your message after the beep.')
+      response.record({
         action: req.url, // Send recording webhook to the same endpoint
         transcribe: false,
         maxLength: 300,
@@ -105,7 +104,7 @@ serve(async (req) => {
         trim: 'trim-silence'
       })
 
-      return new Response(twiml.toString(), {
+      return new Response(response.toString(), {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/xml'
