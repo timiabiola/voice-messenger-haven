@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { Search, ChevronLeft } from 'lucide-react'
-import { formatDistanceToNow } from 'date-fns';
 
 type Profile = {
   id: string;
@@ -142,12 +141,7 @@ const Contacts = () => {
                   </div>
                   
                   <div className="ml-4 flex-1">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-medium text-foreground">{getFullName(profile)}</h3>
-                      <span className="text-sm text-muted-foreground">
-                        {formatDistanceToNow(new Date(profile.created_at), { addSuffix: true })}
-                      </span>
-                    </div>
+                    <h3 className="font-medium text-foreground">{getFullName(profile)}</h3>
                     <p className="text-sm text-muted-foreground">{profile.email}</p>
                   </div>
                 </div>
