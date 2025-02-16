@@ -110,6 +110,8 @@ const Microphone = () => {
         return;
       }
 
+      console.log('Starting voice message upload process...');
+
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const fileName = `voice_message_${Date.now()}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
@@ -148,27 +150,29 @@ const Microphone = () => {
         .single();
 
       if (dbError) {
-        console.error('Database insert error:', dbError);
+        console.error('Voice message creation error:', dbError);
         throw new Error('Failed to save voice message');
       }
 
       console.log('Voice message created:', messageData);
 
-      const recipientRecords = recipients.map(recipient => ({
-        voice_message_id: messageData.id,
-        recipient_id: recipient.id,
-        sender_id: session.user.id
-      }));
+      for (const recipient of recipients) {
+        console.log('Adding recipient:', recipient.id);
+        const { error: recipientError } = await supabase
+          .from('voice_message_recipients_test')
+          .insert({
+            voice_message_id: messageData.id,
+            recipient_id: recipient.id,
+            sender_id: session.user.id
+          });
 
-      const { error: recipientError } = await supabase
-        .from('voice_message_recipients_test')
-        .insert(recipientRecords);
-
-      if (recipientError) {
-        console.error('Recipient insert error:', recipientError);
-        throw new Error('Failed to add recipients');
+        if (recipientError) {
+          console.error('Failed to add recipient:', recipient.id, recipientError);
+          throw new Error(`Failed to add recipient: ${recipient.email}`);
+        }
       }
 
+      console.log('All recipients added successfully');
       toast.success('Voice message sent successfully');
       navigate('/');
     } catch (error) {
