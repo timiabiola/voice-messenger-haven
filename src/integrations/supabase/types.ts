@@ -463,7 +463,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
-          id: string
+          id?: string
           is_default?: boolean | null
           recipient_id?: string | null
           sender_id?: string | null
@@ -481,6 +481,13 @@ export type Database = {
           {
             foreignKeyName: "voice_message_recipients_test_recipient_id_fkey"
             columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_message_recipients_test_sender_id_fkey"
+            columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
