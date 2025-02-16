@@ -15,23 +15,27 @@ export default function Home() {
 
   return (
     <AppLayout>
-      <CategoryTabs
-        currentCategory={currentCategory}
-        setCurrentCategory={setCurrentCategory}
-        counts={{
-          new: messages.new.length,
-          inbox: messages.inbox.length,
-          saved: messages.saved.length,
-          trash: messages.trash.length,
-        }}
-      />
-      
-      <div className="mt-28 px-4">
-        {messages[currentCategory as keyof typeof messages]?.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <div>{/* Message list content */}</div>
-        )}
+      <div className="bg-black min-h-screen">
+        <CategoryTabs
+          currentCategory={currentCategory}
+          setCurrentCategory={setCurrentCategory}
+          counts={{
+            new: messages.new.length,
+            inbox: messages.inbox.length,
+            saved: messages.saved.length,
+            trash: messages.trash.length,
+          }}
+        />
+        
+        <div className="mt-28 px-4">
+          {messages[currentCategory as keyof typeof messages]?.length === 0 ? (
+            <div className="text-[#ffcc00]">
+              <EmptyState />
+            </div>
+          ) : (
+            <div className="text-[#ffcc00]">{/* Message list content */}</div>
+          )}
+        </div>
       </div>
     </AppLayout>
   );
