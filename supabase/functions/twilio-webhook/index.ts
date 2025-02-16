@@ -67,21 +67,63 @@ serve(async (req) => {
         .from('voice_messages')
         .getPublicUrl(fileName)
 
-      // Create or update voice message record
-      const { error: dbError } = await supabase
+      // Find the user associated with this phone number
+      const { data: senderProfile, error: senderError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('phone', from)
+        .single()
+
+      if (senderError) {
+        console.warn('Could not find user profile for phone number:', from)
+      }
+
+      // Create voice message record
+      const { data: messageData, error: dbError } = await supabase
         .from('voice_messages')
-        .upsert({
+        .insert({
           id: callSid,
           audio_url: publicUrl,
           duration: parseInt(recordingDuration as string) || 0,
           phone_number: from as string,
           twilio_sid: callSid as string,
           twilio_status: status as string,
+          sender_id: senderProfile?.id || null,
+          title: 'Voice Message via Phone',
           updated_at: new Date().toISOString()
         })
+        .select()
+        .single()
 
       if (dbError) {
         throw new Error(`Failed to update database: ${dbError.message}`)
+      }
+
+      // If we found a sender, automatically add their default recipients
+      if (senderProfile?.id) {
+        // Get user's default voice message recipients
+        const { data: defaultRecipients, error: recipientsError } = await supabase
+          .from('voice_message_recipients')
+          .select('recipient_id')
+          .eq('sender_id', senderProfile.id)
+          .eq('is_default', true)
+
+        if (!recipientsError && defaultRecipients?.length > 0) {
+          // Create recipient records for this message
+          const recipientRecords = defaultRecipients.map(({ recipient_id }) => ({
+            voice_message_id: messageData.id,
+            recipient_id,
+            created_at: new Date().toISOString()
+          }))
+
+          const { error: insertError } = await supabase
+            .from('voice_message_recipients')
+            .insert(recipientRecords)
+
+          if (insertError) {
+            console.error('Failed to add default recipients:', insertError)
+          }
+        }
       }
 
       return new Response(
