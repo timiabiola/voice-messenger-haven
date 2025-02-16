@@ -21,10 +21,10 @@ export const Header = () => {
   };
 
   return (
-    <header className="bg-[#2196F3] text-white p-4 fixed top-0 w-full z-10">
+    <header className="bg-background border-b border-border text-foreground p-4 fixed top-0 w-full z-10">
       <div className="flex justify-between items-center">
         <button 
-          className="flex items-center"
+          className="flex items-center hover:text-secondary transition-colors"
           onClick={handleLogout}
         >
           <LogOut size={24} />
