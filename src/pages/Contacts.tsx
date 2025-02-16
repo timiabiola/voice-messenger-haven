@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Search } from 'lucide-react'
+import { Search, ChevronLeft } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns';
 
 type Profile = {
@@ -95,8 +95,20 @@ const Contacts = () => {
     <AppLayout>
       {/* Main Content */}
       <div className="flex-1 flex flex-col pt-16">
+        {/* Header with Back Button */}
+        <div className="fixed top-0 left-0 right-0 h-16 flex items-center justify-between px-4 bg-white border-b z-10">
+          <button 
+            onClick={() => navigate('/')}
+            className="p-2 hover:bg-gray-100 rounded-full"
+          >
+            <ChevronLeft className="w-6 h-6 text-gray-600" />
+          </button>
+          <h1 className="text-xl font-semibold">Contacts</h1>
+          <div className="w-10" /> {/* Spacer for alignment */}
+        </div>
+
         {/* Search Bar */}
-        <div className="p-4 bg-white">
+        <div className="p-4 bg-white mt-16">
           <div className="relative">
             <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
             <input

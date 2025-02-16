@@ -8,7 +8,8 @@ import {
   Play, 
   Trash2, 
   Lock,
-  AlertTriangle
+  AlertTriangle,
+  ChevronLeft
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
@@ -102,12 +103,10 @@ const Microphone = () => {
     setIsProcessing(true);
 
     try {
-      // Create audio blob and file
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const fileName = `voice_message_${Date.now()}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
 
-      // Upload to Supabase Storage
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('voice_messages')
         .upload(fileName, file);
@@ -116,12 +115,10 @@ const Microphone = () => {
         throw new Error('Failed to upload voice message');
       }
 
-      // Get the public URL
       const { data: { publicUrl: audioUrl } } = supabase.storage
         .from('voice_messages')
         .getPublicUrl(fileName);
 
-      // Save to database
       const { data: messageData, error: dbError } = await supabase
         .from('voice_messages')
         .insert({
@@ -139,7 +136,6 @@ const Microphone = () => {
         throw new Error('Failed to save voice message');
       }
 
-      // Add recipients
       if (recipients.length > 0) {
         const recipientRecords = recipients.map(recipientId => ({
           voice_message_id: messageData.id,
@@ -170,10 +166,10 @@ const Microphone = () => {
     <div className="flex flex-col min-h-screen bg-gray-50">
       <header className="h-16 flex items-center justify-between px-4 bg-white border-b fixed top-0 left-0 right-0 z-10">
         <button 
-          className="text-gray-600 hover:text-gray-800"
-          onClick={() => navigate(-1)}
+          className="p-2 hover:bg-gray-100 rounded-full"
+          onClick={() => navigate('/')}
         >
-          <X className="w-6 h-6" />
+          <ChevronLeft className="w-6 h-6 text-gray-600" />
         </button>
         <h1 className="text-lg font-semibold">New Voice Message</h1>
         <button 
