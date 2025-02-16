@@ -1,7 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { Twilio } from 'https://esm.sh/twilio@4.19.0'
+import * as twilio from "https://esm.sh/twilio@4.19.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,7 +32,7 @@ serve(async (req) => {
     // Initialize Twilio client
     const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!
     const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
-    const client = new Twilio(accountSid, authToken)
+    const client = new twilio.Twilio(accountSid, authToken)
 
     if (recordingUrl) {
       console.log('Processing recording:', { recordingUrl, callSid, duration: recordingDuration })
@@ -95,7 +95,7 @@ serve(async (req) => {
 
     // Handle incoming calls
     if (status === 'ringing') {
-      const twiml = new Twilio.twiml.VoiceResponse()
+      const twiml = new twilio.twiml.VoiceResponse()
       twiml.say('Please leave your message after the beep.')
       twiml.record({
         action: req.url, // Send recording webhook to the same endpoint
