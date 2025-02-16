@@ -477,15 +477,7 @@ export type Database = {
           sender_id?: string | null
           voice_message_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "voice_message_recipients_test_recipient_id_fkey"
-            columns: ["recipient_id"]
-            isOneToOne: false
-            referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       voice_messages: {
         Row: {
@@ -537,7 +529,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      voice_message_recipients_view: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          is_default: boolean | null
+          recipient_id: string | null
+          sender_id: string | null
+          voice_message_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          voice_message_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+          voice_message_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       toggle_message_selection: {
