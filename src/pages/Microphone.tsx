@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -156,7 +155,6 @@ const Microphone = () => {
       console.log('Voice message created:', messageData);
 
       const recipientRecords = recipients.map(recipient => ({
-        id: crypto.randomUUID(), // Add a UUID for each record
         voice_message_id: messageData.id,
         recipient_id: recipient.id,
         sender_id: session.user.id,
