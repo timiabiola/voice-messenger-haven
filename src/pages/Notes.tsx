@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -140,14 +139,11 @@ export default function Notes() {
   const handleCreateNote = async () => {
     if (!userId) return;
     
-    const noteTitle = prompt('Enter note title:');
-    if (!noteTitle) return;
-
     try {
       const { data, error } = await supabase
         .from('notes')
         .insert({
-          title: noteTitle,
+          title: new Date().toISOString(),
           content: '',
           folder_id: activeFolder,
           user_id: userId
@@ -243,7 +239,6 @@ export default function Notes() {
             </div>
           </div>
           
-          {/* Add New Folder Button */}
           <div className="p-4 border-t border-border">
             <button 
               onClick={handleCreateFolder}
@@ -309,13 +304,12 @@ export default function Notes() {
                     }}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-medium text-foreground">{note.title}</h3>
                       <span className="text-sm text-muted-foreground">
                         {new Date(note.created_at).toLocaleString()}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {note.content || 'No content'}
+                    <p className="text-foreground line-clamp-3">
+                      {note.content || 'Empty note'}
                     </p>
                     <div className="flex items-center space-x-4 mt-2">
                       <span className="text-xs text-muted-foreground">
