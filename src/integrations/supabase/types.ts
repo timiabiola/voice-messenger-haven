@@ -388,6 +388,20 @@ export type Database = {
         }
         Relationships: [
           {
+            foreignKeyName: "voice_message_recipients_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_message_recipients_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "voice_message_recipients_voice_message_id_fkey"
             columns: ["voice_message_id"]
             isOneToOne: false
