@@ -10,12 +10,15 @@ import {
   User,
   Users,
   MessageSquare,
-  Bookmark
+  Bookmark,
+  ChevronLeft
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
+import { useNavigate } from 'react-router-dom'
 
 const Saved = () => {
+  const navigate = useNavigate()
   const [expandedLists, setExpandedLists] = useState(['smart'])
 
   // Fetch saved items
@@ -109,7 +112,15 @@ const Saved = () => {
       <main className="flex-1 flex flex-col">
         {/* Header */}
         <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
-          <h1 className="text-xl font-semibold">My Messages</h1>
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => navigate('/')}
+              className="p-2 hover:bg-gray-100 rounded-full"
+            >
+              <ChevronLeft className="w-6 h-6 text-gray-600" />
+            </button>
+            <h1 className="text-xl font-semibold">My Messages</h1>
+          </div>
           <button className="p-2 hover:bg-gray-100 rounded-full">
             <Settings className="w-6 h-6 text-gray-600" />
           </button>
