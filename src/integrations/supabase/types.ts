@@ -228,6 +228,60 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_items_tags: {
+        Row: {
+          created_at: string
+          saved_item_id: string
+          tag_id: string
+        }
+        Insert: {
+          created_at?: string
+          saved_item_id: string
+          tag_id: string
+        }
+        Update: {
+          created_at?: string
+          saved_item_id?: string
+          tag_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "saved_items_tags_saved_item_id_fkey"
+            columns: ["saved_item_id"]
+            isOneToOne: false
+            referencedRelation: "saved_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_items_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tags: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       voice_message_recipients: {
         Row: {
           created_at: string

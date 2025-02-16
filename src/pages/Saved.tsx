@@ -7,32 +7,115 @@ import {
   Clock,
   Flag,
   Tag,
-  User,
   Users,
   MessageSquare,
   Bookmark,
   ChevronLeft
 } from 'lucide-react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/integrations/supabase/client'
 import { useNavigate } from 'react-router-dom'
+import { TagsInput } from '@/components/TagsInput'
+import { toast } from 'sonner'
 
 const Saved = () => {
   const navigate = useNavigate()
   const [expandedLists, setExpandedLists] = useState(['smart'])
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const queryClient = useQueryClient()
 
-  // Fetch saved items
+  // Fetch saved items with their tags
   const { data: savedItems, isLoading } = useQuery({
-    queryKey: ['saved-items'],
+    queryKey: ['saved-items', selectedTags],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('saved_items')
-        .select('*')
+        .select(`
+          *,
+          saved_items_tags!inner(
+            tags!inner(
+              name
+            )
+          )
+        `)
+
+      if (selectedTags.length > 0) {
+        query = query.in('saved_items_tags.tags.name', selectedTags)
+      }
+
+      const { data, error } = await query
       
       if (error) throw error
       return data
     }
   })
+
+  // Add tag to item mutation
+  const addTagToItem = useMutation({
+    mutationFn: async ({ itemId, tagName }: { itemId: string, tagName: string }) => {
+      // First get or create the tag
+      const { data: tag, error: tagError } = await supabase
+        .from('tags')
+        .select('id')
+        .eq('name', tagName)
+        .single()
+
+      if (tagError) throw tagError
+
+      // Then create the relation
+      const { error } = await supabase
+        .from('saved_items_tags')
+        .insert([{ saved_item_id: itemId, tag_id: tag.id }])
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-items'] })
+      toast.success('Tag added successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to add tag')
+      console.error('Error adding tag:', error)
+    }
+  })
+
+  // Remove tag from item mutation
+  const removeTagFromItem = useMutation({
+    mutationFn: async ({ itemId, tagName }: { itemId: string, tagName: string }) => {
+      const { data: tag, error: tagError } = await supabase
+        .from('tags')
+        .select('id')
+        .eq('name', tagName)
+        .single()
+
+      if (tagError) throw tagError
+
+      const { error } = await supabase
+        .from('saved_items_tags')
+        .delete()
+        .match({ saved_item_id: itemId, tag_id: tag.id })
+
+      if (error) throw error
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['saved-items'] })
+      toast.success('Tag removed successfully')
+    },
+    onError: (error) => {
+      toast.error('Failed to remove tag')
+      console.error('Error removing tag:', error)
+    }
+  })
+
+  const handleTagSelect = (tagName: string) => {
+    if (!selectedTags.includes(tagName)) {
+      setSelectedTags([...selectedTags, tagName])
+    }
+  }
+
+  const handleTagRemove = (tagName: string) => {
+    setSelectedTags(selectedTags.filter(t => t !== tagName))
+  }
 
   // Process saved items into sections
   const sections = {
@@ -96,6 +179,15 @@ const Saved = () => {
           <div className="flex items-center space-x-3 mb-6">
             <Bookmark className="w-8 h-8 text-blue-600" />
             <h2 className="font-semibold">Saved</h2>
+          </div>
+          
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-500 mb-2">Filter by Tags</h3>
+            <TagsInput
+              selectedTags={selectedTags}
+              onTagSelect={handleTagSelect}
+              onTagRemove={handleTagRemove}
+            />
           </div>
           
           <nav className="space-y-1">
