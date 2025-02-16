@@ -4,7 +4,8 @@ import {
   Home,
   Users,
   Mic,
-  Bookmark
+  Bookmark,
+  NotepadText
 } from 'lucide-react';
 
 export const BottomNav = () => {
@@ -21,6 +22,9 @@ export const BottomNav = () => {
       </Link>
       <Link to="/saved" className="nav-item">
         <Bookmark className="w-6 h-6" />
+      </Link>
+      <Link to="/notes" className="nav-item">
+        <NotepadText className="w-6 h-6" />
       </Link>
     </div>
   );
