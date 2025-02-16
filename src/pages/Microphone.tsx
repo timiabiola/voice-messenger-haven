@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -158,9 +157,7 @@ const Microphone = () => {
       const recipientRecords = recipients.map(recipient => ({
         voice_message_id: messageData.id,
         recipient_id: recipient.id,
-        sender_id: session.user.id,
-        created_at: new Date().toISOString(),
-        is_default: false
+        sender_id: session.user.id
       }));
 
       const { error: recipientError } = await supabase

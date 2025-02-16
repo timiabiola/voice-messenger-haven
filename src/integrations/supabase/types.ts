@@ -529,33 +529,7 @@ export type Database = {
       }
     }
     Views: {
-      voice_message_recipients_view: {
-        Row: {
-          created_at: string | null
-          id: string | null
-          is_default: boolean | null
-          recipient_id: string | null
-          sender_id: string | null
-          voice_message_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          is_default?: boolean | null
-          recipient_id?: string | null
-          sender_id?: string | null
-          voice_message_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          is_default?: boolean | null
-          recipient_id?: string | null
-          sender_id?: string | null
-          voice_message_id?: string | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Functions: {
       toggle_message_selection: {
