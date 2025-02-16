@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // Pages
 import Index from "./pages/Index";
+import Notes from "./pages/Notes";
 import SelectLeft from "./pages/SelectLeft";
 import IconsForAppFeatures from "./pages/IconsForAppFeatures";
 import ViewMode from "./pages/ViewMode";
@@ -69,6 +70,7 @@ const App = () => {
           <Routes>
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<Index />} />
+            <Route path="/notes" element={<Notes />} />
             <Route
               path="/select-left"
               element={
