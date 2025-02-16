@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { 
   Mic, 
   X, 
@@ -9,26 +10,48 @@ import {
   Trash2, 
   Lock,
   AlertTriangle,
-  ChevronLeft
+  ChevronLeft,
+  Search,
+  UserPlus
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+type Profile = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string;
+  avatar_url: string | null;
+};
+
 const Microphone = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const [isUrgent, setIsUrgent] = useState(false);
   const [isPrivate, setIsPrivate] = useState(false);
-  const [recipients, setRecipients] = useState<string[]>([]);
+  const [recipients, setRecipients] = useState<Profile[]>([]);
   const [subject, setSubject] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Profile[]>([]);
+  const [showResults, setShowResults] = useState(false);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Initialize with selected profile if coming from contacts
+  useEffect(() => {
+    const selectedProfile = location.state?.selectedProfile;
+    if (selectedProfile) {
+      setRecipients([selectedProfile]);
+    }
+  }, [location.state]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -39,6 +62,49 @@ const Microphone = () => {
     }
     return () => clearInterval(interval);
   }, [isRecording, isPaused]);
+
+  const searchUsers = async (query: string) => {
+    if (!query) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .limit(5);
+
+      if (error) throw error;
+      setSearchResults(data || []);
+    } catch (error) {
+      console.error('Error searching users:', error);
+      toast.error('Failed to search users');
+    }
+  };
+
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      if (searchQuery) {
+        searchUsers(searchQuery);
+      }
+    }, 300);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
+
+  const addRecipient = (profile: Profile) => {
+    if (!recipients.find(r => r.id === profile.id)) {
+      setRecipients([...recipients, profile]);
+    }
+    setSearchQuery('');
+    setShowResults(false);
+  };
+
+  const removeRecipient = (profileId: string) => {
+    setRecipients(recipients.filter(r => r.id !== profileId));
+  };
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -90,7 +156,6 @@ const Microphone = () => {
       setIsRecording(false);
       setIsPaused(false);
       setRecordingTime(0);
-      audioChunksRef.current = [];
     }
   };
 
@@ -100,9 +165,20 @@ const Microphone = () => {
       return;
     }
 
+    if (!recipients.length) {
+      toast.error('Please select at least one recipient');
+      return;
+    }
+
     setIsProcessing(true);
 
     try {
+      // Get current user
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
+      }
+
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
       const fileName = `voice_message_${Date.now()}.webm`;
       const file = new File([audioBlob], fileName, { type: 'audio/webm' });
@@ -127,7 +203,8 @@ const Microphone = () => {
           audio_url: audioUrl,
           duration: recordingTime,
           is_urgent: isUrgent,
-          is_private: isPrivate
+          is_private: isPrivate,
+          sender_id: session.user.id
         })
         .select()
         .single();
@@ -136,19 +213,18 @@ const Microphone = () => {
         throw new Error('Failed to save voice message');
       }
 
-      if (recipients.length > 0) {
-        const recipientRecords = recipients.map(recipientId => ({
-          voice_message_id: messageData.id,
-          recipient_id: recipientId
-        }));
+      // Create recipient records
+      const recipientRecords = recipients.map(recipient => ({
+        voice_message_id: messageData.id,
+        recipient_id: recipient.id
+      }));
 
-        const { error: recipientError } = await supabase
-          .from('voice_message_recipients')
-          .insert(recipientRecords);
+      const { error: recipientError } = await supabase
+        .from('voice_message_recipients')
+        .insert(recipientRecords);
 
-        if (recipientError) {
-          throw new Error('Failed to add recipients');
-        }
+      if (recipientError) {
+        throw new Error('Failed to add recipients');
       }
 
       toast.success('Voice message sent successfully');
@@ -159,6 +235,7 @@ const Microphone = () => {
     } finally {
       setIsProcessing(false);
       handleStopRecording();
+      audioChunksRef.current = [];
     }
   };
 
@@ -184,16 +261,58 @@ const Microphone = () => {
       </header>
 
       <div className={`flex-1 p-4 space-y-4 mt-16 ${isMobile ? 'mb-20' : 'mb-8'}`}>
-        <div className="space-y-2 max-w-2xl mx-auto">
+        <div className="space-y-2 max-w-2xl mx-auto relative">
           <label className="text-sm text-gray-600">To:</label>
-          <div className="flex items-center space-x-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
-            <input 
-              type="text"
-              placeholder="Add recipients..."
-              className="flex-1 outline-none"
-              disabled={isProcessing}
-            />
+          <div className="flex flex-wrap items-center gap-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
+            {recipients.map((recipient) => (
+              <div 
+                key={recipient.id}
+                className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded"
+              >
+                <span className="text-sm">
+                  {recipient.first_name || recipient.email}
+                </span>
+                <button
+                  onClick={() => removeRecipient(recipient.id)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+            <div className="flex-1 min-w-[200px]">
+              <input 
+                type="text"
+                placeholder="Search users..."
+                className="w-full outline-none"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowResults(true);
+                }}
+                disabled={isProcessing}
+              />
+            </div>
           </div>
+          {showResults && searchResults.length > 0 && (
+            <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1">
+              {searchResults.map((profile) => (
+                <button
+                  key={profile.id}
+                  className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+                  onClick={() => addRecipient(profile)}
+                >
+                  <UserPlus className="w-4 h-4 text-gray-500" />
+                  <span>
+                    {profile.first_name} {profile.last_name}
+                  </span>
+                  <span className="text-sm text-gray-500">
+                    ({profile.email})
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2 max-w-2xl mx-auto">
