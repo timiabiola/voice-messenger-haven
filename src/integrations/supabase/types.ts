@@ -554,6 +554,7 @@ export type Database = {
     }
     Enums: {
       contact_status: "online" | "offline" | "away"
+      message_category: "new" | "inbox" | "saved" | "trash"
     }
     CompositeTypes: {
       [_ in never]: never
