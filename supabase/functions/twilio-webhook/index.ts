@@ -24,20 +24,22 @@ serve(async (req) => {
     const status = formData.get('CallStatus') || formData.get('RecordingStatus')
 
     // Initialize Supabase client
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const supabase = createClient(supabaseUrl, supabaseKey)
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+    )
 
     if (recordingUrl) {
       console.log('Processing recording:', { recordingUrl, callSid, duration: recordingDuration })
       
-      // Download recording from Twilio
+      // Download recording from Twilio using fetch
       const accountSid = Deno.env.get('TWILIO_ACCOUNT_SID')!
       const authToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
-      
+      const auth = btoa(`${accountSid}:${authToken}`)
+
       const recordingResponse = await fetch(`${recordingUrl}.mp3`, {
         headers: {
-          Authorization: 'Basic ' + btoa(`${accountSid}:${authToken}`)
+          'Authorization': `Basic ${auth}`
         }
       })
 
@@ -132,7 +134,7 @@ serve(async (req) => {
       )
     }
 
-    // Handle incoming calls
+    // Handle incoming calls using TwiML
     if (status === 'ringing') {
       // Create a simple TwiML response without using the Twilio library
       const twiml = `<?xml version="1.0" encoding="UTF-8"?>
