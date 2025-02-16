@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -27,31 +26,45 @@ export default function Notes() {
   const navigate = useNavigate();
   const { toast } = useToast();
   
-  // State
   const [folders, setFolders] = useState<Folder[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
   const [expandedFolders, setExpandedFolders] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
 
-  // Fetch folders and notes
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        navigate('/auth');
+        return;
+      }
+      setUserId(user.id);
+    };
+
+    getCurrentUser();
+  }, [navigate]);
+
   useEffect(() => {
     const fetchData = async () => {
+      if (!userId) return;
+
       try {
-        // Fetch folders
         const { data: foldersData, error: foldersError } = await supabase
           .from('folders')
           .select('*')
+          .eq('user_id', userId)
           .order('name');
 
         if (foldersError) throw foldersError;
         setFolders(foldersData || []);
 
-        // Fetch notes
         const { data: notesData, error: notesError } = await supabase
           .from('notes')
           .select('*')
+          .eq('user_id', userId)
           .order('created_at', { ascending: false });
 
         if (notesError) throw notesError;
@@ -69,9 +82,8 @@ export default function Notes() {
     };
 
     fetchData();
-  }, [toast]);
+  }, [userId, toast]);
 
-  // Filter notes based on active folder and search query
   const filteredNotes = notes.filter(note => {
     const matchesFolder = activeFolder ? note.folder_id === activeFolder : true;
     const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -79,7 +91,6 @@ export default function Notes() {
     return matchesFolder && matchesSearch;
   });
 
-  // Get folders structure
   const getRootFolders = () => folders.filter(folder => !folder.parent_folder_id);
   const getChildFolders = (parentId: string) => folders.filter(folder => folder.parent_folder_id === parentId);
   const getFolderNoteCount = (folderId: string) => notes.filter(note => note.folder_id === folderId).length;
@@ -93,13 +104,18 @@ export default function Notes() {
   };
 
   const handleCreateFolder = async () => {
+    if (!userId) return;
+    
     const folderName = prompt('Enter folder name:');
     if (!folderName) return;
 
     try {
       const { data, error } = await supabase
         .from('folders')
-        .insert([{ name: folderName }])
+        .insert({
+          name: folderName,
+          user_id: userId
+        })
         .select()
         .single();
 
@@ -121,17 +137,20 @@ export default function Notes() {
   };
 
   const handleCreateNote = async () => {
+    if (!userId) return;
+    
     const noteTitle = prompt('Enter note title:');
     if (!noteTitle) return;
 
     try {
       const { data, error } = await supabase
         .from('notes')
-        .insert([{
+        .insert({
           title: noteTitle,
           content: '',
-          folder_id: activeFolder
-        }])
+          folder_id: activeFolder,
+          user_id: userId
+        })
         .select()
         .single();
 
@@ -155,7 +174,6 @@ export default function Notes() {
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
-        {/* Left Sidebar */}
         <aside className="hidden md:flex w-64 flex-col glass-panel rounded-lg mr-4">
           <div className="p-4">
             <div className="flex items-center justify-between mb-6">
@@ -168,7 +186,6 @@ export default function Notes() {
               </button>
             </div>
 
-            {/* Folder Structure */}
             <div className="space-y-4">
               <button 
                 className={`flex items-center justify-between w-full p-2 rounded-lg hover:bg-accent/10 ${
@@ -183,7 +200,6 @@ export default function Notes() {
                 <span className="text-sm text-muted-foreground">{notes.length}</span>
               </button>
 
-              {/* Root Folders */}
               {getRootFolders().map(folder => (
                 <div key={folder.id}>
                   <button 
@@ -233,9 +249,7 @@ export default function Notes() {
           </div>
         </aside>
 
-        {/* Main Content */}
         <main className="flex-1 flex flex-col glass-panel rounded-lg">
-          {/* Header */}
           <header className="h-16 flex items-center justify-between px-4 border-b border-border">
             <h1 className="text-xl font-semibold text-foreground">
               {activeFolder 
@@ -263,7 +277,6 @@ export default function Notes() {
             </div>
           </header>
 
-          {/* Notes List */}
           <div className="flex-1 overflow-y-auto p-4">
             {isLoading ? (
               <div className="text-center text-muted-foreground">Loading...</div>
@@ -278,7 +291,6 @@ export default function Notes() {
                     key={note.id}
                     className="glass-panel rounded-lg p-4 hover:bg-accent/10 cursor-pointer"
                     onClick={() => {
-                      // TODO: Implement note editing
                       console.log('Open note:', note.id);
                     }}
                   >
