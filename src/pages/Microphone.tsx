@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -156,15 +157,14 @@ const Microphone = () => {
 
       console.log('Voice message created:', messageData);
 
+      // Use the new safe_recipient_insert function for each recipient
       for (const recipient of recipients) {
         console.log('Adding recipient:', recipient.id);
-        const { error: recipientError } = await supabase
-          .from('voice_message_recipients_test')
-          .insert({
-            voice_message_id: messageData.id,
-            recipient_id: recipient.id,
-            sender_id: session.user.id
-          });
+        const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
+          message_id: messageData.id,
+          recipient_id: recipient.id,
+          sender_id: session.user.id
+        });
 
         if (recipientError) {
           console.error('Failed to add recipient:', recipient.id, recipientError);

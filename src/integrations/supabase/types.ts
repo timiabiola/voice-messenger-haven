@@ -265,6 +265,30 @@ export type Database = {
         }
         Relationships: []
       }
+      rls_debug_log: {
+        Row: {
+          created_at: string | null
+          id: string
+          operation: string | null
+          policy_name: string | null
+          table_name: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          operation?: string | null
+          policy_name?: string | null
+          table_name?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          operation?: string | null
+          policy_name?: string | null
+          table_name?: string | null
+        }
+        Relationships: []
+      }
       saved_items: {
         Row: {
           category: string
@@ -477,7 +501,29 @@ export type Database = {
           sender_id?: string | null
           voice_message_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "voice_message_recipients_test_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_message_recipients_test_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_message_recipients_test_voice_message_id_fkey"
+            columns: ["voice_message_id"]
+            isOneToOne: false
+            referencedRelation: "voice_messages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       voice_messages: {
         Row: {
@@ -532,6 +578,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      safe_recipient_insert: {
+        Args: {
+          message_id: string
+          recipient_id: string
+          sender_id: string
+        }
+        Returns: undefined
+      }
       toggle_message_selection: {
         Args: {
           message_id: string
