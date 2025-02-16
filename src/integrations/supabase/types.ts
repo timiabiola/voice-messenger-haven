@@ -170,7 +170,9 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          is_received: boolean | null
           is_selected: boolean | null
+          is_sent: boolean | null
           title: string | null
           updated_at: string | null
         }
@@ -179,7 +181,9 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_received?: boolean | null
           is_selected?: boolean | null
+          is_sent?: boolean | null
           title?: string | null
           updated_at?: string | null
         }
@@ -188,7 +192,9 @@ export type Database = {
           content?: string | null
           created_at?: string | null
           id?: string
+          is_received?: boolean | null
           is_selected?: boolean | null
+          is_sent?: boolean | null
           title?: string | null
           updated_at?: string | null
         }
@@ -546,7 +552,9 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
+          is_received: boolean | null
           is_selected: boolean | null
+          is_sent: boolean | null
           title: string | null
           updated_at: string | null
         }
