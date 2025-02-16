@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -39,17 +40,25 @@ const Contacts = () => {
   const { data: profiles, isLoading } = useQuery({
     queryKey: ['profiles', searchQuery],
     queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession()
+      
       let query = supabase
         .from('profiles')
         .select('*')
       
       if (searchQuery) {
         query = query.ilike('full_name', `%${searchQuery}%`)
+          .or(`email.ilike.%${searchQuery}%`)
       }
       
-      const { data, error } = await query.order('full_name')
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
       
-      if (error) throw error
+      if (error) {
+        console.error('Error fetching profiles:', error)
+        throw error
+      }
+      
       return data as Profile[]
     }
   })
@@ -67,7 +76,6 @@ const Contacts = () => {
         },
         (payload) => {
           console.log('Realtime update:', payload);
-          // The useQuery hook will automatically revalidate the data
         }
       )
       .subscribe()
@@ -128,7 +136,7 @@ const Contacts = () => {
               ))
             ) : (
               <div className="p-4 text-center text-gray-500">
-                No users found
+                {searchQuery ? 'No users found matching your search' : 'No users found'}
               </div>
             )}
           </div>
