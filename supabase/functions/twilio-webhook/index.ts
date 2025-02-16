@@ -1,7 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { twiml } from "npm:twilio@4.19.0"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -93,18 +92,20 @@ serve(async (req) => {
 
     // Handle incoming calls
     if (status === 'ringing') {
-      const VoiceResponse = twiml.VoiceResponse
-      const response = new VoiceResponse()
-      response.say('Please leave your message after the beep.')
-      response.record({
-        action: req.url, // Send recording webhook to the same endpoint
-        transcribe: false,
-        maxLength: 300,
-        playBeep: true,
-        trim: 'trim-silence'
-      })
+      // Create a simple TwiML response without using the Twilio library
+      const twiml = `<?xml version="1.0" encoding="UTF-8"?>
+        <Response>
+          <Say>Please leave your message after the beep.</Say>
+          <Record
+            action="${req.url}"
+            transcribe="false"
+            maxLength="300"
+            playBeep="true"
+            trim="trim-silence"
+          />
+        </Response>`
 
-      return new Response(response.toString(), {
+      return new Response(twiml, {
         headers: {
           ...corsHeaders,
           'Content-Type': 'text/xml'
