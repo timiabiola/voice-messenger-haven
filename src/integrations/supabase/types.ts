@@ -395,8 +395,11 @@ export type Database = {
           id: string
           is_private: boolean | null
           is_urgent: boolean | null
+          phone_number: string | null
           subject: string | null
           title: string | null
+          twilio_sid: string | null
+          twilio_status: string | null
           updated_at: string
         }
         Insert: {
@@ -406,8 +409,11 @@ export type Database = {
           id?: string
           is_private?: boolean | null
           is_urgent?: boolean | null
+          phone_number?: string | null
           subject?: string | null
           title?: string | null
+          twilio_sid?: string | null
+          twilio_status?: string | null
           updated_at?: string
         }
         Update: {
@@ -417,8 +423,11 @@ export type Database = {
           id?: string
           is_private?: boolean | null
           is_urgent?: boolean | null
+          phone_number?: string | null
           subject?: string | null
           title?: string | null
+          twilio_sid?: string | null
+          twilio_status?: string | null
           updated_at?: string
         }
         Relationships: []
