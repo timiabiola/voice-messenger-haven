@@ -23,9 +23,13 @@ export const TagsInput = ({ selectedTags, onTagSelect, onTagRemove }: TagsInputP
   const { data: tags } = useQuery({
     queryKey: ['tags'],
     queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.user) throw new Error('No user session')
+
       const { data, error } = await supabase
         .from('tags')
         .select('id, name')
+        .eq('user_id', session.session.user.id)
       
       if (error) throw error
       return data
@@ -35,9 +39,15 @@ export const TagsInput = ({ selectedTags, onTagSelect, onTagRemove }: TagsInputP
   // Create new tag mutation
   const createTag = useMutation({
     mutationFn: async (name: string) => {
+      const { data: session } = await supabase.auth.getSession()
+      if (!session?.session?.user) throw new Error('No user session')
+
       const { data, error } = await supabase
         .from('tags')
-        .insert([{ name }])
+        .insert([{ 
+          name,
+          user_id: session.session.user.id
+        }])
         .select()
         .single()
 
