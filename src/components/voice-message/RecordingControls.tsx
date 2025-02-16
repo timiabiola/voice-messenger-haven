@@ -65,31 +65,17 @@ export const RecordingControls = ({
             >
               <Trash2 className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </button>
-            {isPaused ? (
-              <>
-                <button 
-                  className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                  onClick={onResumeRecording}
-                  disabled={isProcessing}
-                >
-                  <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-                </button>
-                <button 
-                  className={`${isMobile ? 'w-12 h-12' : 'w-16 h-16'} bg-green-600 rounded-full flex items-center justify-center text-white hover:bg-green-700 transition-colors`}
-                  disabled={isProcessing}
-                >
-                  <Play className={`${isMobile ? 'w-6 h-6' : 'w-8 h-8'}`} />
-                </button>
-              </>
-            ) : (
-              <button 
-                className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
-                onClick={onPauseRecording}
-                disabled={isProcessing}
-              >
+            <button 
+              className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}
+              onClick={isPaused ? onResumeRecording : onPauseRecording}
+              disabled={isProcessing}
+            >
+              {isPaused ? (
+                <Play className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
+              ) : (
                 <Pause className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
-              </button>
-            )}
+              )}
+            </button>
           </>
         )}
       </div>

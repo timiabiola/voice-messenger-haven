@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -11,7 +11,7 @@ import { RecordingControls } from '@/components/voice-message/RecordingControls'
 
 const Microphone = () => {
   const location = useLocation();
-  const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -23,6 +23,7 @@ const Microphone = () => {
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     const selectedProfile = location.state?.selectedProfile;
@@ -32,13 +33,14 @@ const Microphone = () => {
   }, [location.state]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
     if (isRecording && !isPaused) {
-      interval = setInterval(() => {
+      timerRef.current = setInterval(() => {
         setRecordingTime((prev) => prev + 1);
       }, 1000);
+    } else {
+      clearInterval(timerRef.current);
     }
-    return () => clearInterval(interval);
+    return () => clearInterval(timerRef.current);
   }, [isRecording, isPaused]);
 
   const handleStartRecording = async () => {
@@ -55,12 +57,23 @@ const Microphone = () => {
         }
       };
 
-      mediaRecorder.start();
+      mediaRecorder.start(100); // Collect data every 100ms
       setIsRecording(true);
       setIsPaused(false);
+      setRecordingTime(0);
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error('Could not access microphone. Please check permissions.');
+    }
+  };
+
+  const handleStopRecording = () => {
+    if (mediaRecorderRef.current && isRecording) {
+      mediaRecorderRef.current.stop();
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      setIsPaused(false);
+      clearInterval(timerRef.current);
     }
   };
 
@@ -78,23 +91,13 @@ const Microphone = () => {
     }
   };
 
-  const handleStopRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-      setIsRecording(false);
-      setIsPaused(false);
-      setRecordingTime(0);
-    }
-  };
-
   const handleSendRecording = async () => {
-    if (!audioChunksRef.current.length) {
+    if (audioChunksRef.current.length === 0) {
       toast.error('No recording to send');
       return;
     }
 
-    if (!recipients.length) {
+    if (recipients.length === 0) {
       toast.error('Please select at least one recipient');
       return;
     }
@@ -104,7 +107,8 @@ const Microphone = () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        throw new Error('Not authenticated');
+        toast.error('Please sign in to send messages');
+        return;
       }
 
       const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
@@ -156,7 +160,7 @@ const Microphone = () => {
       }
 
       toast.success('Voice message sent successfully');
-      window.location.href = '/';
+      navigate('/');
     } catch (error) {
       console.error('Error sending voice message:', error);
       toast.error('Failed to send voice message');
