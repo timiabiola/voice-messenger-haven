@@ -1,5 +1,6 @@
 
 import { AlertTriangle, Lock } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MessageOptionsProps {
   subject: string;
@@ -20,42 +21,44 @@ export const MessageOptions = ({
   onPrivateChange,
   isProcessing
 }: MessageOptionsProps) => {
+  const isMobile = useIsMobile();
+
   return (
-    <>
-      <div className="space-y-2 max-w-2xl mx-auto">
-        <label className="text-sm text-gray-600">Subject:</label>
+    <div className="space-y-4 w-full">
+      <div className="space-y-2">
+        <label className="text-sm text-muted-foreground px-1">Subject:</label>
         <input 
           type="text"
           placeholder="Add a subject..."
-          className="w-full p-2 bg-white rounded-lg border focus:border-blue-500 outline-none"
+          className="w-full p-2 bg-background rounded-lg border focus:border-primary outline-none h-[44px]"
           value={subject}
           onChange={(e) => onSubjectChange(e.target.value)}
           disabled={isProcessing}
         />
       </div>
 
-      <div className="flex flex-wrap gap-4 justify-center max-w-2xl mx-auto">
+      <div className="flex gap-2 w-full">
         <button 
-          className={`flex items-center space-x-2 p-2 rounded-lg ${
-            isUrgent ? 'bg-red-100 text-red-600' : 'bg-white text-gray-600'
+          className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+            isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-background text-muted-foreground'
           }`}
           onClick={() => onUrgentChange(!isUrgent)}
           disabled={isProcessing}
         >
-          <AlertTriangle className="w-5 h-5" />
-          <span>Urgent</span>
+          <AlertTriangle className="w-4 h-4" />
+          <span className="text-sm font-medium">Urgent</span>
         </button>
         <button 
-          className={`flex items-center space-x-2 p-2 rounded-lg ${
-            isPrivate ? 'bg-blue-100 text-blue-600' : 'bg-white text-gray-600'
+          className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
+            isPrivate ? 'bg-primary/10 text-primary' : 'bg-background text-muted-foreground'
           }`}
           onClick={() => onPrivateChange(!isPrivate)}
           disabled={isProcessing}
         >
-          <Lock className="w-5 h-5" />
-          <span>Private</span>
+          <Lock className="w-4 h-4" />
+          <span className="text-sm font-medium">Private</span>
         </button>
       </div>
-    </>
+    </div>
   );
 };

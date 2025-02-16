@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -167,14 +168,14 @@ const Microphone = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
+    <div className="flex flex-col min-h-screen bg-background">
       <Header 
         isRecording={isRecording}
         isProcessing={isProcessing}
         onSend={handleSendRecording}
       />
 
-      <div className={`flex-1 p-4 space-y-4 mt-16 ${isMobile ? 'mb-20' : 'mb-8'}`}>
+      <div className="flex-1 px-3 space-y-4 mt-[72px] mb-[100px] max-w-2xl mx-auto w-full">
         <Recipients 
           recipients={recipients}
           onAddRecipient={(profile) => setRecipients([...recipients, profile])}

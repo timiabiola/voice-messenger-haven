@@ -3,6 +3,7 @@ import { X, UserPlus } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 export interface Profile {
   id: string;
@@ -28,6 +29,7 @@ export const Recipients = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const isMobile = useIsMobile();
 
   const searchUsers = async (query: string) => {
     if (!query) {
@@ -67,54 +69,54 @@ export const Recipients = ({
   };
 
   return (
-    <div className="space-y-2 max-w-2xl mx-auto relative">
-      <label className="text-sm text-gray-600">To:</label>
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-white rounded-lg border focus-within:border-blue-500">
+    <div className="space-y-2 w-full relative">
+      <label className="text-sm text-muted-foreground px-1">To:</label>
+      <div className="flex flex-wrap items-center gap-2 p-2 bg-background rounded-lg border focus-within:border-primary min-h-[44px]">
         {recipients.map((recipient) => (
           <div 
             key={recipient.id}
-            className="flex items-center gap-2 bg-gray-100 px-2 py-1 rounded"
+            className="flex items-center gap-1 bg-accent/20 px-2 py-1 rounded-full"
           >
-            <span className="text-sm">
+            <span className="text-sm truncate max-w-[150px]">
               {recipient.first_name || recipient.email}
             </span>
             <button
               onClick={() => onRemoveRecipient(recipient.id)}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
         ))}
-        <div className="flex-1 min-w-[200px]">
-          <input 
-            type="text"
-            placeholder="Search users..."
-            className="w-full outline-none"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setShowResults(true);
-            }}
-            disabled={isProcessing}
-          />
-        </div>
+        <input 
+          type="text"
+          placeholder="Search users..."
+          className="flex-1 bg-transparent outline-none min-w-[120px] h-[32px]"
+          value={searchQuery}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            setShowResults(true);
+          }}
+          disabled={isProcessing}
+        />
       </div>
       {showResults && searchResults.length > 0 && (
-        <div className="absolute z-10 w-full bg-white border rounded-lg shadow-lg mt-1">
+        <div className="absolute z-10 w-full bg-popover border rounded-lg shadow-lg mt-1 overflow-hidden">
           {searchResults.map((profile) => (
             <button
               key={profile.id}
-              className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
+              className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-2 transition-colors"
               onClick={() => handleAddRecipient(profile)}
             >
-              <UserPlus className="w-4 h-4 text-gray-500" />
-              <span>
-                {profile.first_name} {profile.last_name}
-              </span>
-              <span className="text-sm text-gray-500">
-                ({profile.email})
-              </span>
+              <UserPlus className="w-4 h-4 text-muted-foreground" />
+              <div className="flex-1 min-w-0">
+                <div className="font-medium truncate">
+                  {profile.first_name} {profile.last_name}
+                </div>
+                <div className="text-sm text-muted-foreground truncate">
+                  {profile.email}
+                </div>
+              </div>
             </button>
           ))}
         </div>
