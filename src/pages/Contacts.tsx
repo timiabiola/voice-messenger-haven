@@ -67,7 +67,6 @@ const Contacts = () => {
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -80,12 +79,11 @@ const Contacts = () => {
                   <TableCell className="font-medium">
                     {`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'No name'}
                   </TableCell>
-                  <TableCell>{profile.email}</TableCell>
                 </TableRow>
               ))}
               {profiles.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={2} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={1} className="text-center py-8 text-gray-500">
                     No users found.
                   </TableCell>
                 </TableRow>
