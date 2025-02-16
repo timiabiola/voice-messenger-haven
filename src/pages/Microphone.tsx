@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -161,7 +162,7 @@ const Microphone = () => {
       }));
 
       const { error: recipientError } = await supabase
-        .from('voice_message_recipients_test')
+        .from('voice_message_recipients_minimal')
         .insert(recipientRecords);
 
       if (recipientError) {

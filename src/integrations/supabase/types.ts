@@ -410,6 +410,48 @@ export type Database = {
           },
         ]
       }
+      voice_message_recipients_minimal: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_default: boolean | null
+          recipient_id: string
+          sender_id: string | null
+          voice_message_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          recipient_id: string
+          sender_id?: string | null
+          voice_message_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_default?: boolean | null
+          recipient_id?: string
+          sender_id?: string | null
+          voice_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vmr_minimal_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "vmr_minimal_voice_message_id_fkey"
+            columns: ["voice_message_id"]
+            isOneToOne: false
+            referencedRelation: "voice_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_message_recipients_test: {
         Row: {
           created_at: string
