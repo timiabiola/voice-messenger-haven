@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
-import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine, X } from 'lucide-react';
+import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine, X, Pencil, Trash2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { Textarea } from '@/components/ui/textarea';
@@ -312,7 +313,7 @@ export default function Notes() {
 
           <div className="flex-1 overflow-y-auto p-4 relative">
             {selectedNote ? (
-              <div className="glass-panel rounded-lg p-6">
+              <div className="glass-panel rounded-lg p-6 relative">
                 <div className="flex justify-between items-center mb-4">
                   <div className="space-y-1">
                     <h2 className="text-2xl font-semibold text-foreground">
@@ -336,10 +337,27 @@ export default function Notes() {
                     Close
                   </Button>
                 </div>
-                <div className="prose prose-invert max-w-none">
+                <div className="prose prose-invert max-w-none mb-16">
                   <div className="whitespace-pre-wrap text-foreground">
                     {selectedNote.content}
                   </div>
+                </div>
+                {/* Add action buttons in the bottom right corner */}
+                <div className="absolute bottom-6 right-6 flex space-x-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-accent/10 hover:bg-accent/20"
+                  >
+                    <Pencil className="w-4 h-4 text-muted-foreground" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="rounded-full bg-accent/10 hover:bg-accent/20"
+                  >
+                    <Trash2 className="w-4 h-4 text-muted-foreground" />
+                  </Button>
                 </div>
               </div>
             ) : isEditing ? (
