@@ -21,11 +21,12 @@ type FolderStructure = {
 }
 
 type TwilioMessageLog = {
-  status: string;
+  id: string;
+  status: string | null;
   error_message: string | null;
-  error_code: string | null;
-  delivery_attempts: number;
-  last_delivery_attempt: string | null;
+  twilio_sid: string | null;
+  error_category: string | null;
+  attempt: number;
   next_retry: string | null;
   retryable: boolean;
 }
@@ -76,11 +77,12 @@ export default function Home() {
         .select(`
           *,
           twilio_message_logs (
+            id,
             status,
             error_message,
-            error_code,
-            delivery_attempts,
-            last_delivery_attempt,
+            twilio_sid,
+            error_category,
+            attempt,
             next_retry,
             retryable
           )
@@ -101,9 +103,8 @@ export default function Home() {
           ...msg,
           status: messageLog?.status || 'pending',
           error_message: messageLog?.error_message || null,
-          error_code: messageLog?.error_code || null,
-          delivery_attempts: messageLog?.delivery_attempts || 0,
-          last_delivery_attempt: messageLog?.last_delivery_attempt || null,
+          twilio_sid: messageLog?.twilio_sid || null,
+          delivery_attempts: messageLog?.attempt || 0,
           next_retry: messageLog?.next_retry || null,
           retryable: messageLog?.retryable ?? true
         };
