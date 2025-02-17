@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
@@ -196,6 +195,81 @@ export default function Notes() {
     setSelectedNote(null);
   };
 
+  const handleEditNote = async () => {
+    if (!selectedNote) return;
+    setIsEditing(true);
+    setCurrentNote({
+      title: selectedNote.title,
+      content: selectedNote.content
+    });
+    setSelectedNote(null);
+  };
+
+  const handleUpdateNote = async () => {
+    if (!userId || !currentNote.content || !selectedNote) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('notes')
+        .update({
+          title: currentNote.content.split('\n')[0] || 'Untitled Note',
+          content: currentNote.content,
+        })
+        .eq('id', selectedNote.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setNotes(prev => prev.map(note => 
+        note.id === selectedNote.id ? data : note
+      ));
+      setIsEditing(false);
+      setCurrentNote({ title: '', content: '' });
+      setSelectedNote(null);
+      toast({
+        title: "Success",
+        description: "Note updated successfully"
+      });
+    } catch (error) {
+      console.error('Error updating note:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update note"
+      });
+    }
+  };
+
+  const handleDeleteNote = async () => {
+    if (!selectedNote) return;
+
+    if (!confirm('Are you sure you want to delete this note?')) return;
+    
+    try {
+      const { error } = await supabase
+        .from('notes')
+        .delete()
+        .eq('id', selectedNote.id);
+
+      if (error) throw error;
+
+      setNotes(prev => prev.filter(note => note.id !== selectedNote.id));
+      setSelectedNote(null);
+      toast({
+        title: "Success",
+        description: "Note deleted successfully"
+      });
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete note"
+      });
+    }
+  };
+
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
@@ -302,7 +376,10 @@ export default function Notes() {
                   </div>
                   <button 
                     className="p-2 hover:bg-accent/10 rounded-full"
-                    onClick={handleCreateNote}
+                    onClick={() => {
+                      setIsEditing(true);
+                      setCurrentNote({ title: '', content: '' });
+                    }}
                   >
                     <Plus className="w-5 h-5 text-muted-foreground" />
                   </button>
@@ -342,12 +419,12 @@ export default function Notes() {
                     {selectedNote.content}
                   </div>
                 </div>
-                {/* Add action buttons in the bottom right corner */}
                 <div className="absolute bottom-6 right-6 flex space-x-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="rounded-full bg-accent/10 hover:bg-accent/20"
+                    onClick={handleEditNote}
                   >
                     <Pencil className="w-4 h-4 text-muted-foreground" />
                   </Button>
@@ -355,6 +432,7 @@ export default function Notes() {
                     variant="ghost"
                     size="icon"
                     className="rounded-full bg-accent/10 hover:bg-accent/20"
+                    onClick={handleDeleteNote}
                   >
                     <Trash2 className="w-4 h-4 text-muted-foreground" />
                   </Button>
@@ -363,7 +441,9 @@ export default function Notes() {
             ) : isEditing ? (
               <div className="glass-panel rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-lg font-semibold">New Note</h2>
+                  <h2 className="text-lg font-semibold">
+                    {selectedNote ? 'Edit Note' : 'New Note'}
+                  </h2>
                   <div className="flex space-x-2">
                     <Button 
                       variant="outline" 
@@ -375,9 +455,9 @@ export default function Notes() {
                     </Button>
                     <Button 
                       size="sm" 
-                      onClick={handleSaveNote}
+                      onClick={selectedNote ? handleUpdateNote : handleSaveNote}
                     >
-                      Save Note
+                      {selectedNote ? 'Update Note' : 'Save Note'}
                     </Button>
                   </div>
                 </div>
