@@ -59,7 +59,18 @@ export default function Home() {
 
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select(`
+          *,
+          twilio_message_logs (
+            status,
+            error_message,
+            error_code,
+            delivery_attempts,
+            last_delivery_attempt,
+            next_retry,
+            retryable
+          )
+        `)
         .eq('category', currentCategory)
         .order('created_at', { ascending: false });
 
@@ -69,12 +80,24 @@ export default function Home() {
         throw error;
       }
 
+      // Transform the data to include Twilio status information
+      const transformedData = data.map(msg => ({
+        ...msg,
+        status: msg.twilio_message_logs?.[0]?.status || 'pending',
+        error_message: msg.twilio_message_logs?.[0]?.error_message,
+        error_code: msg.twilio_message_logs?.[0]?.error_code,
+        delivery_attempts: msg.twilio_message_logs?.[0]?.delivery_attempts || 0,
+        last_delivery_attempt: msg.twilio_message_logs?.[0]?.last_delivery_attempt,
+        next_retry: msg.twilio_message_logs?.[0]?.next_retry,
+        retryable: msg.twilio_message_logs?.[0]?.retryable
+      }));
+
       // Group messages by category
       const groupedMessages = {
-        new: data.filter(msg => msg.category === 'new'),
-        inbox: data.filter(msg => msg.category === 'inbox'),
-        saved: data.filter(msg => msg.category === 'saved'),
-        trash: data.filter(msg => msg.category === 'trash'),
+        new: transformedData.filter(msg => msg.category === 'new'),
+        inbox: transformedData.filter(msg => msg.category === 'inbox'),
+        saved: transformedData.filter(msg => msg.category === 'saved'),
+        trash: transformedData.filter(msg => msg.category === 'trash'),
       };
 
       console.log('Grouped messages:', groupedMessages);
