@@ -63,7 +63,7 @@ const Auth = () => {
 
       if (error) throw error;
 
-      navigate('/contacts');
+      navigate('/');
     } catch (error: any) {
       toast({
         title: "Error",
