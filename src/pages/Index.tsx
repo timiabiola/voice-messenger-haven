@@ -31,7 +31,7 @@ type TwilioMessageLog = {
 }
 
 type MessageWithLogs = Message & {
-  twilio_message_logs: TwilioMessageLog[];
+  twilio_message_logs: TwilioMessageLog[] | null;
 }
 
 export default function Home() {
@@ -95,16 +95,19 @@ export default function Home() {
       }
 
       // Transform the data to include Twilio status information
-      const transformedData = (data as MessageWithLogs[]).map(msg => ({
-        ...msg,
-        status: msg.twilio_message_logs?.[0]?.status || 'pending',
-        error_message: msg.twilio_message_logs?.[0]?.error_message,
-        error_code: msg.twilio_message_logs?.[0]?.error_code,
-        delivery_attempts: msg.twilio_message_logs?.[0]?.delivery_attempts || 0,
-        last_delivery_attempt: msg.twilio_message_logs?.[0]?.last_delivery_attempt,
-        next_retry: msg.twilio_message_logs?.[0]?.next_retry,
-        retryable: msg.twilio_message_logs?.[0]?.retryable
-      }));
+      const transformedData = (data || []).map(msg => {
+        const messageLog = Array.isArray(msg.twilio_message_logs) ? msg.twilio_message_logs[0] : null;
+        return {
+          ...msg,
+          status: messageLog?.status || 'pending',
+          error_message: messageLog?.error_message || null,
+          error_code: messageLog?.error_code || null,
+          delivery_attempts: messageLog?.delivery_attempts || 0,
+          last_delivery_attempt: messageLog?.last_delivery_attempt || null,
+          next_retry: messageLog?.next_retry || null,
+          retryable: messageLog?.retryable ?? true
+        };
+      });
 
       // Group messages by category
       const groupedMessages = {
