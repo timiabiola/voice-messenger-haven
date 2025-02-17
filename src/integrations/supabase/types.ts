@@ -465,27 +465,45 @@ export type Database = {
       }
       twilio_message_logs: {
         Row: {
+          attempt: number
           created_at: string | null
+          error_category:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
           error_message: string | null
           id: string
+          next_retry: string | null
+          retryable: boolean
           status: string | null
           twilio_sid: string | null
           updated_at: string | null
           voice_message_id: string | null
         }
         Insert: {
+          attempt?: number
           created_at?: string | null
+          error_category?:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
           error_message?: string | null
           id?: string
+          next_retry?: string | null
+          retryable?: boolean
           status?: string | null
           twilio_sid?: string | null
           updated_at?: string | null
           voice_message_id?: string | null
         }
         Update: {
+          attempt?: number
           created_at?: string | null
+          error_category?:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
           error_message?: string | null
           id?: string
+          next_retry?: string | null
+          retryable?: boolean
           status?: string | null
           twilio_sid?: string | null
           updated_at?: string | null
@@ -728,6 +746,12 @@ export type Database = {
     }
     Enums: {
       contact_status: "online" | "offline" | "away"
+      delivery_error_category:
+        | "network"
+        | "recipient"
+        | "content"
+        | "quota"
+        | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
     }
     CompositeTypes: {
