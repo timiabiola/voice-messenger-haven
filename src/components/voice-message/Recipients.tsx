@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useNavigate } from 'react-router-dom';
 
 export interface Profile {
   id: string;
@@ -31,20 +32,53 @@ export const Recipients = ({
   const [showResults, setShowResults] = useState(false);
   const [currentUser, setCurrentUser] = useState<string | null>(null);
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
 
   // Get current user's ID on component mount
   useEffect(() => {
     const getCurrentUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Auth error:', error);
+          toast.error('Authentication error. Please sign in again.');
+          navigate('/auth');
+          return;
+        }
+
+        if (!session) {
+          console.log('No active session found');
+          navigate('/auth');
+          return;
+        }
+
         setCurrentUser(session.user.id);
+        
+        // Set up auth state change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          if (!session) {
+            navigate('/auth');
+          } else {
+            setCurrentUser(session.user.id);
+          }
+        });
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error checking auth status:', error);
+        toast.error('Error checking authentication status');
+        navigate('/auth');
       }
     };
+
     getCurrentUser();
-  }, []);
+  }, [navigate]);
 
   const searchUsers = async (query: string) => {
-    if (!query) {
+    if (!query || !currentUser) {
       setSearchResults([]);
       return;
     }
@@ -54,7 +88,7 @@ export const Recipients = ({
         .from('profiles')
         .select('*')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
-        .neq('id', currentUser) // Exclude current user from search results
+        .neq('id', currentUser)
         .limit(5);
 
       if (error) throw error;
@@ -73,9 +107,15 @@ export const Recipients = ({
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, currentUser]); // Add currentUser to dependencies
+  }, [searchQuery, currentUser]);
 
   const handleAddRecipient = (profile: Profile) => {
+    if (!currentUser) {
+      toast.error('Please sign in to add recipients');
+      navigate('/auth');
+      return;
+    }
+
     // Double-check that user isn't adding themselves
     if (profile.id === currentUser) {
       toast.error("You cannot send a message to yourself");
