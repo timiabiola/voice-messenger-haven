@@ -8,4 +8,9 @@ export type Message = {
   is_sent?: boolean | null;
   is_received?: boolean | null;
   is_selected?: boolean | null;
+  error_code?: string | null;
+  error_message?: string | null;
+  delivery_attempts?: number;
+  last_delivery_attempt?: string | null;
+  status?: string;
 };

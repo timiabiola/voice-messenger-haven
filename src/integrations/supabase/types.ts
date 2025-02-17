@@ -169,11 +169,16 @@ export type Database = {
           category: string
           content: string | null
           created_at: string | null
+          delivery_attempts: number | null
+          error_code: string | null
+          error_message: string | null
           id: string
           is_received: boolean | null
           is_selected: boolean | null
           is_sent: boolean | null
+          last_delivery_attempt: string | null
           next_category: string | null
+          status: string | null
           title: string | null
           updated_at: string | null
         }
@@ -181,11 +186,16 @@ export type Database = {
           category: string
           content?: string | null
           created_at?: string | null
+          delivery_attempts?: number | null
+          error_code?: string | null
+          error_message?: string | null
           id?: string
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          last_delivery_attempt?: string | null
           next_category?: string | null
+          status?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -193,11 +203,16 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string | null
+          delivery_attempts?: number | null
+          error_code?: string | null
+          error_message?: string | null
           id?: string
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          last_delivery_attempt?: string | null
           next_category?: string | null
+          status?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -208,11 +223,16 @@ export type Database = {
           category: string
           content: string | null
           created_at: string | null
+          delivery_attempts: number | null
+          error_code: string | null
+          error_message: string | null
           id: string
           is_received: boolean | null
           is_selected: boolean | null
           is_sent: boolean | null
+          last_delivery_attempt: string | null
           next_category: string | null
+          status: string | null
           title: string | null
           updated_at: string | null
         }
@@ -220,11 +240,16 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string | null
+          delivery_attempts?: number | null
+          error_code?: string | null
+          error_message?: string | null
           id?: string
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          last_delivery_attempt?: string | null
           next_category?: string | null
+          status?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -232,11 +257,16 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string | null
+          delivery_attempts?: number | null
+          error_code?: string | null
+          error_message?: string | null
           id?: string
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          last_delivery_attempt?: string | null
           next_category?: string | null
+          status?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -610,6 +640,33 @@ export type Database = {
         }
         Relationships: []
       }
+      webhook_rate_limits: {
+        Row: {
+          created_at: string | null
+          endpoint: string
+          id: string
+          ip_address: string
+          request_count: number | null
+          window_start: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          endpoint: string
+          id?: string
+          ip_address: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          endpoint?: string
+          id?: string
+          ip_address?: string
+          request_count?: number | null
+          window_start?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       rls_log_admin_view: {
@@ -654,11 +711,16 @@ export type Database = {
           category: string
           content: string | null
           created_at: string | null
+          delivery_attempts: number | null
+          error_code: string | null
+          error_message: string | null
           id: string
           is_received: boolean | null
           is_selected: boolean | null
           is_sent: boolean | null
+          last_delivery_attempt: string | null
           next_category: string | null
+          status: string | null
           title: string | null
           updated_at: string | null
         }
