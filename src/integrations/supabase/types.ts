@@ -752,6 +752,7 @@ export type Database = {
         | "content"
         | "quota"
         | "unknown"
+      error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
     }
     CompositeTypes: {
