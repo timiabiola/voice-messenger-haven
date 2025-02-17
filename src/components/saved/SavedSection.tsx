@@ -1,7 +1,7 @@
 
 import React from 'react'
 import { ChevronRight } from 'lucide-react'
-import { SavedSectionItem } from '@/types'
+import { SavedSectionItem } from '@/types/saved'
 
 type SavedSectionProps = {
   title: string
