@@ -2,9 +2,12 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { validateRequest } from 'https://esm.sh/twilio@4.19.0/lib/webhooks/webhooks'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN')!
+
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
 const corsHeaders = {
@@ -19,15 +22,9 @@ serve(async (req) => {
   }
 
   try {
-    const formData = await req.formData()
-    const messageStatus = formData.get('MessageStatus')
-    const messageSid = formData.get('MessageSid')
-    const errorCode = formData.get('ErrorCode')
-    const errorMessage = formData.get('ErrorMessage')
-
     // Get the client's IP address for rate limiting
     const ipAddress = req.headers.get('x-forwarded-for') || 'unknown'
-
+    
     // Check rate limits
     const { data: rateLimitData, error: rateLimitError } = await supabase
       .from('webhook_rate_limits')
@@ -36,7 +33,7 @@ serve(async (req) => {
       .eq('endpoint', '/twilio-webhook')
       .single()
 
-    if (rateLimitError && rateLimitError.code !== 'PGRST116') { // PGRST116 is "not found" error
+    if (rateLimitError && rateLimitError.code !== 'PGRST116') {
       console.error('Rate limit check error:', rateLimitError)
       throw new Error('Failed to check rate limits')
     }
@@ -81,12 +78,17 @@ serve(async (req) => {
         })
     }
 
+    const formData = await req.formData()
+    const messageStatus = formData.get('MessageStatus')
+    const messageSid = formData.get('MessageSid')
+    const errorCode = formData.get('ErrorCode')
+    const errorMessage = formData.get('ErrorMessage')
+
     // Determine error category if there's an error
     let errorCategory = null
     if (errorCode) {
       // Map Twilio error codes to our categories
-      // See: https://www.twilio.com/docs/api/errors
-      const code = parseInt(errorCode)
+      const code = parseInt(errorCode.toString())
       if (code >= 30000 && code <= 30099) errorCategory = 'network'
       else if (code >= 30100 && code <= 30199) errorCategory = 'recipient'
       else if (code >= 30200 && code <= 30299) errorCategory = 'content'
