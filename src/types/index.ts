@@ -13,4 +13,6 @@ export type Message = {
   delivery_attempts?: number;
   last_delivery_attempt?: string | null;
   status?: string;
+  next_retry?: string | null;
+  retryable?: boolean;
 };

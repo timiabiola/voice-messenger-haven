@@ -1,7 +1,7 @@
 
 import { Message } from '@/types';
 import { formatDate } from '@/lib/utils';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Clock } from 'lucide-react';
 
 type MessageListProps = {
   messages: Message[];
@@ -48,6 +48,17 @@ const MessageList = ({ messages, isLoading }: MessageListProps) => {
             {message.delivery_attempts > 0 && (
               <span className="text-xs text-muted-foreground">
                 Attempts: {message.delivery_attempts}
+              </span>
+            )}
+            {message.next_retry && (
+              <div className="flex items-center text-xs text-muted-foreground">
+                <Clock className="w-3 h-3 mr-1" />
+                <span>Next retry: {formatDate(message.next_retry)}</span>
+              </div>
+            )}
+            {message.status === 'failed' && message.retryable === false && (
+              <span className="text-xs text-destructive">
+                No more retries
               </span>
             )}
           </div>
