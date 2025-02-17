@@ -1,28 +1,14 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
-import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine, X, Pencil, Trash2 } from 'lucide-react';
+import { Search, Plus, PencilLine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
-
-type Note = {
-  id: string;
-  title: string;
-  content: string;
-  folder_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
-type Folder = {
-  id: string;
-  name: string;
-  parent_folder_id: string | null;
-  created_at: string;
-  updated_at: string;
-}
+import FolderSidebar from '@/components/notes/FolderSidebar';
+import NoteEditor from '@/components/notes/NoteEditor';
+import NoteViewer from '@/components/notes/NoteViewer';
+import { Note, Folder } from '@/types/notes';
 
 export default function Notes() {
   const navigate = useNavigate();
@@ -96,18 +82,6 @@ export default function Notes() {
     return matchesFolder && matchesSearch;
   });
 
-  const getRootFolders = () => folders.filter(folder => !folder.parent_folder_id);
-  const getChildFolders = (parentId: string) => folders.filter(folder => folder.parent_folder_id === parentId);
-  const getFolderNoteCount = (folderId: string) => notes.filter(note => note.folder_id === folderId).length;
-
-  const toggleFolder = (folderId: string) => {
-    setExpandedFolders(current => 
-      current.includes(folderId)
-        ? current.filter(id => id !== folderId)
-        : [...current, folderId]
-    );
-  };
-
   const handleCreateFolder = async () => {
     if (!userId) return;
     
@@ -141,7 +115,7 @@ export default function Notes() {
     }
   };
 
-  const handleCreateNote = async () => {
+  const handleCreateNote = () => {
     if (!userId) return;
     setIsEditing(true);
     setCurrentNote({ title: '', content: '' });
@@ -179,30 +153,6 @@ export default function Notes() {
         description: "Failed to create note"
       });
     }
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-    setCurrentNote({ title: '', content: '' });
-  };
-
-  const handleNoteClick = (note: Note) => {
-    setSelectedNote(note);
-    setIsEditing(false);
-  };
-
-  const handleCloseReadView = () => {
-    setSelectedNote(null);
-  };
-
-  const handleEditNote = async () => {
-    if (!selectedNote) return;
-    setIsEditing(true);
-    setCurrentNote({
-      title: selectedNote.title,
-      content: selectedNote.content
-    });
-    setSelectedNote(null);
   };
 
   const handleUpdateNote = async () => {
@@ -270,87 +220,49 @@ export default function Notes() {
     }
   };
 
+  const handleEditNote = () => {
+    if (!selectedNote) return;
+    setIsEditing(true);
+    setCurrentNote({
+      title: selectedNote.title,
+      content: selectedNote.content
+    });
+    setSelectedNote(null);
+  };
+
+  const handleCloseReadView = () => {
+    setSelectedNote(null);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setCurrentNote({ title: '', content: '' });
+  };
+
+  const handleNoteClick = (note: Note) => {
+    setSelectedNote(note);
+    setIsEditing(false);
+  };
+
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
-        <aside className="hidden md:flex w-64 flex-col glass-panel rounded-lg mr-4 relative">
-          <div className="p-4 flex-1">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="font-semibold text-foreground">Notes</h2>
-            </div>
-
-            <div className="space-y-4">
-              <button 
-                className={`flex items-center justify-between w-full p-2 rounded-lg hover:bg-accent/10 ${
-                  !activeFolder ? 'bg-accent/10' : ''
-                }`}
-                onClick={() => setActiveFolder(null)}
-              >
-                <div className="flex items-center space-x-3">
-                  <Folder className="w-5 h-5 text-muted-foreground" />
-                  <span className="text-foreground">All Notes</span>
-                </div>
-                <span className="text-sm text-muted-foreground">{notes.length}</span>
-              </button>
-
-              {getRootFolders().map(folder => (
-                <div key={folder.id}>
-                  <button 
-                    className={`flex items-center justify-between w-full p-2 rounded-lg hover:bg-accent/10 ${
-                      activeFolder === folder.id ? 'bg-accent/10' : ''
-                    }`}
-                    onClick={() => toggleFolder(folder.id)}
-                  >
-                    <div className="flex items-center space-x-3">
-                      <Folder className="w-5 h-5 text-primary" />
-                      <span className="text-foreground">{folder.name}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-muted-foreground">
-                        {getFolderNoteCount(folder.id)}
-                      </span>
-                      <ChevronRight className={`w-4 h-4 text-muted-foreground transform transition-transform ${
-                        expandedFolders.includes(folder.id) ? 'rotate-90' : ''
-                      }`} />
-                    </div>
-                  </button>
-
-                  {expandedFolders.includes(folder.id) && (
-                    <div className="ml-4 mt-2 space-y-2">
-                      {getChildFolders(folder.id).map(childFolder => (
-                        <button 
-                          key={childFolder.id}
-                          className={`flex items-center justify-between w-full p-2 rounded-lg hover:bg-accent/10 ${
-                            activeFolder === childFolder.id ? 'bg-accent/10' : ''
-                          }`}
-                          onClick={() => setActiveFolder(childFolder.id)}
-                        >
-                          <div className="flex items-center space-x-3">
-                            <File className="w-4 h-4 text-muted-foreground" />
-                            <span className="text-sm text-foreground">{childFolder.name}</span>
-                          </div>
-                          <span className="text-sm text-muted-foreground">
-                            {getFolderNoteCount(childFolder.id)}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div className="p-4 border-t border-border">
-            <button 
-              onClick={handleCreateFolder}
-              className="flex items-center space-x-2 text-sm text-muted-foreground hover:text-foreground w-full p-2 rounded-lg hover:bg-accent/10 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Folder</span>
-            </button>
-          </div>
-        </aside>
+        <FolderSidebar
+          folders={folders}
+          notes={notes}
+          activeFolder={activeFolder}
+          expandedFolders={expandedFolders}
+          onFolderClick={setActiveFolder}
+          onToggleFolder={(folderId) => {
+            setExpandedFolders(current => 
+              current.includes(folderId)
+                ? current.filter(id => id !== folderId)
+                : [...current, folderId]
+            );
+          }}
+          onCreateFolder={handleCreateFolder}
+          setActiveFolder={setActiveFolder}
+        />
 
         <main className="flex-1 flex flex-col glass-panel rounded-lg">
           <header className="h-16 flex items-center justify-between px-4 border-b border-border">
@@ -376,10 +288,7 @@ export default function Notes() {
                   </div>
                   <button 
                     className="p-2 hover:bg-accent/10 rounded-full"
-                    onClick={() => {
-                      setIsEditing(true);
-                      setCurrentNote({ title: '', content: '' });
-                    }}
+                    onClick={handleCreateNote}
                   >
                     <Plus className="w-5 h-5 text-muted-foreground" />
                   </button>
@@ -390,85 +299,22 @@ export default function Notes() {
 
           <div className="flex-1 overflow-y-auto p-4 relative">
             {selectedNote ? (
-              <div className="glass-panel rounded-lg p-6 relative">
-                <div className="flex justify-between items-center mb-4">
-                  <div className="space-y-1">
-                    <h2 className="text-2xl font-semibold text-foreground">
-                      {selectedNote.title}
-                    </h2>
-                    <div className="flex items-center space-x-4">
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(selectedNote.created_at).toLocaleString()}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {folders.find(f => f.id === selectedNote.folder_id)?.name || 'Uncategorized'}
-                      </span>
-                    </div>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={handleCloseReadView}
-                  >
-                    <X className="w-4 h-4 mr-1" />
-                    Close
-                  </Button>
-                </div>
-                <div className="prose prose-invert max-w-none mb-16">
-                  <div className="whitespace-pre-wrap text-foreground">
-                    {selectedNote.content}
-                  </div>
-                </div>
-                <div className="absolute bottom-6 right-6 flex space-x-2">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full bg-accent/10 hover:bg-accent/20"
-                    onClick={handleEditNote}
-                  >
-                    <Pencil className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="rounded-full bg-accent/10 hover:bg-accent/20"
-                    onClick={handleDeleteNote}
-                  >
-                    <Trash2 className="w-4 h-4 text-muted-foreground" />
-                  </Button>
-                </div>
-              </div>
+              <NoteViewer
+                note={selectedNote}
+                folders={folders}
+                onClose={handleCloseReadView}
+                onEdit={handleEditNote}
+                onDelete={handleDeleteNote}
+              />
             ) : isEditing ? (
-              <div className="glass-panel rounded-lg p-4 mb-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h2 className="text-lg font-semibold">
-                    {selectedNote ? 'Edit Note' : 'New Note'}
-                  </h2>
-                  <div className="flex space-x-2">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={handleCancelEdit}
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Cancel
-                    </Button>
-                    <Button 
-                      size="sm" 
-                      onClick={selectedNote ? handleUpdateNote : handleSaveNote}
-                    >
-                      {selectedNote ? 'Update Note' : 'Save Note'}
-                    </Button>
-                  </div>
-                </div>
-                <Textarea
-                  placeholder="Start writing your note here..."
-                  value={currentNote.content}
-                  onChange={(e) => setCurrentNote(prev => ({ ...prev, content: e.target.value }))}
-                  className="min-h-[200px] focus:ring-1 focus:ring-primary"
-                  autoFocus
-                />
-              </div>
+              <NoteEditor
+                isEditing={isEditing}
+                selectedNote={selectedNote}
+                currentNote={currentNote}
+                onCancel={handleCancelEdit}
+                onSave={selectedNote ? handleUpdateNote : handleSaveNote}
+                onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
+              />
             ) : (
               <>
                 <button
