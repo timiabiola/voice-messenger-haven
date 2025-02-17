@@ -20,6 +20,20 @@ type FolderStructure = {
   [key: string]: FolderItem[];
 }
 
+type TwilioMessageLog = {
+  status: string;
+  error_message: string | null;
+  error_code: string | null;
+  delivery_attempts: number;
+  last_delivery_attempt: string | null;
+  next_retry: string | null;
+  retryable: boolean;
+}
+
+type MessageWithLogs = Message & {
+  twilio_message_logs: TwilioMessageLog[];
+}
+
 export default function Home() {
   const [currentCategory, setCurrentCategory] = useState('inbox');
   const [messages, setMessages] = useState<{
@@ -81,7 +95,7 @@ export default function Home() {
       }
 
       // Transform the data to include Twilio status information
-      const transformedData = data.map(msg => ({
+      const transformedData = (data as MessageWithLogs[]).map(msg => ({
         ...msg,
         status: msg.twilio_message_logs?.[0]?.status || 'pending',
         error_message: msg.twilio_message_logs?.[0]?.error_message,
