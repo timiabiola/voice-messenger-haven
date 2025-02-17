@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
-import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine } from 'lucide-react';
+import { Search, Plus, Folder, File, ChevronRight, MoreVertical, PencilLine, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { Textarea } from '@/components/ui/textarea';
+import { Button } from '@/components/ui/button';
 
 type Note = {
   id: string;
@@ -33,6 +35,8 @@ export default function Notes() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentNote, setCurrentNote] = useState({ title: '', content: '' });
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -138,13 +142,19 @@ export default function Notes() {
 
   const handleCreateNote = async () => {
     if (!userId) return;
+    setIsEditing(true);
+    setCurrentNote({ title: '', content: '' });
+  };
+
+  const handleSaveNote = async () => {
+    if (!userId || !currentNote.content) return;
     
     try {
       const { data, error } = await supabase
         .from('notes')
         .insert({
-          title: new Date().toISOString(),
-          content: '',
+          title: currentNote.content.split('\n')[0] || 'Untitled Note',
+          content: currentNote.content,
           folder_id: activeFolder,
           user_id: userId
         })
@@ -154,6 +164,8 @@ export default function Notes() {
       if (error) throw error;
 
       setNotes(prev => [data, ...prev]);
+      setIsEditing(false);
+      setCurrentNote({ title: '', content: '' });
       toast({
         title: "Success",
         description: "Note created successfully"
@@ -166,6 +178,11 @@ export default function Notes() {
         description: "Failed to create note"
       });
     }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setCurrentNote({ title: '', content: '' });
   };
 
   return (
@@ -279,46 +296,79 @@ export default function Notes() {
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 relative">
-            <button
-              onClick={handleCreateNote}
-              className="absolute top-6 left-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg"
-              title="Create new note"
-            >
-              <PencilLine className="w-5 h-5 text-primary-foreground" />
-            </button>
-
-            {isLoading ? (
-              <div className="text-center text-muted-foreground">Loading...</div>
-            ) : filteredNotes.length === 0 ? (
-              <div className="text-center text-muted-foreground">
-                {searchQuery ? 'No notes found' : 'No notes yet'}
+            {isEditing ? (
+              <div className="glass-panel rounded-lg p-4 mb-4">
+                <div className="flex justify-between items-center mb-2">
+                  <h2 className="text-lg font-semibold">New Note</h2>
+                  <div className="flex space-x-2">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      onClick={handleCancelEdit}
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      onClick={handleSaveNote}
+                    >
+                      Save Note
+                    </Button>
+                  </div>
+                </div>
+                <Textarea
+                  placeholder="Start writing your note here..."
+                  value={currentNote.content}
+                  onChange={(e) => setCurrentNote(prev => ({ ...prev, content: e.target.value }))}
+                  className="min-h-[200px] focus:ring-1 focus:ring-primary"
+                  autoFocus
+                />
               </div>
             ) : (
-              <div className="space-y-4 mt-16">
-                {filteredNotes.map(note => (
-                  <div 
-                    key={note.id}
-                    className="glass-panel rounded-lg p-4 hover:bg-accent/10 cursor-pointer"
-                    onClick={() => {
-                      console.log('Open note:', note.id);
-                    }}
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(note.created_at).toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-foreground line-clamp-3">
-                      {note.content || 'Empty note'}
-                    </p>
-                    <div className="flex items-center space-x-4 mt-2">
-                      <span className="text-xs text-muted-foreground">
-                        {folders.find(f => f.id === note.folder_id)?.name || 'Uncategorized'}
-                      </span>
-                    </div>
+              <>
+                <button
+                  onClick={handleCreateNote}
+                  className="absolute top-6 left-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg"
+                  title="Create new note"
+                >
+                  <PencilLine className="w-5 h-5 text-primary-foreground" />
+                </button>
+
+                {isLoading ? (
+                  <div className="text-center text-muted-foreground">Loading...</div>
+                ) : filteredNotes.length === 0 ? (
+                  <div className="text-center text-muted-foreground">
+                    {searchQuery ? 'No notes found' : 'No notes yet'}
                   </div>
-                ))}
-              </div>
+                ) : (
+                  <div className="space-y-4 mt-16">
+                    {filteredNotes.map(note => (
+                      <div 
+                        key={note.id}
+                        className="glass-panel rounded-lg p-4 hover:bg-accent/10 cursor-pointer"
+                        onClick={() => {
+                          console.log('Open note:', note.id);
+                        }}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm text-muted-foreground">
+                            {new Date(note.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                        <p className="text-foreground line-clamp-3">
+                          {note.content || 'Empty note'}
+                        </p>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <span className="text-xs text-muted-foreground">
+                            {folders.find(f => f.id === note.folder_id)?.name || 'Uncategorized'}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </main>
