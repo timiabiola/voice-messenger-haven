@@ -49,6 +49,7 @@ export function useNoteState() {
     setSearchQuery,
     setActiveFolder,
     setSelectedNote,
+    setCurrentNote, // Added this to the return object
     resetNoteState,
     startNewNote,
     startEditNote,

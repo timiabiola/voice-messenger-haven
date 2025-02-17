@@ -1,5 +1,5 @@
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PencilLine } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -39,7 +39,8 @@ export default function Notes() {
     resetNoteState,
     startNewNote,
     startEditNote,
-    toggleFolder
+    toggleFolder,
+    setCurrentNote // Added this from useNoteState
   } = useNoteState();
 
   useEffect(() => {
