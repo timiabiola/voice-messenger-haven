@@ -394,6 +394,44 @@ export type Database = {
         }
         Relationships: []
       }
+      twilio_message_logs: {
+        Row: {
+          created_at: string | null
+          error_message: string | null
+          id: string
+          status: string | null
+          twilio_sid: string | null
+          updated_at: string | null
+          voice_message_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          status?: string | null
+          twilio_sid?: string | null
+          updated_at?: string | null
+          voice_message_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          error_message?: string | null
+          id?: string
+          status?: string | null
+          twilio_sid?: string | null
+          updated_at?: string | null
+          voice_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "twilio_message_logs_voice_message_id_fkey"
+            columns: ["voice_message_id"]
+            isOneToOne: false
+            referencedRelation: "voice_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       voice_message_recipients: {
         Row: {
           created_at: string | null
