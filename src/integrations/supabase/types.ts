@@ -474,6 +474,7 @@ export type Database = {
           id: string
           message_id: string | null
           next_retry: string | null
+          retry_count: number
           retryable: boolean
           status: string | null
           twilio_sid: string | null
@@ -490,6 +491,7 @@ export type Database = {
           id?: string
           message_id?: string | null
           next_retry?: string | null
+          retry_count?: number
           retryable?: boolean
           status?: string | null
           twilio_sid?: string | null
@@ -506,6 +508,7 @@ export type Database = {
           id?: string
           message_id?: string | null
           next_retry?: string | null
+          retry_count?: number
           retryable?: boolean
           status?: string | null
           twilio_sid?: string | null

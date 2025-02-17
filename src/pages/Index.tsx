@@ -29,6 +29,7 @@ type TwilioMessageLog = {
   attempt: number;
   next_retry: string | null;
   retryable: boolean;
+  retry_count: number;
 }
 
 type MessageWithLogs = Message & {
@@ -84,7 +85,8 @@ export default function Home() {
             error_category,
             attempt,
             next_retry,
-            retryable
+            retryable,
+            retry_count
           )
         `)
         .eq('category', currentCategory)
@@ -106,7 +108,9 @@ export default function Home() {
           twilio_sid: messageLog?.twilio_sid || null,
           delivery_attempts: messageLog?.attempt || 0,
           next_retry: messageLog?.next_retry || null,
-          retryable: messageLog?.retryable ?? true
+          retryable: messageLog?.retryable ?? true,
+          error_category: messageLog?.error_category || null,
+          retry_count: messageLog?.retry_count || 0
         };
       });
 
