@@ -209,27 +209,36 @@ export type Database = {
           content: string | null
           created_at: string | null
           id: string
-          is_read: boolean | null
-          recipient_id: string | null
-          sender_id: string | null
+          is_received: boolean | null
+          is_selected: boolean | null
+          is_sent: boolean | null
+          next_category: string | null
+          title: string | null
+          updated_at: string | null
         }
         Insert: {
           category?: string
           content?: string | null
           created_at?: string | null
           id?: string
-          is_read?: boolean | null
-          recipient_id?: string | null
-          sender_id?: string | null
+          is_received?: boolean | null
+          is_selected?: boolean | null
+          is_sent?: boolean | null
+          next_category?: string | null
+          title?: string | null
+          updated_at?: string | null
         }
         Update: {
           category?: string
           content?: string | null
           created_at?: string | null
           id?: string
-          is_read?: boolean | null
-          recipient_id?: string | null
-          sender_id?: string | null
+          is_received?: boolean | null
+          is_selected?: boolean | null
+          is_sent?: boolean | null
+          next_category?: string | null
+          title?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }

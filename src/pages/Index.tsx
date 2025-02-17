@@ -57,48 +57,24 @@ export default function Home() {
       console.log('Fetching messages for category:', currentCategory);
       setIsLoading(true);
 
-      // First try fetching from messages_test table for debugging
-      const { data: testData, error: testError } = await supabase
-        .from('messages_test')
-        .select('*')
-        .eq('category', currentCategory)
-        .order('created_at', { ascending: false });
-
-      console.log('Test table query result:', { testData, testError });
-
-      if (testError) {
-        console.error('Error fetching from test table:', testError);
-      }
-
-      // Fetch from main messages table
       const { data, error } = await supabase
         .from('messages')
         .select('*')
         .eq('category', currentCategory)
         .order('created_at', { ascending: false });
 
-      console.log('Main table query result:', { data, error });
+      console.log('Messages query result:', { data, error });
 
       if (error) {
         throw error;
       }
 
-      // Combine and deduplicate results from both tables
-      const combinedMessages = [...(testData || []), ...(data || [])].reduce((acc, message) => {
-        if (!acc.some(m => m.id === message.id)) {
-          acc.push(message);
-        }
-        return acc;
-      }, [] as Message[]);
-
-      console.log('Combined messages:', combinedMessages);
-
       // Group messages by category
       const groupedMessages = {
-        new: combinedMessages.filter(msg => msg.category === 'new'),
-        inbox: combinedMessages.filter(msg => msg.category === 'inbox'),
-        saved: combinedMessages.filter(msg => msg.category === 'saved'),
-        trash: combinedMessages.filter(msg => msg.category === 'trash'),
+        new: data.filter(msg => msg.category === 'new'),
+        inbox: data.filter(msg => msg.category === 'inbox'),
+        saved: data.filter(msg => msg.category === 'saved'),
+        trash: data.filter(msg => msg.category === 'trash'),
       };
 
       console.log('Grouped messages:', groupedMessages);
