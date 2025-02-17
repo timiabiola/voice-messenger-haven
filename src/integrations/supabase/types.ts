@@ -129,6 +129,27 @@ export type Database = {
           },
         ]
       }
+      delivery_alerts: {
+        Row: {
+          alert_name: string
+          condition: string
+          created_at: string | null
+          message_template: string
+        }
+        Insert: {
+          alert_name: string
+          condition: string
+          created_at?: string | null
+          message_template: string
+        }
+        Update: {
+          alert_name?: string
+          condition?: string
+          created_at?: string | null
+          message_template?: string
+        }
+        Relationships: []
+      }
       folders: {
         Row: {
           created_at: string
@@ -463,6 +484,30 @@ export type Database = {
         }
         Relationships: []
       }
+      twilio_error_mapping: {
+        Row: {
+          category: Database["public"]["Enums"]["delivery_error_category"]
+          created_at: string | null
+          description: string | null
+          error_code: string
+          retry_strategy: Database["public"]["Enums"]["retry_strategy"]
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["delivery_error_category"]
+          created_at?: string | null
+          description?: string | null
+          error_code: string
+          retry_strategy: Database["public"]["Enums"]["retry_strategy"]
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["delivery_error_category"]
+          created_at?: string | null
+          description?: string | null
+          error_code?: string
+          retry_strategy?: Database["public"]["Enums"]["retry_strategy"]
+        }
+        Relationships: []
+      }
       twilio_message_logs: {
         Row: {
           attempt: number
@@ -470,6 +515,7 @@ export type Database = {
           error_category:
             | Database["public"]["Enums"]["delivery_error_category"]
             | null
+          error_code: string | null
           error_message: string | null
           id: string
           message_id: string | null
@@ -487,6 +533,7 @@ export type Database = {
           error_category?:
             | Database["public"]["Enums"]["delivery_error_category"]
             | null
+          error_code?: string | null
           error_message?: string | null
           id?: string
           message_id?: string | null
@@ -504,6 +551,7 @@ export type Database = {
           error_category?:
             | Database["public"]["Enums"]["delivery_error_category"]
             | null
+          error_code?: string | null
           error_message?: string | null
           id?: string
           message_id?: string | null
@@ -516,6 +564,13 @@ export type Database = {
           voice_message_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "twilio_message_logs_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "message_lifecycle"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "twilio_message_logs_message_id_fkey"
             columns: ["message_id"]
@@ -713,6 +768,21 @@ export type Database = {
         }
         Relationships: []
       }
+      message_lifecycle: {
+        Row: {
+          delivery_status: string | null
+          error_category:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
+          id: string | null
+          last_status_change: string | null
+          message_status: string | null
+          retry_count: number | null
+          retry_strategy: Database["public"]["Enums"]["retry_strategy"] | null
+          sent_time: string | null
+        }
+        Relationships: []
+      }
       retry_effectiveness: {
         Row: {
           initial_error_category:
@@ -750,6 +820,12 @@ export type Database = {
       }
     }
     Functions: {
+      emergency_pause_retries: {
+        Args: {
+          error_cat: Database["public"]["Enums"]["delivery_error_category"]
+        }
+        Returns: undefined
+      }
       safe_recipient_insert: {
         Args: {
           message_id: string
@@ -791,6 +867,7 @@ export type Database = {
         | "unknown"
       error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
+      retry_strategy: "immediate" | "linear_backoff" | "exponential_backoff"
     }
     CompositeTypes: {
       [_ in never]: never

@@ -2,6 +2,8 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { toast } from 'sonner';
 
 type DeliveryStat = {
   status: string;
@@ -19,9 +21,16 @@ type RetryEffectiveness = {
   success_rate: number;
 };
 
+type AlertNotification = {
+  alert_name: string;
+  message: string;
+  created_at: string;
+};
+
 export default function MessageStats() {
   const [deliveryStats, setDeliveryStats] = useState<DeliveryStat[]>([]);
   const [retryStats, setRetryStats] = useState<RetryEffectiveness[]>([]);
+  const [alerts, setAlerts] = useState<AlertNotification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchStats = async () => {
@@ -46,10 +55,37 @@ export default function MessageStats() {
       setRetryStats(retryData || []);
     } catch (error) {
       console.error('Error fetching stats:', error);
+      toast.error('Failed to fetch delivery statistics');
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Setup real-time alert notifications
+  useEffect(() => {
+    const channel = supabase
+      .channel('delivery-alerts')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'delivery_alerts'
+        },
+        (payload) => {
+          const newAlert = payload.new as AlertNotification;
+          toast.warning(newAlert.message, {
+            description: `Alert: ${newAlert.alert_name}`
+          });
+          setAlerts(current => [newAlert, ...current].slice(0, 5));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     fetchStats();
@@ -121,6 +157,26 @@ export default function MessageStats() {
           ))}
         </div>
       </div>
+
+      {alerts.length > 0 && (
+        <div className="col-span-full glass-panel rounded-lg p-4">
+          <h3 className="text-lg font-semibold mb-4 flex items-center">
+            <AlertCircle className="w-5 h-5 mr-2 text-destructive" />
+            Recent Alerts
+          </h3>
+          <div className="space-y-2">
+            {alerts.map((alert, index) => (
+              <div key={index} className="flex items-center justify-between text-sm">
+                <span className="text-destructive">{alert.message}</span>
+                <span className="text-muted-foreground">
+                  <Clock className="w-4 h-4 inline mr-1" />
+                  {new Date(alert.created_at).toLocaleTimeString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 import * as crypto from "https://deno.land/std@0.168.0/crypto/mod.ts"
@@ -95,6 +94,68 @@ function categorizeError(errorCode: string): string {
   return 'unknown'
 }
 
+async function handleTwilioUpdate(body: URLSearchParams) {
+  const messageStatus = body.get('MessageStatus')
+  const messageSid = body.get('MessageSid')
+  const errorCode = body.get('ErrorCode')
+
+  // Fetch error mapping if error code exists
+  let errorMapping = null
+  if (errorCode) {
+    const { data: mapping } = await supabase
+      .from('twilio_error_mapping')
+      .select('*')
+      .eq('error_code', errorCode)
+      .single()
+    errorMapping = mapping
+  }
+
+  // Insert webhook data
+  const { data, error } = await supabase
+    .from('twilio_message_logs')
+    .insert({
+      twilio_sid: messageSid,
+      status: messageStatus,
+      error_code: errorCode,
+      error_category: errorMapping?.category || 'unknown',
+      attempt: 1,
+      retryable: errorMapping?.retry_strategy !== null
+    })
+    .select()
+    .single()
+
+  if (error) throw error
+
+  // Check for alerts
+  const { data: alerts } = await supabase
+    .from('delivery_alerts')
+    .select('*')
+
+  for (const alert of alerts || []) {
+    // Execute alert condition
+    const { data: matches } = await supabase.rpc('check_alert_condition', {
+      condition: alert.condition,
+      alert_context: {
+        error_category: errorMapping?.category,
+        retry_count: data.retry_count,
+        status: messageStatus
+      }
+    })
+
+    if (matches) {
+      console.log('Alert triggered:', {
+        alert: alert.alert_name,
+        message: alert.message_template
+          .replace('{failure_rate}', '0')
+          .replace('{usage_count}', '0')
+          .replace('{retry_count}', data.retry_count?.toString() || '0')
+      })
+    }
+  }
+
+  return data
+}
+
 serve(async (req) => {
   // Handle preflight requests
   if (req.method === 'OPTIONS') {
@@ -114,45 +175,17 @@ serve(async (req) => {
       return new Response('Too Many Requests', { status: 429 })
     }
 
-    // Parse request body
     const body = await req.text()
     const params = new URLSearchParams(body)
     
-    // Validate Twilio signature
     if (!await validateTwilioSignature(req, body)) {
       console.error('Invalid Twilio signature')
       return new Response('Unauthorized', { status: 401 })
     }
 
-    // Extract message details
-    const messageStatus = params.get('MessageStatus')
-    const messageSid = params.get('MessageSid')
-    const errorCode = params.get('ErrorCode')
+    const result = await handleTwilioUpdate(params)
 
-    // Insert webhook data
-    const { data, error } = await supabase
-      .from('twilio_message_logs')
-      .insert({
-        twilio_sid: messageSid,
-        status: messageStatus,
-        error_code: errorCode,
-        error_category: errorCode ? categorizeError(errorCode) : null,
-        attempt: 1,
-        retryable: true
-      })
-      .select()
-      .single()
-
-    if (error) throw error
-
-    console.log('Webhook processed:', {
-      status: messageStatus,
-      sid: messageSid,
-      errorCode,
-      data
-    })
-
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ success: true, data: result }), {
       headers: { 'Content-Type': 'application/json' }
     })
 
