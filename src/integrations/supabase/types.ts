@@ -203,6 +203,36 @@ export type Database = {
         }
         Relationships: []
       }
+      messages_test: {
+        Row: {
+          category: string
+          content: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          recipient_id: string | null
+          sender_id: string | null
+        }
+        Insert: {
+          category?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+        }
+        Update: {
+          category?: string
+          content?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          recipient_id?: string | null
+          sender_id?: string | null
+        }
+        Relationships: []
+      }
       notes: {
         Row: {
           content: string | null
