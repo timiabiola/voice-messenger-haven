@@ -29,7 +29,19 @@ export const Recipients = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [showResults, setShowResults] = useState(false);
+  const [currentUser, setCurrentUser] = useState<string | null>(null);
   const isMobile = useIsMobile();
+
+  // Get current user's ID on component mount
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setCurrentUser(session.user.id);
+      }
+    };
+    getCurrentUser();
+  }, []);
 
   const searchUsers = async (query: string) => {
     if (!query) {
@@ -42,6 +54,7 @@ export const Recipients = ({
         .from('profiles')
         .select('*')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
+        .neq('id', currentUser) // Exclude current user from search results
         .limit(5);
 
       if (error) throw error;
@@ -60,9 +73,21 @@ export const Recipients = ({
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery]);
+  }, [searchQuery, currentUser]); // Add currentUser to dependencies
 
   const handleAddRecipient = (profile: Profile) => {
+    // Double-check that user isn't adding themselves
+    if (profile.id === currentUser) {
+      toast.error("You cannot send a message to yourself");
+      return;
+    }
+    
+    // Check if recipient is already added
+    if (recipients.some(r => r.id === profile.id)) {
+      toast.error("This recipient has already been added");
+      return;
+    }
+
     onAddRecipient(profile);
     setSearchQuery('');
     setShowResults(false);
@@ -83,6 +108,7 @@ export const Recipients = ({
             <button
               onClick={() => onRemoveRecipient(recipient.id)}
               className="text-muted-foreground hover:text-foreground transition-colors"
+              disabled={isProcessing}
             >
               <X className="w-4 h-4" />
             </button>
@@ -107,6 +133,7 @@ export const Recipients = ({
               key={profile.id}
               className="w-full px-3 py-2 text-left hover:bg-accent/50 flex items-center gap-2 transition-colors"
               onClick={() => handleAddRecipient(profile)}
+              disabled={isProcessing}
             >
               <UserPlus className="w-4 h-4 text-muted-foreground" />
               <div className="flex-1 min-w-0">
