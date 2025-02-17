@@ -37,6 +37,7 @@ export default function Notes() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [currentNote, setCurrentNote] = useState({ title: '', content: '' });
+  const [selectedNote, setSelectedNote] = useState<Note | null>(null);
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -185,6 +186,15 @@ export default function Notes() {
     setCurrentNote({ title: '', content: '' });
   };
 
+  const handleNoteClick = (note: Note) => {
+    setSelectedNote(note);
+    setIsEditing(false);
+  };
+
+  const handleCloseReadView = () => {
+    setSelectedNote(null);
+  };
+
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
@@ -270,33 +280,69 @@ export default function Notes() {
         <main className="flex-1 flex flex-col glass-panel rounded-lg">
           <header className="h-16 flex items-center justify-between px-4 border-b border-border">
             <h1 className="text-xl font-semibold text-foreground">
-              {activeFolder 
-                ? folders.find(f => f.id === activeFolder)?.name || 'Notes'
-                : 'All Notes'
+              {selectedNote ? 'Reading Note' : 
+                activeFolder 
+                  ? folders.find(f => f.id === activeFolder)?.name || 'Notes'
+                  : 'All Notes'
               }
             </h1>
             <div className="flex items-center space-x-2">
-              <div className="relative">
-                <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search notes..."
-                  className="pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-              <button 
-                className="p-2 hover:bg-accent/10 rounded-full"
-                onClick={handleCreateNote}
-              >
-                <Plus className="w-5 h-5 text-muted-foreground" />
-              </button>
+              {!selectedNote && (
+                <>
+                  <div className="relative">
+                    <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="Search notes..."
+                      className="pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                  </div>
+                  <button 
+                    className="p-2 hover:bg-accent/10 rounded-full"
+                    onClick={handleCreateNote}
+                  >
+                    <Plus className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                </>
+              )}
             </div>
           </header>
 
           <div className="flex-1 overflow-y-auto p-4 relative">
-            {isEditing ? (
+            {selectedNote ? (
+              <div className="glass-panel rounded-lg p-6">
+                <div className="flex justify-between items-center mb-4">
+                  <div className="space-y-1">
+                    <h2 className="text-2xl font-semibold text-foreground">
+                      {selectedNote.title}
+                    </h2>
+                    <div className="flex items-center space-x-4">
+                      <span className="text-sm text-muted-foreground">
+                        {new Date(selectedNote.created_at).toLocaleString()}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {folders.find(f => f.id === selectedNote.folder_id)?.name || 'Uncategorized'}
+                      </span>
+                    </div>
+                  </div>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleCloseReadView}
+                  >
+                    <X className="w-4 h-4 mr-1" />
+                    Close
+                  </Button>
+                </div>
+                <div className="prose prose-invert max-w-none">
+                  <div className="whitespace-pre-wrap text-foreground">
+                    {selectedNote.content}
+                  </div>
+                </div>
+              </div>
+            ) : isEditing ? (
               <div className="glass-panel rounded-lg p-4 mb-4">
                 <div className="flex justify-between items-center mb-2">
                   <h2 className="text-lg font-semibold">New Note</h2>
@@ -347,9 +393,7 @@ export default function Notes() {
                       <div 
                         key={note.id}
                         className="glass-panel rounded-lg p-4 hover:bg-accent/10 cursor-pointer"
-                        onClick={() => {
-                          console.log('Open note:', note.id);
-                        }}
+                        onClick={() => handleNoteClick(note)}
                       >
                         <div className="flex items-center justify-between mb-2">
                           <span className="text-sm text-muted-foreground">
