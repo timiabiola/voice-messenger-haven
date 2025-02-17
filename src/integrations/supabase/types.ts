@@ -472,6 +472,7 @@ export type Database = {
             | null
           error_message: string | null
           id: string
+          message_id: string | null
           next_retry: string | null
           retryable: boolean
           status: string | null
@@ -487,6 +488,7 @@ export type Database = {
             | null
           error_message?: string | null
           id?: string
+          message_id?: string | null
           next_retry?: string | null
           retryable?: boolean
           status?: string | null
@@ -502,6 +504,7 @@ export type Database = {
             | null
           error_message?: string | null
           id?: string
+          message_id?: string | null
           next_retry?: string | null
           retryable?: boolean
           status?: string | null
@@ -510,6 +513,13 @@ export type Database = {
           voice_message_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "twilio_message_logs_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "messages"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "twilio_message_logs_voice_message_id_fkey"
             columns: ["voice_message_id"]
