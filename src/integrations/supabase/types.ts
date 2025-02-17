@@ -700,6 +700,30 @@ export type Database = {
       }
     }
     Views: {
+      message_delivery_stats: {
+        Row: {
+          avg_delivery_time_seconds: number | null
+          avg_retries: number | null
+          error_category:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
+          retried_messages: number | null
+          status: string | null
+          total_messages: number | null
+        }
+        Relationships: []
+      }
+      retry_effectiveness: {
+        Row: {
+          initial_error_category:
+            | Database["public"]["Enums"]["delivery_error_category"]
+            | null
+          success_rate: number | null
+          successful_retries: number | null
+          total_retries: number | null
+        }
+        Relationships: []
+      }
       rls_log_admin_view: {
         Row: {
           created_at: string | null

@@ -8,6 +8,7 @@ import { useToast } from '@/components/ui/use-toast';
 import MessageList from '@/components/messages/MessageList';
 import FolderSidebar from '@/components/messages/FolderSidebar';
 import MessageHeader from '@/components/messages/MessageHeader';
+import MessageStats from '@/components/messages/MessageStats';
 import { Message } from '@/types';
 
 type FolderItem = {
@@ -160,6 +161,7 @@ export default function Home() {
         />
         
         <div className="mt-28 px-4">
+          <MessageStats />
           {isLoading ? (
             <div className="flex items-center justify-center h-[calc(100vh-8rem)]">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
