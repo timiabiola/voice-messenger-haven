@@ -1,24 +1,13 @@
 
-import { LogOut } from 'lucide-react';
+import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 export const Header = () => {
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
-      navigate('/auth');
-      toast.success('Logged out successfully');
-    } catch (error) {
-      console.error('Error logging out:', error);
-      toast.error('Failed to log out');
-    }
+  const handleBack = () => {
+    navigate('/');
   };
 
   return (
@@ -27,10 +16,10 @@ export const Header = () => {
         <Button 
           variant="ghost"
           className="flex items-center space-x-2 text-muted-foreground hover:text-foreground transition-colors"
-          onClick={handleLogout}
+          onClick={handleBack}
         >
-          <LogOut className="w-5 h-5" />
-          <span>Log out</span>
+          <ChevronLeft className="w-5 h-5" />
+          <span>Back</span>
         </Button>
       </div>
     </header>
