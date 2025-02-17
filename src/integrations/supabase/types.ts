@@ -173,6 +173,7 @@ export type Database = {
           is_received: boolean | null
           is_selected: boolean | null
           is_sent: boolean | null
+          next_category: string | null
           title: string | null
           updated_at: string | null
         }
@@ -184,6 +185,7 @@ export type Database = {
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          next_category?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -195,6 +197,7 @@ export type Database = {
           is_received?: boolean | null
           is_selected?: boolean | null
           is_sent?: boolean | null
+          next_category?: string | null
           title?: string | null
           updated_at?: string | null
         }
@@ -578,6 +581,7 @@ export type Database = {
           is_received: boolean | null
           is_selected: boolean | null
           is_sent: boolean | null
+          next_category: string | null
           title: string | null
           updated_at: string | null
         }
