@@ -20,20 +20,6 @@ type FolderStructure = {
   [key: string]: FolderItem[];
 }
 
-type TwilioMessageLog = {
-  status: string;
-  error_message: string | null;
-  error_code: string | null;
-  delivery_attempts: number;
-  last_delivery_attempt: string | null;
-  next_retry: string | null;
-  retryable: boolean;
-}
-
-type MessageWithLogs = Message & {
-  twilio_message_logs: TwilioMessageLog[] | null;
-}
-
 export default function Home() {
   const [currentCategory, setCurrentCategory] = useState('inbox');
   const [messages, setMessages] = useState<{
@@ -73,18 +59,7 @@ export default function Home() {
 
       const { data, error } = await supabase
         .from('messages')
-        .select(`
-          *,
-          twilio_message_logs (
-            status,
-            error_message,
-            error_code,
-            delivery_attempts,
-            last_delivery_attempt,
-            next_retry,
-            retryable
-          )
-        `)
+        .select('*')
         .eq('category', currentCategory)
         .order('created_at', { ascending: false });
 
@@ -94,27 +69,12 @@ export default function Home() {
         throw error;
       }
 
-      // Transform the data to include Twilio status information
-      const transformedData = (data || []).map(msg => {
-        const messageLog = Array.isArray(msg.twilio_message_logs) ? msg.twilio_message_logs[0] : null;
-        return {
-          ...msg,
-          status: messageLog?.status || 'pending',
-          error_message: messageLog?.error_message || null,
-          error_code: messageLog?.error_code || null,
-          delivery_attempts: messageLog?.delivery_attempts || 0,
-          last_delivery_attempt: messageLog?.last_delivery_attempt || null,
-          next_retry: messageLog?.next_retry || null,
-          retryable: messageLog?.retryable ?? true
-        };
-      });
-
       // Group messages by category
       const groupedMessages = {
-        new: transformedData.filter(msg => msg.category === 'new'),
-        inbox: transformedData.filter(msg => msg.category === 'inbox'),
-        saved: transformedData.filter(msg => msg.category === 'saved'),
-        trash: transformedData.filter(msg => msg.category === 'trash'),
+        new: (data || []).filter(msg => msg.category === 'new'),
+        inbox: (data || []).filter(msg => msg.category === 'inbox'),
+        saved: (data || []).filter(msg => msg.category === 'saved'),
+        trash: (data || []).filter(msg => msg.category === 'trash'),
       };
 
       console.log('Grouped messages:', groupedMessages);
