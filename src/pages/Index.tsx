@@ -1,10 +1,10 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 import { toast } from 'sonner';
 import {
   ShieldCheck,
@@ -13,8 +13,10 @@ import {
   Users,
   Pencil,
   LogOut,
-  Mic
+  Mic,
+  ChevronRight
 } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 interface Message {
   id: string;
@@ -178,6 +180,59 @@ export default function Index() {
     </div>
   );
 
+  const renderRecentMessages = () => {
+    if (messages.length === 0 || unreadCount === 0) return null;
+
+    return (
+      <div className="mb-8">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-primary">Recent Messages</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/inbox-0')}
+            className="text-muted-foreground hover:text-primary"
+          >
+            View all
+            <ChevronRight className="ml-1 h-4 w-4" />
+          </Button>
+        </div>
+        <div className="space-y-3">
+          {messages.slice(0, 3).map((message) => (
+            <Card
+              key={message.id}
+              className="cursor-pointer hover:bg-accent/50 transition-colors"
+              onClick={() => navigate('/inbox-0')}
+            >
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                      <span className="text-primary font-medium">
+                        {message.sender.first_name?.[0] || '?'}
+                      </span>
+                    </div>
+                    <div>
+                      <p className="font-medium">
+                        {message.sender.first_name} {message.sender.last_name}
+                      </p>
+                      <p className="text-sm text-muted-foreground line-clamp-1">
+                        {message.content}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {formatDate(message.created_at)}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground relative pb-24">
       <header className="border-b border-border p-4 flex justify-between items-center">
@@ -217,11 +272,12 @@ export default function Index() {
               </Button>
             )}
           </div>
+
+          {renderRecentMessages()}
           {renderFeatureGrid()}
         </div>
       </main>
 
-      {/* Floating Mic Button */}
       <Button
         variant="default"
         size="icon"
