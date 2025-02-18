@@ -87,7 +87,7 @@ export default function Index() {
           content,
           created_at,
           status,
-          sender:profiles!sender_id(first_name, last_name)
+          sender:profiles(first_name, last_name)
         `)
         .eq('recipient_id', session.session.user.id)
         .eq('status', 'unread');
