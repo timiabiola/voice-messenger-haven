@@ -1,20 +1,171 @@
 
 import { useNavigate } from 'react-router-dom';
-import GridLayout from '@/components/layout/GridLayout';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, MessageSquare, Bookmark, Phone, Pencil } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
+import {
+  ShieldCheck,
+  MessageSquare,
+  Bookmark,
+  Users,
+  Pencil,
+  LogOut
+} from 'lucide-react';
+
+interface Message {
+  id: string;
+  content: string;
+  created_at: string;
+  status: 'read' | 'unread';
+  sender: {
+    first_name: string;
+    last_name: string;
+  };
+}
 
 export default function Index() {
   const navigate = useNavigate();
-  const { isAdmin, isLoading } = useAdmin();
+  const { isAdmin } = useAdmin();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const features = [
+    {
+      id: 'messages',
+      label: 'Messages',
+      description: 'View your messages',
+      icon: <MessageSquare className="w-6 h-6" />,
+      badge: unreadCount,
+      primary: true,
+      path: '/inbox-0'
+    },
+    {
+      id: 'notes',
+      label: 'Notes',
+      description: 'Create and manage your notes',
+      icon: <Pencil className="w-6 h-6" />,
+      path: '/notes'
+    },
+    {
+      id: 'contacts',
+      label: 'Contacts',
+      description: 'Manage your contacts',
+      icon: <Users className="w-6 h-6" />,
+      path: '/contacts'
+    },
+    {
+      id: 'saved',
+      label: 'Saved items',
+      description: 'Access your saved content',
+      icon: <Bookmark className="w-6 h-6" />,
+      path: '/saved'
+    }
+  ];
+
+  useEffect(() => {
+    const fetchUnreadMessages = async () => {
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user) return;
+
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select(`
+          id,
+          content,
+          created_at,
+          status,
+          sender:profiles(first_name, last_name)
+        `)
+        .eq('recipient_id', session.session.user.id)
+        .eq('status', 'unread');
+
+      if (error) {
+        console.error('Error fetching messages:', error);
+        toast.error('Failed to fetch messages');
+        return;
+      }
+
+      setMessages(messages);
+      setUnreadCount(messages.length);
+    };
+
+    fetchUnreadMessages();
+
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('messages-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'messages'
+        },
+        (payload) => {
+          if (payload.new && payload.eventType === 'INSERT') {
+            setMessages(prev => [payload.new as Message, ...prev]);
+            setUnreadCount(prev => prev + 1);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      navigate('/auth');
+    } catch (error) {
+      toast.error('Error signing out');
+    }
+  };
+
+  const NotificationBadge = ({ count }: { count: number }) => {
+    if (!count) return null;
+    return (
+      <Badge 
+        variant="destructive" 
+        className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0"
+      >
+        {count > 99 ? '99+' : count}
+      </Badge>
+    );
+  };
 
   return (
-    <GridLayout>
-      <div className="space-y-8">
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <header className="border-b p-4 flex justify-between items-center">
+        <Button
+          variant="ghost"
+          onClick={handleLogout}
+          className="flex items-center gap-2"
+        >
+          <LogOut className="w-4 h-4" />
+          Logout
+        </Button>
+        {unreadCount > 0 && (
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/inbox-0')}
+            className="flex items-center gap-2"
+          >
+            <Badge variant="destructive">{unreadCount} new</Badge>
+            View Messages
+          </Button>
+        )}
+      </header>
+
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-8">
           <h1 className="text-2xl font-bold">Welcome to the App</h1>
-          {isAdmin && !isLoading && (
+          {isAdmin && (
             <Button
               onClick={() => navigate('/admin')}
               className="flex items-center gap-2"
@@ -26,56 +177,30 @@ export default function Index() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <Button
-            onClick={() => navigate('/notes')}
-            className="flex items-center gap-2 h-auto p-4"
-            variant="outline"
-          >
-            <Pencil className="w-4 h-4" />
-            <div className="text-left">
-              <div className="font-semibold">Notes</div>
-              <p className="text-sm text-muted-foreground">Create and manage your notes</p>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => navigate('/saved')}
-            className="flex items-center gap-2 h-auto p-4"
-            variant="outline"
-          >
-            <Bookmark className="w-4 h-4" />
-            <div className="text-left">
-              <div className="font-semibold">Saved Items</div>
-              <p className="text-sm text-muted-foreground">Access your saved content</p>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => navigate('/contacts')}
-            className="flex items-center gap-2 h-auto p-4"
-            variant="outline"
-          >
-            <Phone className="w-4 h-4" />
-            <div className="text-left">
-              <div className="font-semibold">Contacts</div>
-              <p className="text-sm text-muted-foreground">Manage your contacts</p>
-            </div>
-          </Button>
-
-          <Button
-            onClick={() => navigate('/inbox-0')}
-            className="flex items-center gap-2 h-auto p-4"
-            variant="outline"
-          >
-            <MessageSquare className="w-4 h-4" />
-            <div className="text-left">
-              <div className="font-semibold">Messages</div>
-              <p className="text-sm text-muted-foreground">View your messages</p>
-            </div>
-          </Button>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature) => (
+            <Button
+              key={feature.id}
+              onClick={() => navigate(feature.path)}
+              className={`h-auto p-6 flex flex-col items-start space-y-2 relative ${
+                feature.primary 
+                  ? 'border-primary bg-primary/10 hover:bg-primary/20' 
+                  : 'border-border bg-background hover:border-primary'
+              }`}
+              variant="outline"
+            >
+              <span className="text-2xl relative">
+                {feature.icon}
+                {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
+              </span>
+              <div className="text-left">
+                <h3 className="text-lg font-semibold">{feature.label}</h3>
+                <p className="text-muted-foreground">{feature.description}</p>
+              </div>
+            </Button>
+          ))}
         </div>
-      </div>
-    </GridLayout>
+      </main>
+    </div>
   );
 }
