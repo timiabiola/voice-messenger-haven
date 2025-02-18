@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AppLayout from '@/components/AppLayout';
 
 interface VoiceMessage {
   id: string;
@@ -104,63 +105,71 @@ const Inbox = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-      </div>
+      <AppLayout>
+        <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </div>
+      </AppLayout>
     );
   }
 
   if (messages.length === 0) {
-    return <EmptyState />;
+    return (
+      <AppLayout>
+        <EmptyState />
+      </AppLayout>
+    );
   }
 
   return (
-    <div className="relative">
-      <div className="fixed top-0 left-0 right-0 p-4 bg-background z-10 border-b">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/')}
-          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronLeft className="h-5 w-5" />
-          <span>Back</span>
-        </Button>
-      </div>
-      <div className="pt-16 p-4">
-        <ScrollArea className="h-[calc(100vh-12rem)]">
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <h3 className="font-semibold">{message.subject || 'No Subject'}</h3>
-                    <p className="text-sm text-muted-foreground">
-                      From: {message.sender.first_name} {message.sender.last_name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {new Date(message.created_at).toLocaleString()}
-                    </p>
+    <AppLayout>
+      <div className="relative">
+        <div className="fixed top-0 left-0 right-0 p-4 bg-background z-10 border-b">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span>Back</span>
+          </Button>
+        </div>
+        <div className="pt-16 p-4">
+          <ScrollArea className="h-[calc(100vh-12rem)]">
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <h3 className="font-semibold">{message.subject || 'No Subject'}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        From: {message.sender.first_name} {message.sender.last_name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(message.created_at).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      {message.is_urgent && (
+                        <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                          Urgent
+                        </span>
+                      )}
+                      {message.is_private && (
+                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                          Private
+                        </span>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    {message.is_urgent && (
-                      <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                        Urgent
-                      </span>
-                    )}
-                    {message.is_private && (
-                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                        Private
-                      </span>
-                    )}
-                  </div>
-                </div>
-                <audio className="mt-2 w-full" controls src={message.audio_url} />
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
+                  <audio className="mt-2 w-full" controls src={message.audio_url} />
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 
