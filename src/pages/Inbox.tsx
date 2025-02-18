@@ -39,7 +39,7 @@ const Inbox = () => {
       const { data, error } = await supabase
         .from('voice_message_recipients')
         .select(`
-          voice_message:voice_messages!inner (
+          voice_messages (
             id,
             title,
             subject,
@@ -47,7 +47,8 @@ const Inbox = () => {
             created_at,
             is_urgent,
             is_private,
-            sender:profiles!inner!voice_messages_sender_id_fkey (
+            sender_id,
+            profiles (
               first_name,
               last_name,
               email
@@ -60,10 +61,12 @@ const Inbox = () => {
       if (error) throw error;
 
       // Transform the data to match our interface
-      const flattenedMessages = data.map(item => ({
-        ...item.voice_message,
-        sender: item.voice_message.sender[0], // Get the first (and only) sender
-      })) as VoiceMessage[];
+      const flattenedMessages = data
+        .filter(item => item.voice_messages)
+        .map(item => ({
+          ...item.voice_messages,
+          sender: item.voice_messages.profiles[0],
+        })) as VoiceMessage[];
 
       setMessages(flattenedMessages);
     } catch (error: any) {
