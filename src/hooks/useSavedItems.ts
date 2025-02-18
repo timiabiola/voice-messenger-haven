@@ -20,7 +20,7 @@ export const useSavedItems = (selectedTags: string[] = [], page = 1) => {
         .from('saved_items')
         .select(`
           *,
-          sender:profiles(first_name, last_name, email),
+          sender:profiles!fk_saved_items_sender(first_name, last_name, email),
           saved_items_tags(
             tags(name)
           )
