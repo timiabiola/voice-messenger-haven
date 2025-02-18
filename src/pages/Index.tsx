@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -7,6 +6,7 @@ import { HomeHeader } from '@/components/home/HomeHeader';
 import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { RecentMessages } from '@/components/home/RecentMessages';
 import { MicrophoneButton } from '@/components/home/MicrophoneButton';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Message {
   id: string;
@@ -23,6 +23,7 @@ export default function Index() {
   const { isAdmin } = useAdmin();
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchUnreadMessages = async () => {
@@ -88,10 +89,14 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="flex-1 flex items-center justify-center px-4">
-        <div className="w-full max-w-lg mx-auto">
-          <RecentMessages messages={messages} unreadCount={unreadCount} />
-          <FeatureGrid unreadCount={unreadCount} />
+      <main className={`flex-1 flex items-start md:items-center justify-center px-4 ${
+        isMobile ? 'pt-24 pb-32' : 'py-8'
+      }`}>
+        <div className="w-full max-w-lg mx-auto space-y-6">
+          <div className={`${isMobile ? 'px-0' : 'px-4'}`}>
+            <RecentMessages messages={messages} unreadCount={unreadCount} />
+            <FeatureGrid unreadCount={unreadCount} />
+          </div>
         </div>
       </main>
       <MicrophoneButton />
