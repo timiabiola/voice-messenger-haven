@@ -464,7 +464,15 @@ export type Database = {
           updated_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "fk_saved_items_sender"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       saved_items_tags: {
         Row: {
@@ -975,6 +983,7 @@ export type Database = {
       error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
       retry_strategy: "immediate" | "linear_backoff" | "exponential_backoff"
+      saved_item_category: "smart" | "personal" | "sender"
       test_status: "running" | "completed" | "failed"
     }
     CompositeTypes: {

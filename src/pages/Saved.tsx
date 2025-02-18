@@ -15,6 +15,8 @@ import { useSavedItems } from '@/hooks/useSavedItems'
 import SavedSidebar from '@/components/saved/SavedSidebar'
 import SavedSection from '@/components/saved/SavedSection'
 import { SavedSectionItem } from '@/types/saved'
+import EmptyState from '@/components/layout/EmptyState'
+import { Button } from '@/components/ui/button'
 
 const Saved = () => {
   const navigate = useNavigate()
@@ -86,6 +88,58 @@ const Saved = () => {
     }
   }
 
+  if (isLoading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <SavedSidebar
+          selectedTags={selectedTags}
+          onTagSelect={handleTagSelect}
+          onTagRemove={handleTagRemove}
+        />
+        <main className="flex-1 flex flex-col items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+        </main>
+      </div>
+    )
+  }
+
+  if (!savedItems?.length) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <SavedSidebar
+          selectedTags={selectedTags}
+          onTagSelect={handleTagSelect}
+          onTagRemove={handleTagRemove}
+        />
+        <main className="flex-1 flex flex-col">
+          <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
+            <div className="flex items-center space-x-4">
+              <Button 
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/')}
+                className="hover:bg-gray-100 rounded-full"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-600" />
+              </Button>
+              <h1 className="text-xl font-semibold text-black">My Messages</h1>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-gray-100 rounded-full"
+            >
+              <Settings className="w-6 h-6 text-gray-600" />
+            </Button>
+          </header>
+          <div className="flex-1">
+            <EmptyState />
+          </div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="flex h-screen bg-gray-50">
       <SavedSidebar
@@ -97,46 +151,46 @@ const Saved = () => {
       <main className="flex-1 flex flex-col">
         <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
           <div className="flex items-center space-x-4">
-            <button 
+            <Button 
+              variant="ghost"
+              size="icon"
               onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-100 rounded-full"
+              className="hover:bg-gray-100 rounded-full"
             >
               <ChevronLeft className="w-6 h-6 text-gray-600" />
-            </button>
+            </Button>
             <h1 className="text-xl font-semibold text-black">My Messages</h1>
           </div>
-          <button className="p-2 hover:bg-gray-100 rounded-full">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="hover:bg-gray-100 rounded-full"
+          >
             <Settings className="w-6 h-6 text-gray-600" />
-          </button>
+          </Button>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          {isLoading ? (
-            <div className="text-center py-4 text-black">Loading...</div>
-          ) : (
-            <>
-              <SavedSection
-                title="Smart Views"
-                items={sections.smart as SavedSectionItem[]}
-                isExpanded={expandedLists.includes('smart')}
-                onToggle={() => toggleSection('smart')}
-              />
+          <SavedSection
+            title="Smart Views"
+            items={sections.smart as SavedSectionItem[]}
+            isExpanded={expandedLists.includes('smart')}
+            onToggle={() => toggleSection('smart')}
+          />
 
-              <SavedSection
-                title="Personal Tags"
-                items={sections.personal as SavedSectionItem[]}
-                isExpanded={expandedLists.includes('personal')}
-                onToggle={() => toggleSection('personal')}
-              />
+          <SavedSection
+            title="Personal Tags"
+            items={sections.personal as SavedSectionItem[]}
+            isExpanded={expandedLists.includes('personal')}
+            onToggle={() => toggleSection('personal')}
+          />
 
-              <SavedSection
-                title="From Sender"
-                items={sections.sender as SavedSectionItem[]}
-                isExpanded={expandedLists.includes('sender')}
-                onToggle={() => toggleSection('sender')}
-              />
-            </>
-          )}
+          <SavedSection
+            title="From Sender"
+            items={sections.sender as SavedSectionItem[]}
+            isExpanded={expandedLists.includes('sender')}
+            onToggle={() => toggleSection('sender')}
+          />
         </div>
       </main>
     </div>
