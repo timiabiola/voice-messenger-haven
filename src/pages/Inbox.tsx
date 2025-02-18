@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import EmptyState from '@/components/layout/EmptyState';
@@ -84,14 +83,11 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h3 className="text-gray-100 font-medium">
-            {message.sender.first_name} {message.sender.last_name}
+          <h3 className="text-gray-100 font-medium text-lg">
+            From: {message.sender.first_name} {message.sender.last_name}
           </h3>
-          <p className="text-gray-400 text-sm">
-            {new Date(message.created_at).toLocaleString()}
-          </p>
           <p className="text-gray-400 text-sm mt-1">
-            {message.sender.email}
+            {new Date(message.created_at).toLocaleString()}
           </p>
         </div>
         <button className="text-gray-400 hover:text-gray-300">
