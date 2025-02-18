@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PencilLine } from 'lucide-react';
+import { PencilLine, Settings } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import FolderSidebar from '@/components/notes/FolderSidebar';
@@ -11,10 +11,19 @@ import NotesHeader from '@/components/notes/NotesHeader';
 import NotesList from '@/components/notes/NotesList';
 import { useNotes } from '@/hooks/useNotes';
 import { useNoteState } from '@/hooks/useNoteState';
+import { useAdmin } from '@/hooks/useAdmin';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 export default function Notes() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
+  const { isAdmin } = useAdmin();
 
   const {
     notes,
@@ -40,7 +49,7 @@ export default function Notes() {
     startNewNote,
     startEditNote,
     toggleFolder,
-    setCurrentNote // Added this from useNoteState
+    setCurrentNote
   } = useNoteState();
 
   useEffect(() => {
@@ -91,6 +100,11 @@ export default function Notes() {
     }
   };
 
+  const handleNavigateToLoadTest = () => {
+    // This will be implemented in the next step when we create the load testing page
+    navigate('/load-test');
+  };
+
   return (
     <AppLayout>
       <div className="flex h-[calc(100vh-8rem)]">
@@ -106,14 +120,31 @@ export default function Notes() {
         />
 
         <main className="flex-1 flex flex-col glass-panel rounded-lg">
-          <NotesHeader
-            selectedNoteId={selectedNote?.id || null}
-            activeFolder={activeFolder}
-            folders={folders}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onCreateNote={startNewNote}
-          />
+          <div className="flex justify-between items-center px-4 py-2 border-b border-border">
+            <NotesHeader
+              selectedNoteId={selectedNote?.id || null}
+              activeFolder={activeFolder}
+              folders={folders}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+              onCreateNote={startNewNote}
+            />
+            
+            {isAdmin && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleNavigateToLoadTest}>
+                    Load Testing
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
 
           <div className="flex-1 overflow-y-auto p-4 relative">
             {selectedNote ? (
