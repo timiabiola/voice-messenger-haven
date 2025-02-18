@@ -1,13 +1,16 @@
 
 import { useAdmin } from '@/hooks/useAdmin';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import SidebarLayout from '@/components/layout/SidebarLayout';
 import MessageStats from '@/components/messages/MessageStats';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft } from "lucide-react";
 
 export default function AdminDashboard() {
   const { isAdmin, isLoading } = useAdmin();
+  const navigate = useNavigate();
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen">
@@ -22,7 +25,17 @@ export default function AdminDashboard() {
   return (
     <SidebarLayout>
       <div className="container mx-auto p-4 space-y-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ChevronLeft className="h-5 w-5" />
+            <span>Back</span>
+          </Button>
+          <h1 className="text-3xl font-bold">Admin Dashboard</h1>
+        </div>
         
         <Tabs defaultValue="delivery" className="space-y-4">
           <TabsList>
