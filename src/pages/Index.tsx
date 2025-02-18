@@ -8,7 +8,6 @@ import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { RecentMessages } from '@/components/home/RecentMessages';
 import { MicrophoneButton } from '@/components/home/MicrophoneButton';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Recipients, Profile } from '@/components/voice-message/Recipients';
 
 interface Message {
   id: string;
@@ -25,9 +24,7 @@ export default function Index() {
   const { isAdmin } = useAdmin();
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [recipients, setRecipients] = useState<Profile[]>([]);
   const isMobile = useIsMobile();
-  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchUnreadMessages = async () => {
@@ -90,18 +87,6 @@ export default function Index() {
     };
   }, [isAdmin]);
 
-  const handleAddRecipient = (profile: Profile) => {
-    if (recipients.some(r => r.id === profile.id)) {
-      toast.error("This recipient has already been added");
-      return;
-    }
-    setRecipients(prev => [...prev, profile]);
-  };
-
-  const handleRemoveRecipient = (profileId: string) => {
-    setRecipients(prev => prev.filter(r => r.id !== profileId));
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
@@ -114,12 +99,6 @@ export default function Index() {
           isMobile ? 'max-w-lg' : 'max-w-xl'
         }`}>
           <div className={`${isMobile ? 'px-0' : 'px-4'}`}>
-            <Recipients 
-              recipients={recipients}
-              onAddRecipient={handleAddRecipient}
-              onRemoveRecipient={handleRemoveRecipient}
-              isProcessing={isProcessing}
-            />
             <RecentMessages messages={messages} unreadCount={unreadCount} />
             <FeatureGrid unreadCount={unreadCount} />
           </div>
