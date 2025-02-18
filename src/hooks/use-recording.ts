@@ -10,6 +10,15 @@ export function useRecording() {
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout>();
+  const streamRef = useRef<MediaStream | null>(null);
+
+  useEffect(() => {
+    return () => {
+      // Cleanup on unmount
+      stopRecording();
+      clearInterval(timerRef.current);
+    };
+  }, []);
 
   useEffect(() => {
     if (isRecording && !isPaused) {
@@ -24,19 +33,34 @@ export function useRecording() {
 
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      console.log('Requesting microphone access...');
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          sampleRate: 44100,
+        } 
+      });
+      
+      console.log('Microphone access granted, initializing MediaRecorder...');
+      streamRef.current = stream;
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
       
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
 
       mediaRecorder.ondataavailable = (event) => {
+        console.log('Received audio chunk:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
         }
       };
 
       mediaRecorder.start(100);
+      console.log('MediaRecorder started');
       setIsRecording(true);
       setIsPaused(false);
       setRecordingTime(0);
@@ -47,16 +71,25 @@ export function useRecording() {
   };
 
   const stopRecording = () => {
+    console.log('Stopping recording...');
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => {
+          console.log('Stopping track:', track.kind);
+          track.stop();
+        });
+        streamRef.current = null;
+      }
       setIsRecording(false);
       setIsPaused(false);
       clearInterval(timerRef.current);
+      console.log('Recording stopped, tracks cleaned up');
     }
   };
 
   const pauseRecording = () => {
+    console.log('Pausing recording...');
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
@@ -64,6 +97,7 @@ export function useRecording() {
   };
 
   const resumeRecording = () => {
+    console.log('Resuming recording...');
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
@@ -71,6 +105,7 @@ export function useRecording() {
   };
 
   const getRecordingData = () => {
+    console.log('Getting recording data, chunks:', audioChunksRef.current.length);
     return audioChunksRef.current;
   };
 

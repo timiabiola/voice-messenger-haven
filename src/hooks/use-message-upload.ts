@@ -26,15 +26,27 @@ export function useMessageUpload() {
 
     console.log('Starting voice message upload process...');
 
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+    // Create a single Blob from all chunks with the correct MIME type
+    const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const fileName = `voice_message_${Date.now()}.webm`;
-    const file = new File([audioBlob], fileName, { type: 'audio/webm' });
+    
+    // Get file duration
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    await new Promise((resolve) => {
+      audio.addEventListener('loadedmetadata', resolve, { once: true });
+    });
+    const duration = Math.round(audio.duration);
+    URL.revokeObjectURL(audioUrl);
 
-    console.log('Uploading file:', fileName);
+    console.log('Audio duration:', duration, 'seconds');
+    console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
     
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice_messages')
-      .upload(fileName, file);
+      .upload(fileName, audioBlob, {
+        contentType: 'audio/webm;codecs=opus'
+      });
 
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
@@ -55,7 +67,7 @@ export function useMessageUpload() {
         title: subject || 'Voice Message',
         subject,
         audio_url: audioUrl,
-        duration: 0, // This will be updated by the caller
+        duration: duration,
         is_urgent: isUrgent,
         is_private: isPrivate,
         sender_id: session.user.id
