@@ -30,39 +30,63 @@ export function useMessageUpload() {
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const fileName = `voice_message_${Date.now()}.webm`;
     
-    // Get file duration by creating an audio element and waiting for metadata to load
-    let duration: number;
+    // Calculate duration based on the audio chunks
+    let duration = 0;
     try {
-      duration = await new Promise((resolve, reject) => {
+      const durationPromise = new Promise<number>((resolve, reject) => {
         const audio = new Audio();
-        audio.src = URL.createObjectURL(audioBlob);
+        const objectUrl = URL.createObjectURL(audioBlob);
         
+        const cleanup = () => {
+          URL.revokeObjectURL(objectUrl);
+          audio.removeAttribute('src');
+          audio.load();
+        };
+
         const timeoutId = setTimeout(() => {
-          reject(new Error('Timeout while getting audio duration'));
-        }, 5000); // 5 second timeout
-        
+          cleanup();
+          // If timeout occurs, estimate duration based on blob size
+          // Assuming typical opus compression ratio
+          const estimatedDuration = Math.ceil(audioBlob.size / 1024); // Rough estimate
+          resolve(Math.min(estimatedDuration, 300)); // Cap at 5 minutes
+        }, 3000);
+
         audio.addEventListener('loadedmetadata', () => {
           clearTimeout(timeoutId);
-          const duration = Math.round(audio.duration);
-          URL.revokeObjectURL(audio.src);
-          resolve(duration);
+          if (Number.isFinite(audio.duration) && audio.duration > 0) {
+            const calculatedDuration = Math.round(audio.duration);
+            cleanup();
+            resolve(calculatedDuration);
+          } else {
+            cleanup();
+            // Fallback to blob size estimation
+            const estimatedDuration = Math.ceil(audioBlob.size / 1024);
+            resolve(Math.min(estimatedDuration, 300));
+          }
         });
-        
+
         audio.addEventListener('error', (e) => {
           clearTimeout(timeoutId);
-          reject(new Error('Error loading audio: ' + e.message));
+          cleanup();
+          // Fallback to blob size estimation
+          const estimatedDuration = Math.ceil(audioBlob.size / 1024);
+          resolve(Math.min(estimatedDuration, 300));
         });
+
+        audio.src = objectUrl;
       });
+
+      duration = await durationPromise;
     } catch (error) {
-      console.error('Error getting audio duration:', error);
-      throw new Error('Failed to get audio duration');
+      console.error('Error calculating duration:', error);
+      // Last resort fallback
+      duration = Math.ceil(audioBlob.size / 1024);
     }
 
-    if (!duration || duration <= 0) {
-      throw new Error('Invalid audio duration');
-    }
+    // Ensure we have a valid duration
+    duration = Math.max(1, Math.min(duration, 300)); // Between 1 second and 5 minutes
 
-    console.log('Audio duration:', duration, 'seconds');
+    console.log('Final audio duration:', duration, 'seconds');
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
     
     const { data: uploadData, error: uploadError } = await supabase.storage
