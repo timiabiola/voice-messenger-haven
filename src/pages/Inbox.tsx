@@ -59,7 +59,7 @@ const Inbox = () => {
           created_at,
           is_urgent,
           is_private,
-          sender:profiles (
+          sender:profiles!sender_id (
             first_name,
             last_name,
             email
