@@ -1,4 +1,8 @@
 
-project_id = "your-project-id"
+project_id = "qzkzwtmzqysvhdsbrfzo"
+[functions.twilio-webhook]
+verify_jwt = false
+[functions.twilio-test]
+verify_jwt = false
 [functions.load-test]
 verify_jwt = true

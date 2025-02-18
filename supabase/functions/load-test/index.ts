@@ -17,10 +17,10 @@ interface RateLimitInfo {
   endpoint: string;
   requests: number;
   statusCode: number;
+  remainingRequests?: number;
 }
 
 Deno.serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -39,76 +39,109 @@ Deno.serve(async (req) => {
       const { config } = await req.json() as { config: LoadTestConfig }
       console.log('Starting load test with config:', config)
 
-      const startTime = Date.now()
-      const rateLimits: RateLimitInfo[] = []
-
-      // Simulate concurrent users
-      const userPromises = Array(config.concurrentUsers).fill(null).map(async (_, userIndex) => {
-        for (let i = 0; i < config.requestsPerUser; i++) {
-          const requestStart = Date.now()
-          
-          try {
-            const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
-              headers: {
-                'Authorization': `Bearer ${supabaseKey}`,
-                'apikey': supabaseKey,
-              },
-            })
-
-            rateLimits.push({
-              timestamp: new Date().toISOString(),
-              endpoint: '/messages',
-              requests: i + 1,
-              statusCode: response.status,
-            })
-
-            // Log rate limit headers
-            const remainingRequests = response.headers.get('x-ratelimit-remaining')
-            console.log(`User ${userIndex} - Request ${i + 1} - Remaining requests: ${remainingRequests}`)
-
-            // Respect rate limits
-            if (remainingRequests && parseInt(remainingRequests) < 10) {
-              console.log('Rate limit approaching, adding delay')
-              await new Promise(resolve => setTimeout(resolve, 1000))
-            }
-
-          } catch (error) {
-            console.error(`Error in request: ${error.message}`)
-          }
-
-          // Add delay between requests
-          if (i < config.requestsPerUser - 1) {
-            await new Promise(resolve => setTimeout(resolve, config.delayBetweenRequests))
-          }
-        }
-      })
-
-      await Promise.all(userPromises)
-      
-      // Store test results
-      const { error } = await supabase
+      // Create initial test record
+      const { data: testRecord, error: insertError } = await supabase
         .from('load_test_results')
         .insert({
-          start_time: new Date(startTime).toISOString(),
-          end_time: new Date().toISOString(),
-          config: config,
-          rate_limits: rateLimits,
+          start_time: new Date().toISOString(),
+          config,
+          status: 'running',
         })
+        .select()
+        .single()
 
-      if (error) {
-        throw error
+      if (insertError) {
+        throw new Error(`Failed to create test record: ${insertError.message}`)
       }
 
-      return new Response(
-        JSON.stringify({
-          success: true,
-          message: 'Load test completed successfully',
-          rateLimits,
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        },
-      )
+      const rateLimits: RateLimitInfo[] = []
+
+      try {
+        // Simulate concurrent users
+        const userPromises = Array(config.concurrentUsers).fill(null).map(async (_, userIndex) => {
+          for (let i = 0; i < config.requestsPerUser; i++) {
+            try {
+              const response = await fetch(`${supabaseUrl}/rest/v1/messages`, {
+                headers: {
+                  'Authorization': `Bearer ${supabaseKey}`,
+                  'apikey': supabaseKey,
+                },
+              })
+
+              const remainingRequests = response.headers.get('x-ratelimit-remaining')
+              
+              rateLimits.push({
+                timestamp: new Date().toISOString(),
+                endpoint: '/messages',
+                requests: i + 1,
+                statusCode: response.status,
+                remainingRequests: remainingRequests ? parseInt(remainingRequests) : undefined
+              })
+
+              console.log(`User ${userIndex} - Request ${i + 1} - Remaining requests: ${remainingRequests}`)
+
+              if (remainingRequests && parseInt(remainingRequests) < 10) {
+                console.log('Rate limit approaching, adding delay')
+                await new Promise(resolve => setTimeout(resolve, 1000))
+              }
+
+            } catch (error) {
+              console.error(`Error in request: ${error.message}`)
+              rateLimits.push({
+                timestamp: new Date().toISOString(),
+                endpoint: '/messages',
+                requests: i + 1,
+                statusCode: 500
+              })
+            }
+
+            if (i < config.requestsPerUser - 1) {
+              await new Promise(resolve => setTimeout(resolve, config.delayBetweenRequests))
+            }
+          }
+        })
+
+        await Promise.all(userPromises)
+        
+        // Update test record as completed
+        const { error: updateError } = await supabase
+          .from('load_test_results')
+          .update({
+            end_time: new Date().toISOString(),
+            status: 'completed',
+            rate_limits: rateLimits
+          })
+          .eq('id', testRecord.id)
+
+        if (updateError) {
+          throw updateError
+        }
+
+        return new Response(
+          JSON.stringify({
+            success: true,
+            message: 'Load test completed successfully',
+            testId: testRecord.id,
+            rateLimits,
+          }),
+          {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          },
+        )
+      } catch (error) {
+        // Update test record as failed
+        await supabase
+          .from('load_test_results')
+          .update({
+            end_time: new Date().toISOString(),
+            status: 'failed',
+            error_message: error.message,
+            rate_limits: rateLimits
+          })
+          .eq('id', testRecord.id)
+
+        throw error
+      }
     }
 
     return new Response(

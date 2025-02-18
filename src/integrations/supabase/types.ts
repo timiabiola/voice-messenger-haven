@@ -185,6 +185,42 @@ export type Database = {
           },
         ]
       }
+      load_test_results: {
+        Row: {
+          config: Json
+          created_at: string | null
+          end_time: string | null
+          error_message: string | null
+          id: string
+          rate_limits: Json | null
+          start_time: string
+          status: Database["public"]["Enums"]["test_status"] | null
+          updated_at: string | null
+        }
+        Insert: {
+          config: Json
+          created_at?: string | null
+          end_time?: string | null
+          error_message?: string | null
+          id?: string
+          rate_limits?: Json | null
+          start_time: string
+          status?: Database["public"]["Enums"]["test_status"] | null
+          updated_at?: string | null
+        }
+        Update: {
+          config?: Json
+          created_at?: string | null
+          end_time?: string | null
+          error_message?: string | null
+          id?: string
+          rate_limits?: Json | null
+          start_time?: string
+          status?: Database["public"]["Enums"]["test_status"] | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           category: string
@@ -903,6 +939,7 @@ export type Database = {
       error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
       retry_strategy: "immediate" | "linear_backoff" | "exponential_backoff"
+      test_status: "running" | "completed" | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
