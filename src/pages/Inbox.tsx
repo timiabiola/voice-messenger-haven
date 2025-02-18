@@ -22,6 +22,23 @@ interface VoiceMessage {
   is_private: boolean;
 }
 
+interface VoiceMessageResponse {
+  voice_message: {
+    id: string;
+    title: string | null;
+    subject: string | null;
+    audio_url: string;
+    created_at: string;
+    is_urgent: boolean;
+    is_private: boolean;
+    sender: {
+      first_name: string | null;
+      last_name: string | null;
+      email: string;
+    };
+  } | null;
+}
+
 const Inbox = () => {
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -59,15 +76,27 @@ const Inbox = () => {
 
       if (error) throw error;
 
-      // Transform the data to match our interface
-      const transformedMessages = data
-        ?.filter(item => item.voice_message)
+      // Transform the data with proper type checking
+      const transformedMessages = (data as VoiceMessageResponse[])
+        .filter((item): item is VoiceMessageResponse & { voice_message: NonNullable<VoiceMessageResponse['voice_message']> } => 
+          item.voice_message !== null
+        )
         .map(item => ({
-          ...item.voice_message,
-          sender: item.voice_message.sender
-        })) as VoiceMessage[];
+          id: item.voice_message.id,
+          title: item.voice_message.title || '',
+          subject: item.voice_message.subject || '',
+          audio_url: item.voice_message.audio_url,
+          created_at: item.voice_message.created_at,
+          is_urgent: item.voice_message.is_urgent,
+          is_private: item.voice_message.is_private,
+          sender: {
+            first_name: item.voice_message.sender.first_name || '',
+            last_name: item.voice_message.sender.last_name || '',
+            email: item.voice_message.sender.email
+          }
+        }));
 
-      setMessages(transformedMessages || []);
+      setMessages(transformedMessages);
     } catch (error: any) {
       console.error('Error fetching messages:', error);
       toast({
