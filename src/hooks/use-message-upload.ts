@@ -30,14 +30,37 @@ export function useMessageUpload() {
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const fileName = `voice_message_${Date.now()}.webm`;
     
-    // Get file duration using a temporary URL
-    const tempAudioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(tempAudioUrl);
-    await new Promise((resolve) => {
-      audio.addEventListener('loadedmetadata', resolve, { once: true });
-    });
-    const duration = Math.round(audio.duration);
-    URL.revokeObjectURL(tempAudioUrl);
+    // Get file duration by creating an audio element and waiting for metadata to load
+    let duration: number;
+    try {
+      duration = await new Promise((resolve, reject) => {
+        const audio = new Audio();
+        audio.src = URL.createObjectURL(audioBlob);
+        
+        const timeoutId = setTimeout(() => {
+          reject(new Error('Timeout while getting audio duration'));
+        }, 5000); // 5 second timeout
+        
+        audio.addEventListener('loadedmetadata', () => {
+          clearTimeout(timeoutId);
+          const duration = Math.round(audio.duration);
+          URL.revokeObjectURL(audio.src);
+          resolve(duration);
+        });
+        
+        audio.addEventListener('error', (e) => {
+          clearTimeout(timeoutId);
+          reject(new Error('Error loading audio: ' + e.message));
+        });
+      });
+    } catch (error) {
+      console.error('Error getting audio duration:', error);
+      throw new Error('Failed to get audio duration');
+    }
+
+    if (!duration || duration <= 0) {
+      throw new Error('Invalid audio duration');
+    }
 
     console.log('Audio duration:', duration, 'seconds');
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
