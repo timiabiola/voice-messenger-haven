@@ -64,7 +64,7 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full max-w-md mx-auto">
+    <div className="flex flex-col gap-3 w-full mx-auto">
       {features.map((feature) => (
         <button
           key={feature.id}
@@ -88,4 +88,4 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
       ))}
     </div>
   );
-};
+}

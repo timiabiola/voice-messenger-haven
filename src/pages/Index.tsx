@@ -88,8 +88,8 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="px-4 pt-40 pb-24">
-        <div className="py-4">
+      <main className="container mx-auto px-4 pt-40 pb-24">
+        <div className="max-w-2xl mx-auto">
           <RecentMessages messages={messages} unreadCount={unreadCount} />
           <FeatureGrid unreadCount={unreadCount} />
         </div>
