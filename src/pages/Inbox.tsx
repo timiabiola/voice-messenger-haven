@@ -90,28 +90,10 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
           <p className="text-gray-400 text-sm">
             {new Date(message.created_at).toLocaleString()}
           </p>
-          <p className="text-gray-400 text-sm mt-1">
-            {message.sender.email}
-          </p>
         </div>
         <button className="text-gray-400 hover:text-gray-300">
           <ChevronDown className="w-6 h-6" />
         </button>
-      </div>
-
-      {/* Message Subject */}
-      <div className="mb-4">
-        <h4 className="text-gray-200 font-medium">{message.subject}</h4>
-        {message.is_urgent && (
-          <span className="inline-block px-2 py-1 text-xs bg-red-500/20 text-red-300 rounded-full mt-2">
-            Urgent
-          </span>
-        )}
-        {message.is_private && (
-          <span className="inline-block px-2 py-1 text-xs bg-blue-500/20 text-blue-300 rounded-full mt-2 ml-2">
-            Private
-          </span>
-        )}
       </div>
 
       {/* Waveform Visualization */}
