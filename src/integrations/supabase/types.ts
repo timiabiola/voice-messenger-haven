@@ -897,6 +897,12 @@ export type Database = {
         }
         Returns: undefined
       }
+      has_role: {
+        Args: {
+          role_to_check: string
+        }
+        Returns: boolean
+      }
       safe_recipient_insert: {
         Args: {
           message_id: string
