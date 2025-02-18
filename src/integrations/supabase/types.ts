@@ -973,12 +973,20 @@ export type Database = {
         }
         Returns: undefined
       }
-      has_role: {
-        Args: {
-          role_to_check: string
-        }
-        Returns: boolean
-      }
+      has_role:
+        | {
+            Args: {
+              role_to_check: string
+            }
+            Returns: boolean
+          }
+        | {
+            Args: {
+              user_id: string
+              role: Database["public"]["Enums"]["app_role"]
+            }
+            Returns: boolean
+          }
       safe_recipient_insert: {
         Args: {
           message_id: string
