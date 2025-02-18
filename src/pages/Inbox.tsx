@@ -36,38 +36,36 @@ const Inbox = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // First, get the voice messages with their sender information
       const { data, error } = await supabase
-        .from('voice_messages')
+        .from('voice_message_recipients')
         .select(`
-          id,
-          title,
-          subject,
-          audio_url,
-          created_at,
-          is_urgent,
-          is_private,
-          sender:sender_id (
-            first_name,
-            last_name,
-            email
+          voice_message:voice_message_id (
+            id,
+            title,
+            subject,
+            audio_url,
+            created_at,
+            is_urgent,
+            is_private,
+            sender:sender_id (
+              first_name,
+              last_name,
+              email
+            )
           )
         `)
-        .in('id', 
-          supabase
-            .from('voice_message_recipients')
-            .select('voice_message_id')
-            .eq('recipient_id', session.user.id)
-        )
+        .eq('recipient_id', session.user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
       // Transform the data to match our interface
-      const transformedMessages = data.map(message => ({
-        ...message,
-        sender: message.sender
-      })) as VoiceMessage[];
+      const transformedMessages = data
+        .filter(item => item.voice_message) // Filter out any null messages
+        .map(item => ({
+          ...item.voice_message,
+          sender: item.voice_message.sender
+        })) as VoiceMessage[];
 
       setMessages(transformedMessages);
     } catch (error: any) {
