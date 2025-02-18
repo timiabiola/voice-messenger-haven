@@ -115,49 +115,51 @@ const Inbox = () => {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
+    <div className="relative">
+      <div className="fixed top-0 left-0 right-0 p-4 bg-background z-10 border-b">
         <Button
           variant="ghost"
           onClick={() => navigate('/')}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ChevronLeft className="h-4 w-4" />
-          Back to Home
+          <ChevronLeft className="h-5 w-5" />
+          <span>Back</span>
         </Button>
       </div>
-      <ScrollArea className="h-[calc(100vh-12rem)]">
-        <div className="space-y-4">
-          {messages.map((message) => (
-            <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h3 className="font-semibold">{message.subject || 'No Subject'}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    From: {message.sender.first_name} {message.sender.last_name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {new Date(message.created_at).toLocaleString()}
-                  </p>
+      <div className="pt-16 p-4">
+        <ScrollArea className="h-[calc(100vh-12rem)]">
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold">{message.subject || 'No Subject'}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      From: {message.sender.first_name} {message.sender.last_name}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(message.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    {message.is_urgent && (
+                      <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
+                        Urgent
+                      </span>
+                    )}
+                    {message.is_private && (
+                      <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                        Private
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <div className="flex gap-2">
-                  {message.is_urgent && (
-                    <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                      Urgent
-                    </span>
-                  )}
-                  {message.is_private && (
-                    <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                      Private
-                    </span>
-                  )}
-                </div>
-              </div>
-              <audio className="mt-2 w-full" controls src={message.audio_url} />
-            </Card>
-          ))}
-        </div>
-      </ScrollArea>
+                <audio className="mt-2 w-full" controls src={message.audio_url} />
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
+      </div>
     </div>
   );
 };
