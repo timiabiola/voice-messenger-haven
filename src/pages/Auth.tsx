@@ -19,29 +19,11 @@ const Auth = () => {
 
   useEffect(() => {
     // Check if user is already authenticated
-    const checkSession = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('Error checking session:', error);
-        return;
-      }
-      if (session) {
-        navigate('/');
-      }
-    };
-
-    checkSession();
-
-    // Set up auth state listener
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         navigate('/');
       }
     });
-
-    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -57,7 +39,7 @@ const Auth = () => {
             first_name: firstName,
             last_name: lastName,
           },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo: window.location.origin,
         },
       });
 
@@ -83,16 +65,14 @@ const Auth = () => {
     setLoading(true);
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) throw error;
 
-      if (data.session) {
-        navigate('/');
-      }
+      navigate('/');
     } catch (error: any) {
       toast({
         title: "Error",
