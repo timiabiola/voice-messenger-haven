@@ -1,7 +1,6 @@
 
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import AppLayout from '@/components/AppLayout';
 import EmptyState from '@/components/layout/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -22,23 +21,6 @@ interface VoiceMessage {
   is_private: boolean;
 }
 
-interface VoiceMessageResponse {
-  voice_message: {
-    id: string;
-    title: string | null;
-    subject: string | null;
-    audio_url: string;
-    created_at: string;
-    is_urgent: boolean;
-    is_private: boolean;
-    sender: {
-      first_name: string | null;
-      last_name: string | null;
-      email: string;
-    };
-  } | null;
-}
-
 const Inbox = () => {
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -53,48 +35,55 @@ const Inbox = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data, error } = await supabase
+      // First get the voice message IDs for this recipient
+      const { data: recipientData, error: recipientError } = await supabase
         .from('voice_message_recipients')
+        .select('voice_message_id')
+        .eq('recipient_id', session.user.id);
+
+      if (recipientError) throw recipientError;
+
+      if (!recipientData?.length) {
+        setMessages([]);
+        return;
+      }
+
+      // Then fetch the full message data
+      const { data: messageData, error: messageError } = await supabase
+        .from('voice_messages')
         .select(`
-          voice_message!voice_message_id (
-            id,
-            title,
-            subject,
-            audio_url,
-            created_at,
-            is_urgent,
-            is_private,
-            sender:profiles!voice_messages_sender_id_fkey (
-              first_name,
-              last_name,
-              email
-            )
+          id,
+          title,
+          subject,
+          audio_url,
+          created_at,
+          is_urgent,
+          is_private,
+          sender:profiles (
+            first_name,
+            last_name,
+            email
           )
         `)
-        .eq('recipient_id', session.user.id)
+        .in('id', recipientData.map(r => r.voice_message_id))
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (messageError) throw messageError;
 
-      // Transform the data with proper type checking
-      const transformedMessages = (data as VoiceMessageResponse[])
-        .filter((item): item is VoiceMessageResponse & { voice_message: NonNullable<VoiceMessageResponse['voice_message']> } => 
-          item.voice_message !== null
-        )
-        .map(item => ({
-          id: item.voice_message.id,
-          title: item.voice_message.title || '',
-          subject: item.voice_message.subject || '',
-          audio_url: item.voice_message.audio_url,
-          created_at: item.voice_message.created_at,
-          is_urgent: item.voice_message.is_urgent,
-          is_private: item.voice_message.is_private,
-          sender: {
-            first_name: item.voice_message.sender.first_name || '',
-            last_name: item.voice_message.sender.last_name || '',
-            email: item.voice_message.sender.email
-          }
-        }));
+      const transformedMessages = (messageData || []).map(message => ({
+        id: message.id,
+        title: message.title || '',
+        subject: message.subject || '',
+        audio_url: message.audio_url,
+        created_at: message.created_at,
+        is_urgent: message.is_urgent || false,
+        is_private: message.is_private || false,
+        sender: {
+          first_name: message.sender?.first_name || '',
+          last_name: message.sender?.last_name || '',
+          email: message.sender?.email || ''
+        }
+      }));
 
       setMessages(transformedMessages);
     } catch (error: any) {
