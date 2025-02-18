@@ -9,9 +9,9 @@ interface GridLayoutProps {
 
 const GridLayout = ({ children }: GridLayoutProps) => {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-background">
       <Header />
-      <main className="container mx-auto px-4 pt-28 pb-20">
+      <main className="pt-16 pb-24">
         {children}
       </main>
       <BottomNav />

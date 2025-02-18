@@ -2,6 +2,7 @@
 import { Button } from '@/components/ui/button';
 import { MessageSquare, Pencil, Users, Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface Feature {
   id: string;
@@ -19,6 +20,7 @@ interface FeatureGridProps {
 
 export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const features: Feature[] = [
     {
@@ -64,25 +66,25 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
   };
 
   return (
-    <div className="flex flex-col gap-3 w-full mx-auto">
+    <div className="grid grid-cols-1 gap-4">
       {features.map((feature) => (
         <button
           key={feature.id}
           onClick={() => navigate(feature.path)}
-          className={`w-full p-5 rounded-xl border transition-colors text-left relative
+          className={`w-full p-6 rounded-2xl transition-all duration-200 relative
             ${feature.primary 
-              ? 'border-primary bg-primary/5 hover:bg-primary/10 active:bg-primary/15' 
-              : 'border-border bg-card hover:border-primary active:bg-accent/5'}`}
+              ? 'bg-primary text-primary-foreground shadow-lg hover:shadow-xl active:shadow-md' 
+              : 'bg-card hover:bg-card/80 text-card-foreground border border-border/50 hover:border-primary/30'}`}
         >
-          <div className="flex items-center space-x-4">
-            <span className="text-2xl relative">
+          <div className="flex items-center gap-4">
+            <div className={`p-3 rounded-xl ${feature.primary ? 'bg-primary-foreground/10' : 'bg-primary/10'}`}>
               {feature.icon}
-              {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
-            </span>
-            <div className="flex-1">
-              <h3 className="text-xl font-semibold text-primary mb-1">{feature.label}</h3>
-              <p className="text-sm text-muted-foreground">{feature.description}</p>
             </div>
+            <div className="flex-1 text-left">
+              <h3 className="text-xl font-semibold mb-1">{feature.label}</h3>
+              <p className="text-sm opacity-80">{feature.description}</p>
+            </div>
+            {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
           </div>
         </button>
       ))}

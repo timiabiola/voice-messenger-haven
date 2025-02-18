@@ -10,11 +10,11 @@ export const MicrophoneButton = () => {
     <Button
       variant="default"
       size="icon"
-      className="fixed bottom-24 left-1/2 -translate-x-1/2 rounded-full shadow-lg hover:shadow-xl 
-        active:shadow-md transition-all w-14 h-14 bg-primary"
+      className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full shadow-lg hover:shadow-xl 
+        active:shadow-md transition-all w-16 h-16 bg-primary z-50"
       onClick={() => navigate('/microphone')}
     >
-      <Mic className="w-7 h-7" />
+      <Mic className="w-8 h-8" />
     </Button>
   );
 };
