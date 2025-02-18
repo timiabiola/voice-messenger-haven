@@ -36,39 +36,33 @@ const Inbox = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // Updated query with correct PostgREST syntax
       const { data, error } = await supabase
-        .from('voice_message_recipients')
+        .from('voice_messages')
         .select(`
-          voice_message:voice_message_id (
-            id,
-            title,
-            subject,
-            audio_url,
-            created_at,
-            is_urgent,
-            is_private,
-            sender:sender_id (
-              first_name,
-              last_name,
-              email
-            )
+          id,
+          title,
+          subject,
+          audio_url,
+          created_at,
+          is_urgent,
+          is_private,
+          sender:profiles!sender_id (
+            first_name,
+            last_name,
+            email
           )
         `)
-        .eq('recipient_id', session.user.id)
+        .in('id', 
+          supabase
+            .from('voice_message_recipients')
+            .select('voice_message_id')
+            .eq('recipient_id', session.user.id)
+        )
         .order('created_at', { ascending: false });
 
       if (error) throw error;
 
-      // Transform the data to match our interface
-      const transformedMessages = data
-        ?.filter(item => item.voice_message && item.voice_message.sender)
-        .map(item => ({
-          ...item.voice_message,
-          sender: item.voice_message.sender
-        })) as VoiceMessage[];
-
-      setMessages(transformedMessages || []);
+      setMessages(data || []);
     } catch (error: any) {
       console.error('Error fetching messages:', error);
       toast({
