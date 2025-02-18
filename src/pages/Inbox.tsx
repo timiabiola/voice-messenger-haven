@@ -3,10 +3,17 @@ import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import EmptyState from '@/components/layout/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ChevronLeft } from 'lucide-react';
+import { 
+  ChevronLeft,
+  Play,
+  Pause,
+  Share2,
+  Bookmark,
+  Search,
+  ChevronDown,
+  MessageCircle
+} from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AppLayout from '@/components/AppLayout';
 
@@ -25,9 +32,156 @@ interface VoiceMessage {
   is_private: boolean;
 }
 
+const MessageCard = ({ message }: { message: VoiceMessage }) => {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [audio] = useState(new Audio(message.audio_url));
+  const waveform = Array(40).fill(0).map(() => Math.random() * 100);
+
+  useEffect(() => {
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime / audio.duration);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, [audio]);
+
+  const togglePlayPause = () => {
+    if (isPlaying) {
+      audio.pause();
+    } else {
+      audio.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <div className="relative bg-gray-800/30 backdrop-blur-lg rounded-2xl p-6 mb-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h3 className="text-gray-100 font-medium">
+            {message.sender.first_name} {message.sender.last_name}
+          </h3>
+          <p className="text-gray-400 text-sm">
+            {new Date(message.created_at).toLocaleString()}
+          </p>
+        </div>
+        <button className="text-gray-400 hover:text-gray-300">
+          <ChevronDown className="w-6 h-6" />
+        </button>
+      </div>
+
+      {/* Waveform Visualization */}
+      <div className="mb-8">
+        <div className="flex items-center h-24 gap-px">
+          {waveform.map((height, i) => (
+            <div key={i} className="flex-1 h-full flex items-center">
+              <div 
+                className={`w-full rounded-full transition-all duration-300 ${
+                  i / waveform.length < currentTime 
+                    ? 'bg-blue-500/80' 
+                    : 'bg-gray-600/50'
+                }`}
+                style={{ 
+                  height: `${height}%`,
+                  transform: `scaleY(${isPlaying ? '1' : '0.95'})`,
+                  transition: 'transform 0.2s ease'
+                }}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="space-y-6">
+        {/* Time Indicators */}
+        <div className="flex justify-between text-sm text-gray-400">
+          <span>{formatTime(currentTime * duration)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="relative h-1 bg-gray-700/50 rounded-full">
+          <div 
+            className="absolute h-full bg-blue-500/80 rounded-full"
+            style={{ width: `${currentTime * 100}%` }}
+          />
+          <div 
+            className="absolute h-3 w-3 bg-blue-500 rounded-full shadow-lg -mt-1"
+            style={{ left: `${currentTime * 100}%` }}
+          />
+        </div>
+
+        {/* Control Buttons */}
+        <div className="flex items-center justify-between px-4">
+          <button 
+            className="w-16 h-16 rounded-full bg-blue-500/80 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+            onClick={togglePlayPause}
+          >
+            {isPlaying ? (
+              <Pause className="w-8 h-8 text-white" />
+            ) : (
+              <Play className="w-8 h-8 text-white ml-1" />
+            )}
+          </button>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex justify-center space-x-8 pt-4">
+          <button className="group flex flex-col items-center">
+            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
+              <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
+            </div>
+            <span className="text-xs text-gray-500 mt-1">Forward</span>
+          </button>
+          <button className="group flex flex-col items-center">
+            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
+              <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
+            </div>
+            <span className="text-xs text-gray-500 mt-1">Reply</span>
+          </button>
+          <button className="group flex flex-col items-center">
+            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
+              <Bookmark className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
+            </div>
+            <span className="text-xs text-gray-500 mt-1">Save</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Inbox = () => {
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -40,7 +194,6 @@ const Inbox = () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      // First get the voice message IDs for this recipient
       const { data: recipientData, error: recipientError } = await supabase
         .from('voice_message_recipients')
         .select('voice_message_id')
@@ -53,7 +206,6 @@ const Inbox = () => {
         return;
       }
 
-      // Then fetch the full message data with sender information
       const { data: messageData, error: messageError } = await supabase
         .from('voice_messages')
         .select(`
@@ -75,22 +227,7 @@ const Inbox = () => {
 
       if (messageError) throw messageError;
 
-      const transformedMessages = (messageData || []).map(message => ({
-        id: message.id,
-        title: message.title || '',
-        subject: message.subject || '',
-        audio_url: message.audio_url,
-        created_at: message.created_at,
-        is_urgent: message.is_urgent || false,
-        is_private: message.is_private || false,
-        sender: {
-          first_name: message.sender?.first_name || '',
-          last_name: message.sender?.last_name || '',
-          email: message.sender?.email || ''
-        }
-      }));
-
-      setMessages(transformedMessages);
+      setMessages(messageData || []);
     } catch (error: any) {
       console.error('Error fetching messages:', error);
       toast({
@@ -121,52 +258,45 @@ const Inbox = () => {
     );
   }
 
+  const filteredMessages = messages.filter(message => 
+    message.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    `${message.sender.first_name} ${message.sender.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <AppLayout>
-      <div className="relative">
-        <div className="fixed top-0 left-0 right-0 p-4 bg-background z-10 border-b">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ChevronLeft className="h-5 w-5" />
-            <span>Back</span>
-          </Button>
-        </div>
-        <div className="pt-16 p-4">
-          <ScrollArea className="h-[calc(100vh-12rem)]">
-            <div className="space-y-4">
-              {messages.map((message) => (
-                <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <h3 className="font-semibold">{message.subject || 'No Subject'}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        From: {message.sender.first_name} {message.sender.last_name}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        {new Date(message.created_at).toLocaleString()}
-                      </p>
-                    </div>
-                    <div className="flex gap-2">
-                      {message.is_urgent && (
-                        <span className="px-2 py-1 text-xs bg-red-100 text-red-800 rounded-full">
-                          Urgent
-                        </span>
-                      )}
-                      {message.is_private && (
-                        <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
-                          Private
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <audio className="mt-2 w-full" controls src={message.audio_url} />
-                </Card>
-              ))}
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        {/* Top Search Bar */}
+        <div className="sticky top-0 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800">
+          <div className="max-w-2xl mx-auto p-4">
+            <div className="flex items-center gap-4 mb-4">
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/')}
+                className="text-gray-400 hover:text-gray-300"
+              >
+                <ChevronLeft className="h-5 w-5" />
+                <span>Back</span>
+              </Button>
             </div>
-          </ScrollArea>
+            <div className="relative">
+              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search voice messages..."
+                className="w-full bg-gray-800/50 text-gray-100 placeholder-gray-500 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content */}
+        <div className="max-w-2xl mx-auto p-4">
+          {filteredMessages.map((message) => (
+            <MessageCard key={message.id} message={message} />
+          ))}
         </div>
       </div>
     </AppLayout>
