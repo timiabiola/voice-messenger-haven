@@ -463,6 +463,30 @@ export type Database = {
           },
         ]
       }
+      stat_refresh_logs: {
+        Row: {
+          error_message: string | null
+          id: number
+          refresh_completed_at: string | null
+          refresh_started_at: string | null
+          success: boolean | null
+        }
+        Insert: {
+          error_message?: string | null
+          id?: number
+          refresh_completed_at?: string | null
+          refresh_started_at?: string | null
+          success?: boolean | null
+        }
+        Update: {
+          error_message?: string | null
+          id?: number
+          refresh_completed_at?: string | null
+          refresh_started_at?: string | null
+          success?: boolean | null
+        }
+        Relationships: []
+      }
       tags: {
         Row: {
           created_at: string
@@ -815,6 +839,17 @@ export type Database = {
           operation?: string | null
           policy_name?: string | null
           table_name?: string | null
+        }
+        Relationships: []
+      }
+      stat_refresh_performance: {
+        Row: {
+          avg_refresh_time_seconds: number | null
+          failed_refreshes: number | null
+          max_refresh_time_seconds: number | null
+          refresh_date: string | null
+          successful_refreshes: number | null
+          total_refreshes: number | null
         }
         Relationships: []
       }
