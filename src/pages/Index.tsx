@@ -42,6 +42,7 @@ export default function Index() {
   const { isAdmin } = useAdmin();
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [activeFeature, setActiveFeature] = useState('home');
 
   const features: Feature[] = [
     {
@@ -144,75 +145,79 @@ export default function Index() {
   const NotificationBadge = ({ count }: { count: number }) => {
     if (!count) return null;
     return (
-      <Badge 
-        variant="destructive" 
-        className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0"
-      >
+      <div className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground text-xs 
+        rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
         {count > 99 ? '99+' : count}
-      </Badge>
+      </div>
     );
   };
 
+  const renderFeatureGrid = () => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {features.map((feature) => (
+        <button
+          key={feature.id}
+          onClick={() => navigate(feature.path)}
+          className={`p-6 rounded-lg border transition-colors text-left relative
+            ${feature.primary 
+              ? 'border-primary bg-primary/10 hover:bg-primary/20' 
+              : 'border-border bg-background hover:border-primary'}`}
+        >
+          <div className="flex items-start space-x-4">
+            <span className="text-2xl relative">
+              {feature.icon}
+              {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
+            </span>
+            <div>
+              <h3 className="text-lg font-semibold text-primary">{feature.label}</h3>
+              <p className="text-muted-foreground mt-1">{feature.description}</p>
+            </div>
+          </div>
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-background relative">
-      <header className="border-b p-4 flex justify-between items-center">
+    <div className="min-h-screen bg-background text-foreground relative">
+      <header className="border-b border-border p-4 flex justify-between items-center">
         <Button
           variant="ghost"
           onClick={handleLogout}
-          className="flex items-center gap-2"
+          className="text-primary hover:text-primary/90"
         >
-          <LogOut className="w-4 h-4" />
+          <LogOut className="w-4 h-4 mr-2" />
           Logout
         </Button>
         {unreadCount > 0 && (
           <Button
             variant="ghost"
             onClick={() => navigate('/inbox-0')}
-            className="flex items-center gap-2"
+            className="text-primary hover:text-primary/90 flex items-center gap-2"
           >
-            <Badge variant="destructive">{unreadCount} new</Badge>
+            <Badge variant="destructive" className="animate-pulse">
+              {unreadCount} new
+            </Badge>
             View Messages
           </Button>
         )}
       </header>
 
-      <main className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold">Welcome to the App</h1>
-          {isAdmin && (
-            <Button
-              onClick={() => navigate('/admin')}
-              className="flex items-center gap-2"
-              variant="outline"
-            >
-              <ShieldCheck className="w-4 h-4" />
-              Admin Dashboard
-            </Button>
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map((feature) => (
-            <Button
-              key={feature.id}
-              onClick={() => navigate(feature.path)}
-              className={`h-auto p-6 flex flex-col items-start space-y-2 relative ${
-                feature.primary 
-                  ? 'border-primary bg-primary/10 hover:bg-primary/20' 
-                  : 'border-border bg-background hover:border-primary'
-              }`}
-              variant="outline"
-            >
-              <span className="text-2xl relative">
-                {feature.icon}
-                {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
-              </span>
-              <div className="text-left">
-                <h3 className="text-lg font-semibold">{feature.label}</h3>
-                <p className="text-muted-foreground">{feature.description}</p>
-              </div>
-            </Button>
-          ))}
+      <main className="container mx-auto">
+        <div className="p-6">
+          <div className="flex justify-between items-center mb-8">
+            <h1 className="text-2xl font-semibold text-primary">Welcome to the App</h1>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/admin')}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <ShieldCheck className="w-4 h-4 mr-2" />
+                Admin Dashboard
+              </Button>
+            )}
+          </div>
+          {renderFeatureGrid()}
         </div>
       </main>
 
