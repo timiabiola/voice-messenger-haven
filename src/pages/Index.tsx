@@ -84,7 +84,7 @@ export default function Index() {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return;
 
-      const { data, error } = await supabase
+      const query = supabase
         .from('messages')
         .select(`
           id,
@@ -93,9 +93,15 @@ export default function Index() {
           status,
           sender:profiles!messages_sender_id_fkey(first_name, last_name)
         `)
-        .eq('recipient_id', session.session.user.id)
         .eq('status', 'unread')
         .order('created_at', { ascending: false });
+
+      // Only filter by recipient if not an admin
+      if (!isAdmin) {
+        query.eq('recipient_id', session.session.user.id);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching messages:', error);
@@ -134,7 +140,7 @@ export default function Index() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [isAdmin]);
 
   const handleLogout = async () => {
     try {
