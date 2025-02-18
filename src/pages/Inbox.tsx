@@ -39,7 +39,7 @@ const Inbox = () => {
       const { data, error } = await supabase
         .from('voice_message_recipients')
         .select(`
-          voice_message:voice_message_id (
+          voice_message:voice_message_id!inner (
             id,
             title,
             subject,
@@ -47,7 +47,7 @@ const Inbox = () => {
             created_at,
             is_urgent,
             is_private,
-            sender:sender_id (
+            sender:profiles!voice_messages_sender_id_fkey (
               first_name,
               last_name,
               email
@@ -60,8 +60,8 @@ const Inbox = () => {
       if (error) throw error;
 
       // Transform the data to match our interface
-      const transformedMessages = data
-        .filter(item => item.voice_message) // Filter out any null messages
+      const transformedMessages = (data || [])
+        .filter(item => item.voice_message && item.voice_message.sender)
         .map(item => ({
           ...item.voice_message,
           sender: item.voice_message.sender
