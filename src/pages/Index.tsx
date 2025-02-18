@@ -94,7 +94,8 @@ export default function Index() {
           sender:profiles!messages_sender_id_fkey(first_name, last_name)
         `)
         .eq('recipient_id', session.session.user.id)
-        .eq('status', 'unread');
+        .eq('status', 'unread')
+        .order('created_at', { ascending: false });
 
       if (error) {
         console.error('Error fetching messages:', error);
