@@ -119,11 +119,11 @@ const Inbox = () => {
       <div className="mb-4">
         <Button
           variant="ghost"
-          onClick={() => navigate('/admin')}
+          onClick={() => navigate('/')}
           className="flex items-center gap-2"
         >
           <ChevronLeft className="h-4 w-4" />
-          Back to Admin Panel
+          Back to Home
         </Button>
       </div>
       <ScrollArea className="h-[calc(100vh-12rem)]">
