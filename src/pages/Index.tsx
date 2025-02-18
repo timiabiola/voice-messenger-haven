@@ -86,10 +86,10 @@ export default function Index() {
   }, [isAdmin]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="container mx-auto px-4 pt-40 pb-24">
-        <div className="max-w-2xl mx-auto">
+      <main className="flex-1 flex items-center justify-center pt-40 pb-24 px-4">
+        <div className="w-full max-w-xl mx-auto">
           <RecentMessages messages={messages} unreadCount={unreadCount} />
           <FeatureGrid unreadCount={unreadCount} />
         </div>
