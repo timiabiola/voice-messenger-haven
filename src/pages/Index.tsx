@@ -88,15 +88,21 @@ export default function Index() {
   }, [isAdmin]);
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden">
+    <div className="min-h-screen bg-background">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="px-4 py-6">
-        <div className="max-w-lg mx-auto space-y-6">
-          <h1 className="text-3xl font-bold text-primary mb-8 text-center">
-            Welcome to Voice Haven
-          </h1>
-          <RecentMessages messages={messages} unreadCount={unreadCount} />
-          <FeatureGrid unreadCount={unreadCount} />
+      <main className="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-start p-4">
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+          <div className="grid gap-6 justify-items-center">
+            <h1 className="text-3xl font-bold text-primary text-center w-full">
+              Welcome to Voice Haven
+            </h1>
+            <div className="w-full">
+              <RecentMessages messages={messages} unreadCount={unreadCount} />
+            </div>
+            <div className="w-full">
+              <FeatureGrid unreadCount={unreadCount} />
+            </div>
+          </div>
         </div>
       </main>
       <MicrophoneButton />
