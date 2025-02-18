@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,6 +20,7 @@ import Inbox from "./pages/Inbox";
 import Trash from "./pages/Trash";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
+import AdminDashboard from "./pages/AdminDashboard";
 
 // Create a client
 const queryClient = new QueryClient({
@@ -71,6 +71,14 @@ const App = () => {
             <Route path="/auth" element={<Auth />} />
             <Route path="/" element={<Index />} />
             <Route path="/notes" element={<Notes />} />
+            <Route
+              path="/admin"
+              element={
+                <PrivateRoute>
+                  <AdminDashboard />
+                </PrivateRoute>
+              }
+            />
             <Route
               path="/select-left"
               element={
