@@ -12,7 +12,8 @@ import {
   Bookmark,
   Users,
   Pencil,
-  LogOut
+  LogOut,
+  Mic
 } from 'lucide-react';
 
 interface Message {
@@ -153,7 +154,7 @@ export default function Index() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       <header className="border-b p-4 flex justify-between items-center">
         <Button
           variant="ghost"
@@ -214,6 +215,16 @@ export default function Index() {
           ))}
         </div>
       </main>
+
+      {/* Floating Mic Button */}
+      <Button
+        variant="default"
+        size="icon"
+        className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full shadow-lg hover:shadow-xl transition-all w-12 h-12 bg-primary"
+        onClick={() => navigate('/microphone')}
+      >
+        <Mic className="w-6 h-6" />
+      </Button>
     </div>
   );
 }
