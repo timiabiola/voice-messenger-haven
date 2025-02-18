@@ -8,7 +8,8 @@ import {
   Flag,
   Tag,
   Users,
-  MessageSquare
+  MessageSquare,
+  Loader2
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useSavedItems } from '@/hooks/useSavedItems'
@@ -22,17 +23,20 @@ const Saved = () => {
   const navigate = useNavigate()
   const [expandedLists, setExpandedLists] = useState(['smart'])
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
 
-  const { savedItems, isLoading } = useSavedItems(selectedTags)
+  const { savedItems, isLoading, hasMore } = useSavedItems(selectedTags, currentPage)
 
   const handleTagSelect = (tagName: string) => {
     if (!selectedTags.includes(tagName)) {
       setSelectedTags([...selectedTags, tagName])
+      setCurrentPage(1) // Reset to first page when filter changes
     }
   }
 
   const handleTagRemove = (tagName: string) => {
     setSelectedTags(selectedTags.filter(t => t !== tagName))
+    setCurrentPage(1) // Reset to first page when filter changes
   }
 
   const sections = {
@@ -97,13 +101,13 @@ const Saved = () => {
           onTagRemove={handleTagRemove}
         />
         <main className="flex-1 flex flex-col items-center justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
         </main>
       </div>
     )
   }
 
-  if (!savedItems?.length) {
+  if (!savedItems?.length && currentPage === 1) {
     return (
       <div className="flex h-screen bg-gray-50">
         <SavedSidebar
@@ -191,6 +195,18 @@ const Saved = () => {
             isExpanded={expandedLists.includes('sender')}
             onToggle={() => toggleSection('sender')}
           />
+
+          {hasMore && (
+            <div className="flex justify-center py-4">
+              <Button
+                variant="outline"
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="w-full max-w-xs"
+              >
+                Load More
+              </Button>
+            </div>
+          )}
         </div>
       </main>
     </div>

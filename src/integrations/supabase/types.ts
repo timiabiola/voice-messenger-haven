@@ -9,6 +9,32 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      api_rate_limits: {
+        Row: {
+          last_request: string
+          request_count: number
+          user_id: string
+        }
+        Insert: {
+          last_request?: string
+          request_count?: number
+          user_id: string
+        }
+        Update: {
+          last_request?: string
+          request_count?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "api_rate_limits_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bookmarks: {
         Row: {
           category: string | null
@@ -429,6 +455,8 @@ export type Database = {
           category: string
           content: string | null
           created_at: string
+          created_by: string | null
+          deleted_at: string | null
           id: string
           is_flagged: boolean | null
           is_read: boolean | null
@@ -442,6 +470,8 @@ export type Database = {
           category: string
           content?: string | null
           created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
           id?: string
           is_flagged?: boolean | null
           is_read?: boolean | null
@@ -455,6 +485,8 @@ export type Database = {
           category?: string
           content?: string | null
           created_at?: string
+          created_by?: string | null
+          deleted_at?: string | null
           id?: string
           is_flagged?: boolean | null
           is_read?: boolean | null
@@ -468,6 +500,13 @@ export type Database = {
           {
             foreignKeyName: "fk_saved_items_sender"
             columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "saved_items_created_by_fkey"
+            columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
