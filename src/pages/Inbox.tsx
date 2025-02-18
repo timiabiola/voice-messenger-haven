@@ -48,7 +48,7 @@ const Inbox = () => {
         return;
       }
 
-      // Then fetch the full message data
+      // Then fetch the full message data with sender information
       const { data: messageData, error: messageError } = await supabase
         .from('voice_messages')
         .select(`
@@ -59,7 +59,7 @@ const Inbox = () => {
           created_at,
           is_urgent,
           is_private,
-          sender:profiles!sender_id (
+          sender:profiles (
             first_name,
             last_name,
             email
