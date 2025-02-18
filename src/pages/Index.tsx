@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -89,10 +90,14 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className={`flex-1 flex items-start md:items-center justify-center px-4 ${
-        isMobile ? 'pt-24 pb-32' : 'py-8'
+      <main className={`flex-1 flex justify-center ${
+        isMobile 
+          ? 'items-start pt-24 pb-32 px-4' 
+          : 'items-center px-4 min-h-[calc(100vh-160px)]'
       }`}>
-        <div className="w-full max-w-lg mx-auto space-y-6">
+        <div className={`w-full mx-auto space-y-6 ${
+          isMobile ? 'max-w-lg' : 'max-w-xl'
+        }`}>
           <div className={`${isMobile ? 'px-0' : 'px-4'}`}>
             <RecentMessages messages={messages} unreadCount={unreadCount} />
             <FeatureGrid unreadCount={unreadCount} />
