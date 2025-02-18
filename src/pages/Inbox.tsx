@@ -5,6 +5,9 @@ import EmptyState from '@/components/layout/EmptyState';
 import { supabase } from '@/integrations/supabase/client';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 interface VoiceMessage {
   id: string;
@@ -25,6 +28,7 @@ const Inbox = () => {
   const [messages, setMessages] = useState<VoiceMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchMessages();
@@ -112,7 +116,17 @@ const Inbox = () => {
 
   return (
     <div className="p-4">
-      <ScrollArea className="h-[calc(100vh-8rem)]">
+      <div className="mb-4">
+        <Button
+          variant="ghost"
+          onClick={() => navigate('/admin')}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          Back to Admin Panel
+        </Button>
+      </div>
+      <ScrollArea className="h-[calc(100vh-12rem)]">
         <div className="space-y-4">
           {messages.map((message) => (
             <Card key={message.id} className="p-4 hover:bg-accent/10 transition-colors">
