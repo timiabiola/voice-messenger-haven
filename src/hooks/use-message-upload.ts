@@ -30,14 +30,14 @@ export function useMessageUpload() {
     const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
     const fileName = `voice_message_${Date.now()}.webm`;
     
-    // Get file duration
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
+    // Get file duration using a temporary URL
+    const tempAudioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(tempAudioUrl);
     await new Promise((resolve) => {
       audio.addEventListener('loadedmetadata', resolve, { once: true });
     });
     const duration = Math.round(audio.duration);
-    URL.revokeObjectURL(audioUrl);
+    URL.revokeObjectURL(tempAudioUrl);
 
     console.log('Audio duration:', duration, 'seconds');
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
@@ -55,18 +55,18 @@ export function useMessageUpload() {
 
     console.log('File uploaded successfully:', uploadData);
 
-    const { data: { publicUrl: audioUrl } } = supabase.storage
+    const { data: { publicUrl } } = supabase.storage
       .from('voice_messages')
       .getPublicUrl(fileName);
 
-    console.log('Got public URL:', audioUrl);
+    console.log('Got public URL:', publicUrl);
 
     const { data: messageData, error: dbError } = await supabase
       .from('voice_messages')
       .insert({
         title: subject || 'Voice Message',
         subject,
-        audio_url: audioUrl,
+        audio_url: publicUrl,
         duration: duration,
         is_urgent: isUrgent,
         is_private: isPrivate,
