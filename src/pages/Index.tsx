@@ -21,9 +21,19 @@ interface Message {
   created_at: string;
   status: 'read' | 'unread';
   sender: {
-    first_name: string;
-    last_name: string;
+    first_name: string | null;
+    last_name: string | null;
   };
+}
+
+interface Feature {
+  id: string;
+  label: string;
+  description: string;
+  icon: JSX.Element;
+  badge?: number;
+  primary?: boolean;
+  path: string;
 }
 
 export default function Index() {
@@ -32,7 +42,7 @@ export default function Index() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
 
-  const features = [
+  const features: Feature[] = [
     {
       id: 'messages',
       label: 'Messages',
@@ -70,14 +80,14 @@ export default function Index() {
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user) return;
 
-      const { data: messages, error } = await supabase
+      const { data, error } = await supabase
         .from('messages')
         .select(`
           id,
           content,
           created_at,
           status,
-          sender:profiles(first_name, last_name)
+          sender:profiles!sender_id(first_name, last_name)
         `)
         .eq('recipient_id', session.session.user.id)
         .eq('status', 'unread');
@@ -88,8 +98,10 @@ export default function Index() {
         return;
       }
 
-      setMessages(messages);
-      setUnreadCount(messages.length);
+      if (data) {
+        setMessages(data as Message[]);
+        setUnreadCount(data.length);
+      }
     };
 
     fetchUnreadMessages();
@@ -106,7 +118,8 @@ export default function Index() {
         },
         (payload) => {
           if (payload.new && payload.eventType === 'INSERT') {
-            setMessages(prev => [payload.new as Message, ...prev]);
+            const newMessage = payload.new as Message;
+            setMessages(prev => [newMessage, ...prev]);
             setUnreadCount(prev => prev + 1);
           }
         }

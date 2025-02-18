@@ -261,6 +261,9 @@ export type Database = {
           is_sent: boolean | null
           last_delivery_attempt: string | null
           next_category: string | null
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
           status: string | null
           title: string | null
           updated_at: string | null
@@ -278,6 +281,9 @@ export type Database = {
           is_sent?: boolean | null
           last_delivery_attempt?: string | null
           next_category?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
           status?: string | null
           title?: string | null
           updated_at?: string | null
@@ -295,11 +301,29 @@ export type Database = {
           is_sent?: boolean | null
           last_delivery_attempt?: string | null
           next_category?: string | null
+          read_at?: string | null
+          recipient_id?: string | null
+          sender_id?: string | null
           status?: string | null
           title?: string | null
           updated_at?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "messages_recipient_id_fkey"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       messages_test: {
         Row: {
@@ -1012,6 +1036,9 @@ export type Database = {
           is_sent: boolean | null
           last_delivery_attempt: string | null
           next_category: string | null
+          read_at: string | null
+          recipient_id: string | null
+          sender_id: string | null
           status: string | null
           title: string | null
           updated_at: string | null
@@ -1029,6 +1056,7 @@ export type Database = {
         | "unknown"
       error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
+      message_status: "read" | "unread"
       retry_strategy: "immediate" | "linear_backoff" | "exponential_backoff"
       saved_item_category: "smart" | "personal" | "sender"
       test_status: "running" | "completed" | "failed"
