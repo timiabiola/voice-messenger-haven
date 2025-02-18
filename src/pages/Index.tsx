@@ -153,17 +153,17 @@ export default function Index() {
   };
 
   const renderFeatureGrid = () => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="flex flex-col gap-4 max-w-md mx-auto w-full">
       {features.map((feature) => (
         <button
           key={feature.id}
           onClick={() => navigate(feature.path)}
-          className={`p-6 rounded-lg border transition-colors text-left relative
+          className={`w-full p-6 rounded-lg border transition-colors text-left relative
             ${feature.primary 
               ? 'border-primary bg-primary/10 hover:bg-primary/20' 
               : 'border-border bg-background hover:border-primary'}`}
         >
-          <div className="flex items-start space-x-4">
+          <div className="flex items-center space-x-4">
             <span className="text-2xl relative">
               {feature.icon}
               {feature.badge > 0 && <NotificationBadge count={feature.badge} />}
@@ -179,7 +179,7 @@ export default function Index() {
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground relative">
+    <div className="min-h-screen bg-background text-foreground relative pb-24">
       <header className="border-b border-border p-4 flex justify-between items-center">
         <Button
           variant="ghost"
@@ -187,7 +187,7 @@ export default function Index() {
           className="text-primary hover:text-primary/90"
         >
           <LogOut className="w-4 h-4 mr-2" />
-          Logout
+          <span className="sr-only sm:not-sr-only">Logout</span>
         </Button>
         {unreadCount > 0 && (
           <Button
@@ -198,19 +198,19 @@ export default function Index() {
             <Badge variant="destructive" className="animate-pulse">
               {unreadCount} new
             </Badge>
-            View Messages
+            <span className="sr-only sm:not-sr-only">View Messages</span>
           </Button>
         )}
       </header>
 
-      <main className="container mx-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-8">
+      <main className="container mx-auto px-4">
+        <div className="py-6">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-8">
             <h1 className="text-2xl font-semibold text-primary">Welcome to the App</h1>
             {isAdmin && (
               <Button
                 onClick={() => navigate('/admin')}
-                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                className="w-full sm:w-auto bg-primary text-primary-foreground hover:bg-primary/90"
               >
                 <ShieldCheck className="w-4 h-4 mr-2" />
                 Admin Dashboard
