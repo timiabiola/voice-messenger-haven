@@ -16,12 +16,9 @@ export function useAdmin() {
           return;
         }
 
+        // Using rpc call to check admin status
         const { data, error } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .single();
+          .rpc('has_role', { role_to_check: 'admin' });
 
         if (error) {
           console.error('Error checking admin status:', error);
