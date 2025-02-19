@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -43,7 +42,6 @@ export default function Index() {
           return;
         }
 
-        // Session exists, fetch messages
         const fetchUnreadMessages = async () => {
           const query = supabase
             .from('messages')
@@ -87,7 +85,6 @@ export default function Index() {
 
     checkSession();
 
-    // Set up realtime subscription
     const channel = supabase
       .channel('messages-changes')
       .on(
@@ -124,12 +121,10 @@ export default function Index() {
     <div className="flex flex-col min-h-screen bg-black">
       <TopBar isAdmin={isAdmin} />
       
-      <main className="flex-1 flex items-center justify-center px-4 py-8">
-        <div className="w-full max-w-screen-xl mx-auto flex items-center justify-center">
-          <div className="w-full max-w-4xl">
-            <div className="grid place-items-center">
-              <FeatureGrid unreadCount={unreadCount} />
-            </div>
+      <main className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-4xl px-4 mx-auto">
+          <div className="flex justify-center">
+            <FeatureGrid unreadCount={unreadCount} />
           </div>
         </div>
       </main>
