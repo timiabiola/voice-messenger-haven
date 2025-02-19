@@ -32,7 +32,7 @@ export const RecordingControls = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col items-center justify-center space-y-8 mt-8">
+    <div className="w-full flex flex-col items-center justify-center space-y-8 mt-8">
       <div className={`${isMobile ? 'w-48 h-48' : 'w-64 h-64'} rounded-full bg-blue-50 flex items-center justify-center`}>
         <div className={`${isMobile ? 'w-32 h-32' : 'w-44 h-44'} rounded-full bg-blue-100 flex items-center justify-center ${
           isRecording && !isPaused ? 'animate-pulse' : ''
@@ -47,7 +47,7 @@ export const RecordingControls = ({
         {formatTime(recordingTime)}
       </div>
 
-      <div className="flex items-center space-x-6">
+      <div className="flex items-center justify-center space-x-6">
         {!isRecording ? (
           <button 
             className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-blue-600 rounded-full flex items-center justify-center text-white hover:bg-blue-700 transition-colors`}

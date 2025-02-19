@@ -69,7 +69,7 @@ const Microphone = () => {
         onSend={handleSendRecording}
       />
 
-      <div className="flex-1 container mx-auto px-4 md:px-6 space-y-4 mt-[72px] mb-[100px] max-w-3xl">
+      <div className="flex-1 flex flex-col items-center px-4 md:px-6 space-y-4 mt-[72px] mb-[100px] max-w-xl mx-auto w-full">
         <Recipients 
           recipients={recipients}
           onAddRecipient={(profile) => setRecipients([...recipients, profile])}
