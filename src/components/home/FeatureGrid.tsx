@@ -16,7 +16,7 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
         icon={MessageSquare}
         title="Messages"
         description="View your messages"
-        onClick={() => navigate('/inbox-0')}
+        onClick={() => navigate('/inbox')}
         badge={unreadCount > 0 ? `${unreadCount} unread` : undefined}
       />
       <FeatureButton
