@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -58,7 +59,6 @@ const ForwardMessage = () => {
     
     setOriginalMessage(state.originalMessage);
     setSubject(`Fwd: ${state.originalMessage.subject}`);
-
     audioContext.current = new AudioContext();
   }, [location.state, navigate, setSubject]);
 
@@ -70,71 +70,75 @@ const ForwardMessage = () => {
 
     setIsProcessing(true);
     try {
-      // Get the preamble recording as a Blob
+      // 1. Get the preamble recording as a Blob and decode it
       const preambleChunks = getRecordingData();
       if (preambleChunks.length === 0) {
         toast.error('Please record a preamble message first');
         setIsProcessing(false);
         return;
       }
-
-      // Create a blob from preamble chunks
       const preambleBlob = new Blob(preambleChunks, { type: 'audio/webm;codecs=opus' });
-      console.log('Preamble blob size:', preambleBlob.size);
-      
-      // Download the original message audio
+      const preambleArrayBuffer = await preambleBlob.arrayBuffer();
+      const preambleAudioBuffer = await audioContext.current!.decodeAudioData(preambleArrayBuffer);
+
+      // 2. Fetch and decode the original message audio
       const originalAudioResponse = await fetch(originalMessage.audio_url);
       if (!originalAudioResponse.ok) {
         throw new Error('Failed to fetch original message audio');
       }
       const originalAudioBlob = await originalAudioResponse.blob();
-      console.log('Original audio blob size:', originalAudioBlob.size);
-      
-      // Process preamble audio
-      const preambleBuffer = await audioContext.current!.decodeAudioData(await preambleBlob.arrayBuffer());
-      const originalBuffer = await audioContext.current!.decodeAudioData(await originalAudioBlob.arrayBuffer());
-      
-      // Create a combined audio buffer
-      const combinedBuffer = audioContext.current!.createBuffer(
-        Math.max(preambleBuffer.numberOfChannels, originalBuffer.numberOfChannels),
-        preambleBuffer.length + originalBuffer.length,
-        preambleBuffer.sampleRate
-      );
-      
-      // Copy preamble data
-      for (let channel = 0; channel < preambleBuffer.numberOfChannels; channel++) {
-        const channelData = combinedBuffer.getChannelData(channel);
-        channelData.set(preambleBuffer.getChannelData(channel), 0);
+      const originalArrayBuffer = await originalAudioBlob.arrayBuffer();
+      const originalAudioBuffer = await audioContext.current!.decodeAudioData(originalArrayBuffer);
+
+      // 3. Create a new AudioBuffer to combine the two recordings
+      const numberOfChannels = Math.max(preambleAudioBuffer.numberOfChannels, originalAudioBuffer.numberOfChannels);
+      const sampleRate = audioContext.current!.sampleRate;
+      const combinedLength = preambleAudioBuffer.length + originalAudioBuffer.length;
+      const combinedBuffer = audioContext.current!.createBuffer(numberOfChannels, combinedLength, sampleRate);
+
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const combinedData = combinedBuffer.getChannelData(channel);
+        // Copy preamble data (if the channel doesn't exist, loop through available channels)
+        const preambleData = preambleAudioBuffer.getChannelData(channel % preambleAudioBuffer.numberOfChannels);
+        combinedData.set(preambleData, 0);
+        // Copy original audio data after the preamble
+        const originalData = originalAudioBuffer.getChannelData(channel % originalAudioBuffer.numberOfChannels);
+        combinedData.set(originalData, preambleAudioBuffer.length);
       }
-      
-      // Copy original message data
-      for (let channel = 0; channel < originalBuffer.numberOfChannels; channel++) {
-        const channelData = combinedBuffer.getChannelData(channel);
-        channelData.set(originalBuffer.getChannelData(channel), preambleBuffer.length);
-      }
-      
-      // Create final blob from combined buffer
-      const processedBlob = await new Promise<Blob>((resolve) => {
-        const destination = audioContext.current!.createMediaStreamDestination();
-        const mediaRecorder = new MediaRecorder(destination.stream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
-        const chunks: Blob[] = [];
-        
-        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
-        mediaRecorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm;codecs=opus' }));
-        
-        const source = audioContext.current!.createBufferSource();
-        source.buffer = combinedBuffer;
-        source.connect(destination);
-        
+
+      // 4. Render the combined buffer using OfflineAudioContext
+      const offlineContext = new OfflineAudioContext(numberOfChannels, combinedBuffer.length, sampleRate);
+      const source = offlineContext.createBufferSource();
+      source.buffer = combinedBuffer;
+      source.connect(offlineContext.destination);
+      source.start();
+      const renderedBuffer = await offlineContext.startRendering();
+
+      // 5. Record the rendered output using MediaRecorder
+      const tempContext = new AudioContext();
+      const dest = tempContext.createMediaStreamDestination();
+      const source2 = tempContext.createBufferSource();
+      source2.buffer = renderedBuffer;
+      source2.connect(dest);
+      source2.start();
+
+      const recordedChunks: Blob[] = [];
+      const mediaRecorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus' });
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) recordedChunks.push(event.data);
+      };
+
+      await new Promise<void>((resolve) => {
+        mediaRecorder.onstop = resolve;
         mediaRecorder.start();
-        source.start(0);
-        source.onended = () => mediaRecorder.stop();
+        source2.onended = () => mediaRecorder.stop();
       });
-      
-      console.log('Final processed blob size:', processedBlob.size);
-      await uploadMessage([processedBlob]);
+
+      const finalBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
+      console.log('Final combined blob size:', finalBlob.size);
+
+      // 6. Upload the final Blob
+      await uploadMessage([finalBlob]);
       toast.success('Message forwarded successfully');
       navigate('/inbox');
     } catch (error) {
