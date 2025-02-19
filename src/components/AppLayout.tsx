@@ -14,10 +14,8 @@ const AppLayout = ({ children }: AppLayoutProps) => {
   return (
     <div className="relative bg-background min-h-screen w-full">
       <Header />
-      <main className="flex-1 min-h-screen flex items-center justify-center w-full">
-        <div className="w-full flex items-center justify-center">
-          {children}
-        </div>
+      <main className="flex-1 min-h-screen w-full">
+        {children}
       </main>
       <BottomNav />
     </div>
