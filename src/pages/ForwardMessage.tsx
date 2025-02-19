@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Header } from '@/components/voice-message/Header';
@@ -21,6 +21,7 @@ const ForwardMessage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [originalMessage, setOriginalMessage] = useState<ForwardMessageState['originalMessage'] | null>(null);
+  const audioContext = useRef<AudioContext | null>(null);
   
   const {
     isRecording,
@@ -58,6 +59,9 @@ const ForwardMessage = () => {
     
     setOriginalMessage(state.originalMessage);
     setSubject(`Fwd: ${state.originalMessage.subject}`);
+
+    // Initialize AudioContext
+    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
   }, [location.state, navigate, setSubject]);
 
   const handleSendRecording = async () => {
@@ -68,19 +72,57 @@ const ForwardMessage = () => {
 
     setIsProcessing(true);
     try {
-      // Get the preamble recording
+      // Get the preamble recording as a Blob
       const preambleChunks = getRecordingData();
+      if (preambleChunks.length === 0) {
+        toast.error('Please record a preamble message first');
+        setIsProcessing(false);
+        return;
+      }
+
+      console.log('Preamble chunks:', preambleChunks.length);
       
       // Download the original message audio
       const originalAudioResponse = await fetch(originalMessage.audio_url);
+      if (!originalAudioResponse.ok) {
+        throw new Error('Failed to fetch original message audio');
+      }
       const originalAudioBlob = await originalAudioResponse.blob();
+      console.log('Original audio blob size:', originalAudioBlob.size);
       
-      // Combine the preamble and original message
-      const combinedChunks = [...preambleChunks, originalAudioBlob];
+      // Create a combined blob
+      const combinedBlob = new Blob([...preambleChunks, originalAudioBlob], {
+        type: 'audio/webm;codecs=opus'
+      });
+      console.log('Combined blob size:', combinedBlob.size);
       
-      await uploadMessage(combinedChunks);
+      // Convert Blob to array buffer for proper audio handling
+      const arrayBuffer = await combinedBlob.arrayBuffer();
+      const audioBuffer = await audioContext.current!.decodeAudioData(arrayBuffer);
+      
+      // Create a new blob from the processed audio
+      const processedBlob = await new Promise<Blob>((resolve) => {
+        const mediaRecorder = new MediaRecorder(
+          audioContext.current!.createMediaStreamDestination().stream,
+          { mimeType: 'audio/webm;codecs=opus' }
+        );
+        const chunks: Blob[] = [];
+        
+        mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
+        mediaRecorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm;codecs=opus' }));
+        
+        const source = audioContext.current!.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(mediaRecorder.stream.getAudioTracks()[0].source);
+        
+        mediaRecorder.start();
+        source.start(0);
+        source.onended = () => mediaRecorder.stop();
+      });
+      
+      await uploadMessage([processedBlob]);
       toast.success('Message forwarded successfully');
-      navigate('/');
+      navigate('/inbox');
     } catch (error) {
       console.error('Error forwarding message:', error);
       toast.error(error instanceof Error ? error.message : 'Failed to forward message. Please try again.');
