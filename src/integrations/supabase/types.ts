@@ -886,6 +886,36 @@ export type Database = {
           },
         ]
       }
+      voice_recordings: {
+        Row: {
+          audio_chunks: Json[] | null
+          created_at: string | null
+          id: string
+          recording_time: number
+          status: Database["public"]["Enums"]["recording_status"]
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          audio_chunks?: Json[] | null
+          created_at?: string | null
+          id?: string
+          recording_time?: number
+          status?: Database["public"]["Enums"]["recording_status"]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          audio_chunks?: Json[] | null
+          created_at?: string | null
+          id?: string
+          recording_time?: number
+          status?: Database["public"]["Enums"]["recording_status"]
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       webhook_rate_limits: {
         Row: {
           created_at: string | null
@@ -1057,6 +1087,7 @@ export type Database = {
       error_category: "network" | "recipient" | "content" | "quota" | "unknown"
       message_category: "new" | "inbox" | "saved" | "trash"
       message_status: "read" | "unread"
+      recording_status: "in_progress" | "paused" | "completed"
       retry_strategy: "immediate" | "linear_backoff" | "exponential_backoff"
       saved_item_category: "smart" | "personal" | "sender"
       test_status: "running" | "completed" | "failed"

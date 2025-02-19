@@ -3,6 +3,12 @@ import { useState, useRef, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
+type AudioChunk = {
+  data: string;
+  type: string;
+  size: number;
+};
+
 export function useRecording() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -44,10 +50,13 @@ export function useRecording() {
       const chunksData = await Promise.all(
         chunks.map(async (chunk) => {
           const buffer = await chunk.arrayBuffer();
-          const base64 = btoa(
-            new Uint8Array(buffer)
-              .reduce((data, byte) => data + String.fromCharCode(byte), '')
-          );
+          const uint8Array = new Uint8Array(buffer);
+          let binary = '';
+          uint8Array.forEach(byte => {
+            binary += String.fromCharCode(byte);
+          });
+          const base64 = btoa(binary);
+          
           return {
             data: base64,
             type: chunk.type,
@@ -64,7 +73,7 @@ export function useRecording() {
             status,
             audio_chunks: chunksData,
             updated_at: new Date().toISOString()
-          })
+          } as any)
           .eq('id', currentRecordingId);
 
         if (error) throw error;
@@ -76,12 +85,14 @@ export function useRecording() {
             status,
             audio_chunks: chunksData,
             user_id: session.session.user.id
-          })
+          } as any)
           .select()
           .single();
 
         if (error) throw error;
-        setCurrentRecordingId(data.id);
+        if (data) {
+          setCurrentRecordingId(data.id);
+        }
       }
     } catch (error) {
       console.error('Error saving recording state:', error);
