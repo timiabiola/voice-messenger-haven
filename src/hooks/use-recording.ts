@@ -1,13 +1,9 @@
 
 import { useState, useRef, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { requestMicrophonePermissions } from '@/utils/microphone-permissions';
+import { saveRecordingState } from '@/utils/recording-state';
+import type { RecordingState } from '@/types/recording';
 import { toast } from 'sonner';
-
-type AudioChunk = {
-  data: string;
-  type: string;
-  size: number;
-};
 
 export function useRecording() {
   const [isRecording, setIsRecording] = useState(false);
@@ -39,100 +35,6 @@ export function useRecording() {
     return () => clearInterval(timerRef.current);
   }, [isRecording, isPaused]);
 
-  const saveRecordingState = async (chunks: Blob[], status: 'in_progress' | 'paused' | 'completed') => {
-    try {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session) {
-        throw new Error('No authenticated session');
-      }
-
-      // Convert chunks to base64
-      const chunksData = await Promise.all(
-        chunks.map(async (chunk) => {
-          const buffer = await chunk.arrayBuffer();
-          const uint8Array = new Uint8Array(buffer);
-          let binary = '';
-          uint8Array.forEach(byte => {
-            binary += String.fromCharCode(byte);
-          });
-          const base64 = btoa(binary);
-          
-          return {
-            data: base64,
-            type: chunk.type,
-            size: chunk.size
-          };
-        })
-      );
-
-      if (currentRecordingId) {
-        const { error } = await supabase
-          .from('voice_recordings')
-          .update({
-            recording_time: recordingTime,
-            status,
-            audio_chunks: chunksData,
-            updated_at: new Date().toISOString()
-          } as any)
-          .eq('id', currentRecordingId);
-
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('voice_recordings')
-          .insert({
-            recording_time: recordingTime,
-            status,
-            audio_chunks: chunksData,
-            user_id: session.session.user.id
-          } as any)
-          .select()
-          .single();
-
-        if (error) throw error;
-        if (data) {
-          setCurrentRecordingId(data.id);
-        }
-      }
-    } catch (error) {
-      console.error('Error saving recording state:', error);
-      toast.error('Failed to save recording state');
-    }
-  };
-
-  const requestMicrophonePermissions = async () => {
-    try {
-      // First check if permissions are already granted
-      const permissions = await navigator.permissions.query({ name: 'microphone' as PermissionName });
-      
-      if (permissions.state === 'denied') {
-        throw new Error('Microphone access is blocked. Please enable it in your device settings.');
-      }
-
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        audio: {
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          sampleRate: 44100,
-        } 
-      });
-
-      return stream;
-    } catch (error) {
-      console.error('Error requesting microphone permissions:', error);
-      if (error instanceof Error) {
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-          throw new Error('Please grant microphone permissions in your device settings to record audio.');
-        } else if (error.name === 'NotFoundError') {
-          throw new Error('No microphone found. Please ensure your device has a working microphone.');
-        }
-      }
-      throw error;
-    }
-  };
-
   const startRecording = async () => {
     try {
       console.log('Requesting microphone access...');
@@ -156,7 +58,13 @@ export function useRecording() {
         console.log('Received audio chunk:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
-          await saveRecordingState(audioChunksRef.current, 'in_progress');
+          const newId = await saveRecordingState(
+            audioChunksRef.current,
+            'in_progress',
+            recordingTime,
+            currentRecordingId
+          );
+          if (newId) setCurrentRecordingId(newId);
         }
       };
 
@@ -187,7 +95,7 @@ export function useRecording() {
       clearInterval(timerRef.current);
       
       // Save final state
-      await saveRecordingState(audioChunksRef.current, 'completed');
+      await saveRecordingState(audioChunksRef.current, 'completed', recordingTime, currentRecordingId);
       setCurrentRecordingId(null);
       // Reset recording time when stopping
       setRecordingTime(0);
@@ -200,7 +108,7 @@ export function useRecording() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
-      await saveRecordingState(audioChunksRef.current, 'paused');
+      await saveRecordingState(audioChunksRef.current, 'paused', recordingTime, currentRecordingId);
     }
   };
 
@@ -209,7 +117,7 @@ export function useRecording() {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
-      await saveRecordingState(audioChunksRef.current, 'in_progress');
+      await saveRecordingState(audioChunksRef.current, 'in_progress', recordingTime, currentRecordingId);
     }
   };
 
@@ -218,7 +126,6 @@ export function useRecording() {
     return audioChunksRef.current;
   };
 
-  // Add new function to convert chunks to playable audio
   const createAudioFromChunks = () => {
     return new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
   };
