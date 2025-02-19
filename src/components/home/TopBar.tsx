@@ -24,7 +24,7 @@ export const TopBar = ({ isAdmin }: TopBarProps) => {
 
   return (
     <div className="w-full py-4 px-4 md:px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto flex justify-between items-center">
+      <div className="w-full max-w-4xl mx-auto flex justify-between items-center">
         <button 
           onClick={handleLogout}
           className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
@@ -44,4 +44,4 @@ export const TopBar = ({ isAdmin }: TopBarProps) => {
       </div>
     </div>
   );
-};
+}
