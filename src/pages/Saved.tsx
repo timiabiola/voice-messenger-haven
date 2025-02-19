@@ -3,137 +3,83 @@ import React, { useState } from 'react'
 import { 
   Settings, 
   ChevronLeft,
-  Star,
-  Clock,
-  Flag,
-  Tag,
-  Users,
-  MessageSquare,
-  Loader2
+  Check,
+  Edit2,
+  Trash2
 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useSavedItems } from '@/hooks/useSavedItems'
-import SavedSidebar from '@/components/saved/SavedSidebar'
-import SavedSection from '@/components/saved/SavedSection'
-import { SavedSectionItem } from '@/types/saved'
 import EmptyState from '@/components/layout/EmptyState'
 import { Button } from '@/components/ui/button'
 
 const Saved = () => {
   const navigate = useNavigate()
-  const [expandedLists, setExpandedLists] = useState(['smart'])
-  const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [selectedMessages, setSelectedMessages] = useState<string[]>([])
+  const [isEditingTags, setIsEditingTags] = useState(false)
+  const [editedTags, setEditedTags] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [selectedTags, setSelectedTags] = useState<string[]>([])
 
   const { savedItems, isLoading, hasMore } = useSavedItems(selectedTags, currentPage)
 
-  const handleTagSelect = (tagName: string) => {
-    if (!selectedTags.includes(tagName)) {
-      setSelectedTags([...selectedTags, tagName])
-      setCurrentPage(1) // Reset to first page when filter changes
-    }
+  const toggleMessageSelect = (messageId: string) => {
+    setSelectedMessages(
+      selectedMessages.includes(messageId)
+        ? selectedMessages.filter((id) => id !== messageId)
+        : [...selectedMessages, messageId]
+    )
   }
 
-  const handleTagRemove = (tagName: string) => {
-    setSelectedTags(selectedTags.filter(t => t !== tagName))
-    setCurrentPage(1) // Reset to first page when filter changes
+  const startEditingTags = () => {
+    const uniqueTags = [...new Set(savedItems?.flatMap(item => 
+      item.saved_items_tags?.map(t => t.tags.name) || []
+    ))]
+    setEditedTags(uniqueTags)
+    setIsEditingTags(true)
   }
 
-  const sections = {
-    smart: [
-      { 
-        id: 'unread', 
-        label: 'Unread', 
-        count: savedItems?.filter(item => !item.is_read).length || 0, 
-        icon: <MessageSquare /> 
-      },
-      { 
-        id: 'flagged', 
-        label: 'Flagged', 
-        count: savedItems?.filter(item => item.is_flagged).length || 0, 
-        icon: <Flag /> 
-      },
-      { 
-        id: 'recent', 
-        label: 'Recent', 
-        count: savedItems?.length || 0, 
-        icon: <Clock /> 
-      }
-    ],
-    personal: [
-      { 
-        id: 'important', 
-        label: 'Important', 
-        count: savedItems?.filter(item => item.tag === 'important').length || 0, 
-        icon: <Star /> 
-      },
-      { 
-        id: 'work', 
-        label: 'Work', 
-        count: savedItems?.filter(item => item.tag === 'work').length || 0, 
-        icon: <Tag /> 
-      }
-    ],
-    sender: [
-      { 
-        id: 'team', 
-        label: 'Team', 
-        count: savedItems?.filter(item => item.category === 'team').length || 0, 
-        icon: <Users /> 
-      }
-    ]
+  const editTag = (oldTag: string, newTag: string) => {
+    setEditedTags(editedTags.map((tag) => (tag === oldTag ? newTag : tag)))
   }
 
-  const toggleSection = (section: string) => {
-    if (expandedLists.includes(section)) {
-      setExpandedLists(expandedLists.filter(s => s !== section))
-    } else {
-      setExpandedLists([...expandedLists, section])
-    }
+  const deleteTag = (tagToDelete: string) => {
+    setEditedTags(editedTags.filter((tag) => tag !== tagToDelete))
+  }
+
+  const saveTagChanges = () => {
+    setIsEditingTags(false)
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <SavedSidebar
-          selectedTags={selectedTags}
-          onTagSelect={handleTagSelect}
-          onTagRemove={handleTagRemove}
-        />
-        <main className="flex-1 flex flex-col items-center justify-center">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-        </main>
+      <div className="flex h-screen items-center justify-center bg-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400"></div>
       </div>
     )
   }
 
   if (!savedItems?.length && currentPage === 1) {
     return (
-      <div className="flex h-screen bg-gray-50">
-        <SavedSidebar
-          selectedTags={selectedTags}
-          onTagSelect={handleTagSelect}
-          onTagRemove={handleTagRemove}
-        />
+      <div className="flex h-screen bg-black">
         <main className="flex-1 flex flex-col">
-          <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
+          <header className="h-16 flex items-center justify-between px-4 border-b border-amber-400/20">
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate('/')}
-                className="hover:bg-gray-100 rounded-full"
+                className="hover:bg-amber-400/10 rounded-full"
               >
-                <ChevronLeft className="w-6 h-6 text-gray-600" />
+                <ChevronLeft className="w-6 h-6 text-amber-400" />
               </Button>
-              <h1 className="text-xl font-semibold text-black">My Messages</h1>
+              <h1 className="text-xl font-semibold text-amber-400">Saved Messages</h1>
             </div>
             <Button
               variant="ghost"
               size="icon"
-              className="hover:bg-gray-100 rounded-full"
+              className="hover:bg-amber-400/10 rounded-full"
             >
-              <Settings className="w-6 h-6 text-gray-600" />
+              <Settings className="w-6 h-6 text-amber-400" />
             </Button>
           </header>
           <div className="flex-1">
@@ -145,63 +91,121 @@ const Saved = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50">
-      <SavedSidebar
-        selectedTags={selectedTags}
-        onTagSelect={handleTagSelect}
-        onTagRemove={handleTagRemove}
-      />
-
+    <div className="flex h-screen bg-black">
       <main className="flex-1 flex flex-col">
-        <header className="h-16 flex items-center justify-between px-4 bg-white border-b">
+        <header className="h-16 flex items-center justify-between px-4 border-b border-amber-400/20">
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost"
               size="icon"
               onClick={() => navigate('/')}
-              className="hover:bg-gray-100 rounded-full"
+              className="hover:bg-amber-400/10 rounded-full"
             >
-              <ChevronLeft className="w-6 h-6 text-gray-600" />
+              <ChevronLeft className="w-6 h-6 text-amber-400" />
             </Button>
-            <h1 className="text-xl font-semibold text-black">My Messages</h1>
+            <h1 className="text-xl font-semibold text-amber-400">Saved Messages</h1>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="hover:bg-gray-100 rounded-full"
-          >
-            <Settings className="w-6 h-6 text-gray-600" />
-          </Button>
+          <div className="flex items-center gap-2">
+            {selectedMessages.length > 0 && (
+              <Button
+                variant="destructive"
+                onClick={() => setSelectedMessages([])}
+                className="gap-2"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete Selected
+              </Button>
+            )}
+            
+            {isEditingTags ? (
+              <Button 
+                variant="default"
+                onClick={saveTagChanges}
+                className="bg-amber-400 hover:bg-amber-300 text-black"
+              >
+                <Check className="w-4 h-4" />
+              </Button>
+            ) : (
+              <Button
+                variant="outline"
+                onClick={startEditingTags}
+                className="border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
+              >
+                <Edit2 className="w-4 h-4 mr-2" />
+                Edit Tags
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hover:bg-amber-400/10 rounded-full"
+            >
+              <Settings className="w-6 h-6 text-amber-400" />
+            </Button>
+          </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
-          <SavedSection
-            title="Smart Views"
-            items={sections.smart as SavedSectionItem[]}
-            isExpanded={expandedLists.includes('smart')}
-            onToggle={() => toggleSection('smart')}
-          />
-
-          <SavedSection
-            title="Personal Tags"
-            items={sections.personal as SavedSectionItem[]}
-            isExpanded={expandedLists.includes('personal')}
-            onToggle={() => toggleSection('personal')}
-          />
-
-          <SavedSection
-            title="From Sender"
-            items={sections.sender as SavedSectionItem[]}
-            isExpanded={expandedLists.includes('sender')}
-            onToggle={() => toggleSection('sender')}
-          />
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+          {savedItems?.map((message) => (
+            <div
+              key={message.id}
+              className={`glass-panel rounded-lg p-4 transition-all ${
+                selectedMessages.includes(message.id) ? 'bg-amber-400/10' : ''
+              }`}
+            >
+              <div className="flex justify-between mb-2">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selectedMessages.includes(message.id)}
+                    onChange={() => toggleMessageSelect(message.id)}
+                    className="mt-1 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
+                  />
+                  <div>
+                    <h2 className="font-bold text-xl mb-2 text-amber-400">
+                      {message.id}
+                    </h2>
+                    <p className="text-amber-400/60">Message content here</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap gap-2 mt-3">
+                {message.saved_items_tags?.map(({ tags }) => (
+                  <span 
+                    key={tags.name} 
+                    className="bg-amber-400/10 text-amber-400 rounded-full px-3 py-1 text-sm"
+                  >
+                    {isEditingTags ? (
+                      <span className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={editedTags.find((t) => t === tags.name) || ''}
+                          onChange={(e) => editTag(tags.name, e.target.value)}
+                          className="bg-transparent border-none focus:outline-none w-20 text-amber-400"
+                        />
+                        <button 
+                          onClick={() => deleteTag(tags.name)}
+                          className="text-amber-400/60 hover:text-amber-400"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </span>
+                    ) : (
+                      tags.name
+                    )}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))}
 
           {hasMore && (
             <div className="flex justify-center py-4">
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(currentPage + 1)}
-                className="w-full max-w-xs"
+                className="w-full max-w-xs border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
               >
                 Load More
               </Button>
