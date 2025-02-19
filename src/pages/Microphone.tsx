@@ -9,6 +9,8 @@ import { RecordingControls } from '@/components/voice-message/RecordingControls'
 import { useRecording } from '@/hooks/use-recording';
 import { useMessageUpload } from '@/hooks/use-message-upload';
 
+const HEADER_HEIGHT = 64;
+
 const Microphone = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -62,41 +64,48 @@ const Microphone = () => {
 
   return (
     <div className="flex flex-col min-h-screen bg-background">
-      <Header 
-        isRecording={isRecording}
-        isProcessing={isProcessing}
-        onSend={handleSendRecording}
-      />
+      <div className="h-[64px]">
+        <Header 
+          isRecording={isRecording}
+          isProcessing={isProcessing}
+          onSend={handleSendRecording}
+        />
+      </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6">
-        <div className="w-full max-w-xl mx-auto space-y-6">
-          <Recipients 
-            recipients={recipients}
-            onAddRecipient={(profile) => setRecipients([...recipients, profile])}
-            onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
-            isProcessing={isProcessing}
-          />
+      <div
+        className="flex-1 flex flex-col items-center justify-center px-4 md:px-6"
+        style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}
+      >
+        <div className="w-full max-w-xl mx-auto">
+          <div className="flex flex-col items-center space-y-6">
+            <Recipients 
+              recipients={recipients}
+              onAddRecipient={(profile) => setRecipients([...recipients, profile])}
+              onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
+              isProcessing={isProcessing}
+            />
 
-          <MessageOptions 
-            subject={subject}
-            onSubjectChange={setSubject}
-            isUrgent={isUrgent}
-            onUrgentChange={setIsUrgent}
-            isPrivate={isPrivate}
-            onPrivateChange={setIsPrivate}
-            isProcessing={isProcessing}
-          />
+            <MessageOptions 
+              subject={subject}
+              onSubjectChange={setSubject}
+              isUrgent={isUrgent}
+              onUrgentChange={setIsUrgent}
+              isPrivate={isPrivate}
+              onPrivateChange={setIsPrivate}
+              isProcessing={isProcessing}
+            />
 
-          <RecordingControls 
-            isRecording={isRecording}
-            isPaused={isPaused}
-            isProcessing={isProcessing}
-            recordingTime={recordingTime}
-            onStartRecording={startRecording}
-            onStopRecording={stopRecording}
-            onPauseRecording={pauseRecording}
-            onResumeRecording={resumeRecording}
-          />
+            <RecordingControls 
+              isRecording={isRecording}
+              isPaused={isPaused}
+              isProcessing={isProcessing}
+              recordingTime={recordingTime}
+              onStartRecording={startRecording}
+              onStopRecording={stopRecording}
+              onPauseRecording={pauseRecording}
+              onResumeRecording={resumeRecording}
+            />
+          </div>
         </div>
       </div>
     </div>
