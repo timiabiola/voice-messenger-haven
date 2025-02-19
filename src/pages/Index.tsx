@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -102,8 +103,8 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
-      <div className="w-full py-4 px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto flex justify-between items-center">
+      <div className="w-full py-4 px-4 md:px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1200px] mx-auto flex justify-between items-center">
           <button 
             onClick={handleLogout}
             className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
@@ -123,24 +124,24 @@ export default function Index() {
         </div>
       </div>
 
-      <main className="flex-1 w-full pt-16 pb-8">
-        <div className="container mx-auto px-4 md:px-6 lg:px-8">
-          <div className="max-w-6xl mx-auto">
-            <div className="space-y-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <main className="flex-1 w-full pt-8 md:pt-16 pb-24">
+        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1200px] mx-auto px-0 md:px-4">
+          <div className="w-full">
+            <div className="space-y-4 md:space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                 <button 
                   onClick={() => navigate('/inbox-0')}
-                  className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
+                  className="group p-4 md:p-6 bg-zinc-900/50 rounded-xl md:rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-amber-400/10 rounded-xl">
-                      <MessageSquare className="w-6 h-6 text-amber-400" />
+                    <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg md:rounded-xl">
+                      <MessageSquare className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-amber-400 mb-2">Messages</h3>
-                      <p className="text-gray-400">View your messages</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-1 md:mb-2">Messages</h3>
+                      <p className="text-sm md:text-base text-gray-400">View your messages</p>
                       {unreadCount > 0 && (
-                        <span className="inline-block mt-2 text-sm text-amber-400">
+                        <span className="inline-block mt-2 text-xs md:text-sm text-amber-400">
                           {unreadCount} unread
                         </span>
                       )}
@@ -150,45 +151,45 @@ export default function Index() {
 
                 <button 
                   onClick={() => navigate('/notes')}
-                  className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
+                  className="group p-4 md:p-6 bg-zinc-900/50 rounded-xl md:rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-amber-400/10 rounded-xl">
-                      <PenSquare className="w-6 h-6 text-amber-400" />
+                    <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg md:rounded-xl">
+                      <PenSquare className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-amber-400 mb-2">Notes</h3>
-                      <p className="text-gray-400">Create and manage your notes</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-1 md:mb-2">Notes</h3>
+                      <p className="text-sm md:text-base text-gray-400">Create and manage your notes</p>
                     </div>
                   </div>
                 </button>
 
                 <button 
                   onClick={() => navigate('/contacts')}
-                  className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
+                  className="group p-4 md:p-6 bg-zinc-900/50 rounded-xl md:rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-amber-400/10 rounded-xl">
-                      <Users className="w-6 h-6 text-amber-400" />
+                    <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg md:rounded-xl">
+                      <Users className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-amber-400 mb-2">Contacts</h3>
-                      <p className="text-gray-400">Manage your contacts</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-1 md:mb-2">Contacts</h3>
+                      <p className="text-sm md:text-base text-gray-400">Manage your contacts</p>
                     </div>
                   </div>
                 </button>
 
                 <button 
                   onClick={() => navigate('/saved')}
-                  className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
+                  className="group p-4 md:p-6 bg-zinc-900/50 rounded-xl md:rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
                 >
                   <div className="flex items-start space-x-4">
-                    <div className="p-3 bg-amber-400/10 rounded-xl">
-                      <Bookmark className="w-6 h-6 text-amber-400" />
+                    <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg md:rounded-xl">
+                      <Bookmark className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="text-xl font-semibold text-amber-400 mb-2">Saved items</h3>
-                      <p className="text-gray-400">Access your saved content</p>
+                      <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-1 md:mb-2">Saved items</h3>
+                      <p className="text-sm md:text-base text-gray-400">Access your saved content</p>
                     </div>
                   </div>
                 </button>
@@ -200,10 +201,10 @@ export default function Index() {
 
       <button 
         onClick={() => navigate('/new')}
-        className="fixed bottom-6 right-6 w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-300 transition-colors group"
+        className="fixed bottom-6 right-4 md:right-6 w-12 h-12 md:w-14 md:h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-300 transition-colors group"
       >
-        <Mic className="w-6 h-6 text-black" />
-        <span className="absolute -top-10 right-0 bg-black text-amber-400 text-sm py-1 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
+        <Mic className="w-5 h-5 md:w-6 md:h-6 text-black" />
+        <span className="absolute -top-10 right-0 bg-black text-amber-400 text-xs md:text-sm py-1 px-3 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
           Record
         </span>
       </button>
