@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import EmptyState from '@/components/layout/EmptyState';
@@ -57,12 +56,10 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
       setCurrentTime(0);
     };
 
-    // Set up event listeners
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
 
-    // Preload audio metadata
     audio.preload = 'metadata';
 
     return () => {
@@ -99,7 +96,6 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
 
   return (
     <div className="relative bg-gray-800/30 backdrop-blur-lg rounded-2xl p-6 mb-4">
-      {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
           <h3 className="text-gray-100 font-medium">
@@ -114,7 +110,6 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
         </button>
       </div>
 
-      {/* Waveform Visualization */}
       <div className="mb-8">
         <div className="flex items-center h-24 gap-px">
           {waveform.map((height, i) => (
@@ -136,15 +131,12 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
         </div>
       </div>
 
-      {/* Controls */}
       <div className="space-y-6">
-        {/* Time Indicators */}
         <div className="flex justify-between text-sm text-gray-400">
           <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
 
-        {/* Progress Bar */}
         <div className="relative h-1 bg-gray-700/50 rounded-full">
           <div 
             className="absolute h-full bg-blue-500/80 rounded-full"
@@ -156,7 +148,6 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
           />
         </div>
 
-        {/* Control Buttons */}
         <div className="flex items-center justify-between px-4">
           <button 
             className={`w-16 h-16 rounded-full ${
@@ -175,7 +166,6 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
           </button>
         </div>
 
-        {/* Action Buttons */}
         <div className="flex justify-center space-x-8 pt-4">
           <button className="group flex flex-col items-center">
             <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
@@ -289,33 +279,6 @@ const Inbox = () => {
   return (
     <AppLayout>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full">
-        {/* Top Search Bar */}
-        <div className="sticky top-0 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 z-10">
-          <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 max-w-[1400px]">
-            <div className="flex items-center gap-4 mb-4">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/')}
-                className="text-gray-400 hover:text-gray-300"
-              >
-                <ChevronLeft className="h-5 w-5" />
-                <span>Back</span>
-              </Button>
-            </div>
-            <div className="relative">
-              <Search className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search voice messages..."
-                className="w-full bg-gray-800/50 text-gray-100 placeholder-gray-500 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content */}
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 max-w-[1400px]">
           <div className="space-y-4 py-4">
             {filteredMessages.map((message) => (

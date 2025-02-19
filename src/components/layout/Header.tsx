@@ -16,11 +16,11 @@ const Header = () => {
           {showBackButton ? (
             <Button
               variant="ghost"
-              size="icon"
               onClick={() => navigate('/')}
-              className="mr-2"
+              className="text-gray-400 hover:text-gray-300"
             >
               <ChevronLeft className="h-5 w-5" />
+              <span>Back</span>
             </Button>
           ) : (
             <SidebarTrigger />
