@@ -268,7 +268,7 @@ const Inbox = () => {
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         {/* Top Search Bar */}
         <div className="sticky top-0 bg-gray-900/80 backdrop-blur-xl border-b border-gray-800 z-10">
-          <div className="max-w-[90vw] lg:max-w-[1200px] mx-auto p-4">
+          <div className="max-w-[90vw] lg:max-w-[800px] mx-auto p-4">
             <div className="flex items-center gap-4 mb-4">
               <Button
                 variant="ghost"
@@ -293,8 +293,8 @@ const Inbox = () => {
         </div>
 
         {/* Main Content */}
-        <div className="max-w-[90vw] lg:max-w-[1200px] mx-auto p-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="max-w-[90vw] lg:max-w-[800px] mx-auto p-4">
+          <div className="space-y-4">
             {filteredMessages.map((message) => (
               <MessageCard key={message.id} message={message} />
             ))}
