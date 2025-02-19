@@ -20,7 +20,7 @@ const navigationItems = [
   },
   {
     title: "Messages",
-    path: "/inbox",
+    path: "/inbox",  // This is the actual change from "/inbox-0" to "/inbox"
     icon: Mail,
   },
   {
