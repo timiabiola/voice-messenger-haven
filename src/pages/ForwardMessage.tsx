@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -60,7 +59,6 @@ const ForwardMessage = () => {
     setOriginalMessage(state.originalMessage);
     setSubject(`Fwd: ${state.originalMessage.subject}`);
 
-    // Initialize AudioContext - removed webkitAudioContext since it's not needed in modern browsers
     audioContext.current = new AudioContext();
   }, [location.state, navigate, setSubject]);
 
@@ -80,7 +78,9 @@ const ForwardMessage = () => {
         return;
       }
 
-      console.log('Preamble chunks:', preambleChunks.length);
+      // Create a blob from preamble chunks
+      const preambleBlob = new Blob(preambleChunks, { type: 'audio/webm;codecs=opus' });
+      console.log('Preamble blob size:', preambleBlob.size);
       
       // Download the original message audio
       const originalAudioResponse = await fetch(originalMessage.audio_url);
@@ -90,17 +90,30 @@ const ForwardMessage = () => {
       const originalAudioBlob = await originalAudioResponse.blob();
       console.log('Original audio blob size:', originalAudioBlob.size);
       
-      // Create a combined blob
-      const combinedBlob = new Blob([...preambleChunks, originalAudioBlob], {
-        type: 'audio/webm;codecs=opus'
-      });
-      console.log('Combined blob size:', combinedBlob.size);
+      // Process preamble audio
+      const preambleBuffer = await audioContext.current!.decodeAudioData(await preambleBlob.arrayBuffer());
+      const originalBuffer = await audioContext.current!.decodeAudioData(await originalAudioBlob.arrayBuffer());
       
-      // Convert Blob to array buffer for proper audio handling
-      const arrayBuffer = await combinedBlob.arrayBuffer();
-      const audioBuffer = await audioContext.current!.decodeAudioData(arrayBuffer);
+      // Create a combined audio buffer
+      const combinedBuffer = audioContext.current!.createBuffer(
+        Math.max(preambleBuffer.numberOfChannels, originalBuffer.numberOfChannels),
+        preambleBuffer.length + originalBuffer.length,
+        preambleBuffer.sampleRate
+      );
       
-      // Create a new blob from the processed audio using AudioContext
+      // Copy preamble data
+      for (let channel = 0; channel < preambleBuffer.numberOfChannels; channel++) {
+        const channelData = combinedBuffer.getChannelData(channel);
+        channelData.set(preambleBuffer.getChannelData(channel), 0);
+      }
+      
+      // Copy original message data
+      for (let channel = 0; channel < originalBuffer.numberOfChannels; channel++) {
+        const channelData = combinedBuffer.getChannelData(channel);
+        channelData.set(originalBuffer.getChannelData(channel), preambleBuffer.length);
+      }
+      
+      // Create final blob from combined buffer
       const processedBlob = await new Promise<Blob>((resolve) => {
         const destination = audioContext.current!.createMediaStreamDestination();
         const mediaRecorder = new MediaRecorder(destination.stream, {
@@ -112,7 +125,7 @@ const ForwardMessage = () => {
         mediaRecorder.onstop = () => resolve(new Blob(chunks, { type: 'audio/webm;codecs=opus' }));
         
         const source = audioContext.current!.createBufferSource();
-        source.buffer = audioBuffer;
+        source.buffer = combinedBuffer;
         source.connect(destination);
         
         mediaRecorder.start();
@@ -120,6 +133,7 @@ const ForwardMessage = () => {
         source.onended = () => mediaRecorder.stop();
       });
       
+      console.log('Final processed blob size:', processedBlob.size);
       await uploadMessage([processedBlob]);
       toast.success('Message forwarded successfully');
       navigate('/inbox');
