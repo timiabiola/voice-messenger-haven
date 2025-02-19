@@ -112,7 +112,7 @@ export default function Index() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[100dvh] items-center justify-center">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400"></div>
       </div>
     );
@@ -122,7 +122,7 @@ export default function Index() {
     <div className="flex flex-col min-h-[100dvh] bg-black">
       <TopBar isAdmin={isAdmin} />
       
-      <main className="flex-1 w-full pt-4 pb-20">
+      <main className="flex-1 w-full pt-4 pb-24">
         <div className="w-full px-4 sm:px-6 md:px-8 mx-auto">
           <div className="flex flex-col items-center justify-center">
             <FeatureGrid unreadCount={unreadCount} />

@@ -28,18 +28,19 @@ export const TopBar = ({ isAdmin }: TopBarProps) => {
         <div className="flex justify-between items-center">
           <button 
             onClick={handleLogout}
-            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
+            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
           >
             <LogOut className="w-5 h-5" />
-            <span>Logout</span>
+            <span className="text-sm sm:text-base">Logout</span>
           </button>
           {isAdmin && (
             <button 
               onClick={() => navigate('/admin')}
-              className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors"
+              className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95"
             >
               <Shield className="w-4 h-4" />
-              Admin Dashboard
+              <span className="hidden sm:inline">Admin Dashboard</span>
+              <span className="sm:hidden">Admin</span>
             </button>
           )}
         </div>
