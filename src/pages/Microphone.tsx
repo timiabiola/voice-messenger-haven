@@ -76,7 +76,7 @@ const Microphone = () => {
         className="flex-1 flex flex-col items-center justify-center px-4 md:px-6"
         style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}
       >
-        <div className="w-full max-w-xl mx-auto">
+        <div className="w-full max-w-3xl mx-auto">
           <div className="flex flex-col items-center text-center space-y-8">
             <div className="w-full flex flex-col items-center text-center space-y-2">
               <Recipients 

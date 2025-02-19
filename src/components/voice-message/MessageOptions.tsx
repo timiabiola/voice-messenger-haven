@@ -26,18 +26,18 @@ export const MessageOptions = ({
   return (
     <div className="space-y-4 w-full">
       <div className="space-y-2">
-        <label className="text-sm text-muted-foreground px-1">Subject:</label>
+        <label className="text-sm text-muted-foreground px-1 text-center block">Subject:</label>
         <input 
           type="text"
           placeholder="Add a subject..."
-          className="w-full p-2 bg-background rounded-lg border focus:border-primary outline-none h-[44px]"
+          className="w-full p-2 bg-background rounded-lg border focus:border-primary outline-none h-[44px] text-center"
           value={subject}
           onChange={(e) => onSubjectChange(e.target.value)}
           disabled={isProcessing}
         />
       </div>
 
-      <div className="flex gap-2 w-full">
+      <div className="flex gap-2 w-full justify-center">
         <button 
           className={`flex-1 flex items-center justify-center gap-2 p-3 rounded-lg transition-colors ${
             isUrgent ? 'bg-destructive/10 text-destructive' : 'bg-background text-muted-foreground'

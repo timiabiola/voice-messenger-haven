@@ -135,8 +135,8 @@ export const Recipients = ({
 
   return (
     <div className="space-y-2 w-full relative">
-      <label className="text-sm text-muted-foreground px-1">To:</label>
-      <div className="flex flex-wrap items-center gap-2 p-2 bg-background rounded-lg border focus-within:border-primary min-h-[44px]">
+      <label className="text-sm text-muted-foreground px-1 text-center block">To:</label>
+      <div className="flex flex-wrap items-center justify-center gap-2 p-2 bg-background rounded-lg border focus-within:border-primary min-h-[44px]">
         {recipients.map((recipient) => (
           <div 
             key={recipient.id}
@@ -157,7 +157,7 @@ export const Recipients = ({
         <input 
           type="text"
           placeholder="Search users..."
-          className="flex-1 bg-transparent outline-none min-w-[120px] h-[32px]"
+          className="flex-1 bg-transparent outline-none min-w-[120px] h-[32px] text-center"
           value={searchQuery}
           onChange={(e) => {
             setSearchQuery(e.target.value);
