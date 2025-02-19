@@ -13,17 +13,17 @@ export const FeatureButton = ({ icon: Icon, title, description, onClick, badge }
   return (
     <button 
       onClick={onClick}
-      className="group p-4 md:p-6 bg-zinc-900/50 rounded-xl md:rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
+      className="group p-4 bg-zinc-900/50 rounded-xl border border-zinc-800 hover:border-amber-400/50 transition-all w-full text-left active:scale-[0.98] touch-manipulation"
     >
       <div className="flex items-start space-x-4">
-        <div className="p-2 md:p-3 bg-amber-400/10 rounded-lg md:rounded-xl">
-          <Icon className="w-5 h-5 md:w-6 md:h-6 text-amber-400" />
+        <div className="p-2 bg-amber-400/10 rounded-lg shrink-0">
+          <Icon className="w-5 h-5 text-amber-400" />
         </div>
-        <div className="flex-1">
-          <h3 className="text-lg md:text-xl font-semibold text-amber-400 mb-1 md:mb-2">{title}</h3>
-          <p className="text-sm md:text-base text-gray-400">{description}</p>
+        <div className="flex-1 min-w-0">
+          <h3 className="text-base font-semibold text-amber-400 mb-1 truncate">{title}</h3>
+          <p className="text-sm text-gray-400 line-clamp-2">{description}</p>
           {badge && (
-            <span className="inline-block mt-2 text-xs md:text-sm text-amber-400">
+            <span className="inline-block mt-2 text-xs text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">
               {badge}
             </span>
           )}

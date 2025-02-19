@@ -11,7 +11,7 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6 w-full">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg sm:max-w-2xl">
       <FeatureButton
         icon={MessageSquare}
         title="Messages"
