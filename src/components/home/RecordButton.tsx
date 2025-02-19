@@ -7,7 +7,7 @@ export const RecordButton = () => {
   
   return (
     <div className="fixed bottom-6 w-full px-6 pointer-events-none">
-      <div className="max-w-3xl mx-auto relative">
+      <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto relative">
         <button 
           onClick={() => navigate('/new')}
           className="absolute bottom-0 right-0 w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-300 transition-colors group pointer-events-auto"
