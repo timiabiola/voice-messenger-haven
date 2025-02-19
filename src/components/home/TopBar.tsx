@@ -24,23 +24,25 @@ export const TopBar = ({ isAdmin }: TopBarProps) => {
 
   return (
     <div className="w-full py-4 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-      <div className="w-full max-w-2xl mx-auto flex justify-between items-center">
-        <button 
-          onClick={handleLogout}
-          className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
-        >
-          <LogOut className="w-5 h-5" />
-          <span>Logout</span>
-        </button>
-        {isAdmin && (
+      <div className="w-full max-w-2xl mx-auto px-4">
+        <div className="flex justify-between items-center">
           <button 
-            onClick={() => navigate('/admin')}
-            className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors"
+            onClick={handleLogout}
+            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
           >
-            <Shield className="w-4 h-4" />
-            Admin Dashboard
+            <LogOut className="w-5 h-5" />
+            <span>Logout</span>
           </button>
-        )}
+          {isAdmin && (
+            <button 
+              onClick={() => navigate('/admin')}
+              className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors"
+            >
+              <Shield className="w-4 h-4" />
+              Admin Dashboard
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
