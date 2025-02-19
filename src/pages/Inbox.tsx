@@ -36,16 +36,20 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
-  const [audio] = useState(new Audio(message.audio_url));
+  const [audioReady, setAudioReady] = useState(false);
+  const [audio] = useState(() => new Audio(message.audio_url));
   const waveform = Array(40).fill(0).map(() => Math.random() * 100);
 
   useEffect(() => {
     const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime / audio.duration);
+      setCurrentTime(audio.currentTime);
     };
 
     const handleLoadedMetadata = () => {
-      setDuration(audio.duration);
+      if (Number.isFinite(audio.duration)) {
+        setDuration(audio.duration);
+        setAudioReady(true);
+      }
     };
 
     const handleEnded = () => {
@@ -53,31 +57,45 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
       setCurrentTime(0);
     };
 
+    // Set up event listeners
     audio.addEventListener('timeupdate', handleTimeUpdate);
     audio.addEventListener('loadedmetadata', handleLoadedMetadata);
     audio.addEventListener('ended', handleEnded);
+
+    // Preload audio metadata
+    audio.preload = 'metadata';
 
     return () => {
       audio.removeEventListener('timeupdate', handleTimeUpdate);
       audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
       audio.removeEventListener('ended', handleEnded);
+      audio.pause();
+      audio.src = '';
     };
   }, [audio]);
 
   const togglePlayPause = () => {
+    if (!audioReady) return;
+    
     if (isPlaying) {
       audio.pause();
     } else {
-      audio.play();
+      audio.play().catch(error => {
+        console.error('Error playing audio:', error);
+      });
     }
     setIsPlaying(!isPlaying);
   };
 
   const formatTime = (seconds: number) => {
+    if (!Number.isFinite(seconds)) return '0:00';
+    
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
+
+  const progress = duration > 0 ? (currentTime / duration) : 0;
 
   return (
     <div className="relative bg-gray-800/30 backdrop-blur-lg rounded-2xl p-6 mb-4">
@@ -103,7 +121,7 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
             <div key={i} className="flex-1 h-full flex items-center">
               <div 
                 className={`w-full rounded-full transition-all duration-300 ${
-                  i / waveform.length < currentTime 
+                  i / waveform.length < progress 
                     ? 'bg-blue-500/80' 
                     : 'bg-gray-600/50'
                 }`}
@@ -122,7 +140,7 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
       <div className="space-y-6">
         {/* Time Indicators */}
         <div className="flex justify-between text-sm text-gray-400">
-          <span>{formatTime(currentTime * duration)}</span>
+          <span>{formatTime(currentTime)}</span>
           <span>{formatTime(duration)}</span>
         </div>
 
@@ -130,19 +148,24 @@ const MessageCard = ({ message }: { message: VoiceMessage }) => {
         <div className="relative h-1 bg-gray-700/50 rounded-full">
           <div 
             className="absolute h-full bg-blue-500/80 rounded-full"
-            style={{ width: `${currentTime * 100}%` }}
+            style={{ width: `${progress * 100}%` }}
           />
           <div 
             className="absolute h-3 w-3 bg-blue-500 rounded-full shadow-lg -mt-1"
-            style={{ left: `${currentTime * 100}%` }}
+            style={{ left: `${progress * 100}%` }}
           />
         </div>
 
         {/* Control Buttons */}
         <div className="flex items-center justify-between px-4">
           <button 
-            className="w-16 h-16 rounded-full bg-blue-500/80 hover:bg-blue-500 flex items-center justify-center transition-all duration-300 transform hover:scale-105"
+            className={`w-16 h-16 rounded-full ${
+              audioReady 
+                ? 'bg-blue-500/80 hover:bg-blue-500 cursor-pointer' 
+                : 'bg-gray-600/50 cursor-not-allowed'
+            } flex items-center justify-center transition-all duration-300 transform hover:scale-105`}
             onClick={togglePlayPause}
+            disabled={!audioReady}
           >
             {isPlaying ? (
               <Pause className="w-8 h-8 text-white" />
