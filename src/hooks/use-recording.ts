@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { requestMicrophonePermissions } from '@/utils/microphone-permissions';
 import { saveRecordingState } from '@/utils/recording-state';
@@ -35,6 +34,26 @@ export function useRecording() {
     return () => clearInterval(timerRef.current);
   }, [isRecording, isPaused]);
 
+  const getSupportedMimeType = () => {
+    const types = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/ogg;codecs=opus',
+      'audio/mp4;codecs=opus',
+      'audio/mpeg'
+    ];
+    
+    for (const type of types) {
+      if (MediaRecorder.isTypeSupported(type)) {
+        console.log('Using MIME type:', type);
+        return type;
+      }
+    }
+    
+    console.warn('No preferred MIME types supported, falling back to browser default');
+    return '';
+  };
+
   const startRecording = async () => {
     try {
       console.log('Requesting microphone access...');
@@ -42,9 +61,12 @@ export function useRecording() {
       
       console.log('Microphone access granted, initializing MediaRecorder...');
       streamRef.current = stream;
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm;codecs=opus'
-      });
+
+      const mimeType = getSupportedMimeType();
+      const options = mimeType ? { mimeType } : undefined;
+      
+      const mediaRecorder = new MediaRecorder(stream, options);
+      console.log('MediaRecorder initialized with options:', options);
       
       mediaRecorderRef.current = mediaRecorder;
       
@@ -127,7 +149,10 @@ export function useRecording() {
   };
 
   const createAudioFromChunks = () => {
-    return new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+    if (audioChunksRef.current.length === 0) return null;
+    
+    const mimeType = audioChunksRef.current[0].type || getSupportedMimeType();
+    return new Blob(audioChunksRef.current, { type: mimeType });
   };
 
   return {
