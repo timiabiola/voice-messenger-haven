@@ -3,6 +3,7 @@ import { AlertTriangle, Lock, Play, Square, Forward } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 
 interface MessageCardProps {
   message: {
@@ -75,8 +76,8 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     setIsPlaying(false);
   };
 
-  const handleAudioError = (e: Event) => {
-    console.error('Audio playback error:', e);
+  const handleAudioError = (event: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    console.error('Audio playback error:', event);
     setIsPlaying(false);
     setIsLoading(false);
     toast.error('Error playing audio message');
