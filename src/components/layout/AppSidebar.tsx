@@ -20,7 +20,7 @@ const navigationItems = [
   },
   {
     title: "Messages",
-    path: "/inbox",  // Changed from "/inbox-0" to "/inbox"
+    path: "/inbox",
     icon: Mail,
   },
   {
