@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -62,7 +63,7 @@ const Microphone = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
+    <div className="flex flex-col min-h-[100dvh] w-full bg-black">
       <div className="h-[64px] w-full">
         <Header 
           isRecording={isRecording}
@@ -71,45 +72,35 @@ const Microphone = () => {
         />
       </div>
 
-      <div
-        className="flex-1 flex flex-col items-center justify-center w-full px-4 md:px-6"
-        style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}
-      >
-        {/* Removed max-w constraint to let content expand naturally */}
-        <div className="w-full flex flex-col items-center justify-center">
-          <div className="w-full flex flex-col items-center justify-center space-y-8">
-            <div className="w-full flex flex-col items-center justify-center">
-              <Recipients 
-                recipients={recipients}
-                onAddRecipient={(profile) => setRecipients([...recipients, profile])}
-                onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
-                isProcessing={isProcessing}
-              />
-            </div>
+      <div className="flex-1 flex flex-col items-center justify-center w-full px-4 pb-24 sm:pb-4">
+        <div className="w-full max-w-md mx-auto space-y-8">
+          <Recipients 
+            recipients={recipients}
+            onAddRecipient={(profile) => setRecipients([...recipients, profile])}
+            onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
+            isProcessing={isProcessing}
+          />
 
-            <div className="w-full flex flex-col items-center justify-center">
-              <MessageOptions 
-                subject={subject}
-                onSubjectChange={setSubject}
-                isUrgent={isUrgent}
-                onUrgentChange={setIsUrgent}
-                isPrivate={isPrivate}
-                onPrivateChange={setIsPrivate}
-                isProcessing={isProcessing}
-              />
-            </div>
+          <MessageOptions 
+            subject={subject}
+            onSubjectChange={setSubject}
+            isUrgent={isUrgent}
+            onUrgentChange={setIsUrgent}
+            isPrivate={isPrivate}
+            onPrivateChange={setIsPrivate}
+            isProcessing={isProcessing}
+          />
 
-            <RecordingControls 
-              isRecording={isRecording}
-              isPaused={isPaused}
-              isProcessing={isProcessing}
-              recordingTime={recordingTime}
-              onStartRecording={startRecording}
-              onStopRecording={stopRecording}
-              onPauseRecording={pauseRecording}
-              onResumeRecording={resumeRecording}
-            />
-          </div>
+          <RecordingControls 
+            isRecording={isRecording}
+            isPaused={isPaused}
+            isProcessing={isProcessing}
+            recordingTime={recordingTime}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
+            onPauseRecording={pauseRecording}
+            onResumeRecording={resumeRecording}
+          />
         </div>
       </div>
     </div>
