@@ -54,6 +54,7 @@ export default function NoteViewer({
           size="icon"
           className="rounded-full bg-accent/10 hover:bg-accent/20"
           onClick={onEdit}
+          title="Edit note"
         >
           <Pencil className="w-4 h-4 text-muted-foreground" />
         </Button>
@@ -62,6 +63,7 @@ export default function NoteViewer({
           size="icon"
           className="rounded-full bg-accent/10 hover:bg-accent/20"
           onClick={onDelete}
+          title="Delete note"
         >
           <Trash2 className="w-4 h-4 text-muted-foreground" />
         </Button>
