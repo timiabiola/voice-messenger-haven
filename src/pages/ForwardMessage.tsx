@@ -60,8 +60,8 @@ const ForwardMessage = () => {
     setOriginalMessage(state.originalMessage);
     setSubject(`Fwd: ${state.originalMessage.subject}`);
 
-    // Initialize AudioContext
-    audioContext.current = new (window.AudioContext || window.webkitAudioContext)();
+    // Initialize AudioContext - removed webkitAudioContext since it's not needed in modern browsers
+    audioContext.current = new AudioContext();
   }, [location.state, navigate, setSubject]);
 
   const handleSendRecording = async () => {
@@ -100,12 +100,12 @@ const ForwardMessage = () => {
       const arrayBuffer = await combinedBlob.arrayBuffer();
       const audioBuffer = await audioContext.current!.decodeAudioData(arrayBuffer);
       
-      // Create a new blob from the processed audio
+      // Create a new blob from the processed audio using AudioContext
       const processedBlob = await new Promise<Blob>((resolve) => {
-        const mediaRecorder = new MediaRecorder(
-          audioContext.current!.createMediaStreamDestination().stream,
-          { mimeType: 'audio/webm;codecs=opus' }
-        );
+        const destination = audioContext.current!.createMediaStreamDestination();
+        const mediaRecorder = new MediaRecorder(destination.stream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
         const chunks: Blob[] = [];
         
         mediaRecorder.ondataavailable = (e) => chunks.push(e.data);
@@ -113,7 +113,7 @@ const ForwardMessage = () => {
         
         const source = audioContext.current!.createBufferSource();
         source.buffer = audioBuffer;
-        source.connect(mediaRecorder.stream.getAudioTracks()[0].source);
+        source.connect(destination);
         
         mediaRecorder.start();
         source.start(0);
