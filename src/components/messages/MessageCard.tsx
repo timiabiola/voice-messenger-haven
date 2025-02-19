@@ -28,33 +28,81 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
+  // Log when audio URL changes
   useEffect(() => {
-    // Pre-load the audio when component mounts
-    if (audioRef.current) {
-      audioRef.current.load();
-    }
+    console.log('Audio URL:', message.audio_url);
   }, [message.audio_url]);
 
+  // Handle audio element initialization
+  useEffect(() => {
+    if (audioRef.current) {
+      // Set up audio element
+      audioRef.current.preload = 'metadata';
+      
+      // Log when audio metadata is loaded
+      const handleLoadedMetadata = () => {
+        console.log('Audio metadata loaded:', {
+          duration: audioRef.current?.duration,
+          readyState: audioRef.current?.readyState
+        });
+      };
+
+      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
+      
+      // Cleanup
+      return () => {
+        audioRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      };
+    }
+  }, []);
+
   const handlePlayback = async () => {
-    if (!audioRef.current) return;
+    if (!audioRef.current) {
+      console.error('No audio element found');
+      toast.error('Audio player not initialized');
+      return;
+    }
 
     try {
+      console.log('Current audio state:', {
+        paused: audioRef.current.paused,
+        readyState: audioRef.current.readyState,
+        currentSrc: audioRef.current.currentSrc
+      });
+
       if (isPlaying) {
+        console.log('Pausing audio');
         audioRef.current.pause();
         setIsPlaying(false);
       } else {
         setIsLoading(true);
-        // Ensure audio is loaded
-        await audioRef.current.load();
-        const playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-          await playPromise;
-          setIsPlaying(true);
+        console.log('Starting audio playback');
+        
+        // Reset audio if it was played before
+        if (audioRef.current.currentTime > 0) {
+          audioRef.current.currentTime = 0;
+        }
+
+        try {
+          await audioRef.current.load();
+          console.log('Audio loaded successfully');
+          
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            await playPromise;
+            console.log('Audio playing successfully');
+            setIsPlaying(true);
+          }
+        } catch (playError) {
+          console.error('Error during play:', playError);
+          toast.error('Failed to play audio');
+          throw playError;
         }
       }
     } catch (error) {
       console.error('Playback error:', error);
       toast.error('Failed to play audio message');
+      setIsPlaying(false);
     } finally {
       setIsLoading(false);
     }
@@ -73,11 +121,16 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   };
 
   const handleAudioEnded = () => {
+    console.log('Audio playback ended');
     setIsPlaying(false);
   };
 
   const handleAudioError = (event: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-    console.error('Audio playback error:', event);
+    console.error('Audio playback error:', {
+      error: audioRef.current?.error,
+      event: event,
+      src: audioRef.current?.currentSrc
+    });
     setIsPlaying(false);
     setIsLoading(false);
     toast.error('Error playing audio message');
@@ -92,7 +145,10 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         src={message.audio_url}
         onEnded={handleAudioEnded}
         onError={handleAudioError}
-        preload="none"
+        onLoadStart={() => console.log('Audio load started')}
+        onLoadedData={() => console.log('Audio data loaded')}
+        onCanPlay={() => console.log('Audio can play')}
+        preload="metadata"
         className="hidden"
       />
       
