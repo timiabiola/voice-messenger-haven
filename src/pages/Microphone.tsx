@@ -63,8 +63,8 @@ const Microphone = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
-      <div className="h-[64px]">
+    <div className="flex flex-col min-h-screen w-full bg-background">
+      <div className="h-[64px] w-full">
         <Header 
           isRecording={isRecording}
           isProcessing={isProcessing}
@@ -73,12 +73,13 @@ const Microphone = () => {
       </div>
 
       <div
-        className="flex-1 flex flex-col items-center justify-center px-4 md:px-6"
+        className="flex-1 flex flex-col items-center justify-center w-full px-4 md:px-6"
         style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}
       >
-        <div className="w-full max-w-3xl mx-auto">
-          <div className="flex flex-col items-center text-center space-y-8">
-            <div className="w-full flex flex-col items-center text-center space-y-2">
+        {/* Removed max-w constraint to let content expand naturally */}
+        <div className="w-full flex flex-col items-center justify-center">
+          <div className="w-full flex flex-col items-center justify-center space-y-8">
+            <div className="w-full flex flex-col items-center justify-center">
               <Recipients 
                 recipients={recipients}
                 onAddRecipient={(profile) => setRecipients([...recipients, profile])}
@@ -87,7 +88,7 @@ const Microphone = () => {
               />
             </div>
 
-            <div className="w-full flex flex-col items-center text-center space-y-2">
+            <div className="w-full flex flex-col items-center justify-center">
               <MessageOptions 
                 subject={subject}
                 onSubjectChange={setSubject}
