@@ -33,16 +33,6 @@ export const RecordingControls = ({
 
   return (
     <div className="w-full flex flex-col items-center justify-center text-center space-y-6">
-      <div className={`${isMobile ? 'w-48 h-48' : 'w-64 h-64'} rounded-full bg-blue-50 flex items-center justify-center`}>
-        <div className={`${isMobile ? 'w-32 h-32' : 'w-44 h-44'} rounded-full bg-blue-100 flex items-center justify-center ${
-          isRecording && !isPaused ? 'animate-pulse' : ''
-        }`}>
-          <Mic className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} ${
-            isRecording ? 'text-red-500' : 'text-blue-500'
-          }`} />
-        </div>
-      </div>
-
       <div className="text-3xl font-medium text-gray-700">
         {formatTime(recordingTime)}
       </div>
