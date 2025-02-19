@@ -140,7 +140,7 @@ export default function Index() {
   return (
     <div className="flex flex-col min-h-screen bg-black">
       <div className="w-full py-4 px-4 md:px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1200px] mx-auto flex justify-between items-center">
+        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto flex justify-between items-center">
           <button 
             onClick={handleLogout}
             className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
@@ -160,8 +160,8 @@ export default function Index() {
         </div>
       </div>
 
-      <main className="flex-1 w-full pt-8 md:pt-16 pb-24">
-        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1200px] mx-auto px-0 md:px-4">
+      <main className="flex-1 w-full pt-8 md:pt-16 pb-24 flex items-center justify-center">
+        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto px-4">
           <div className="w-full">
             <div className="space-y-4 md:space-y-8">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
