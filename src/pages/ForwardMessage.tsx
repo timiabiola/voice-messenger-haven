@@ -128,8 +128,8 @@ const ForwardMessage = () => {
         if (event.data.size > 0) recordedChunks.push(event.data);
       };
 
-      await new Promise<void>((resolve) => {
-        mediaRecorder.onstop = resolve;
+      await new Promise((resolve) => {
+        mediaRecorder.onstop = () => resolve(undefined);
         mediaRecorder.start();
         source2.onended = () => mediaRecorder.stop();
       });
