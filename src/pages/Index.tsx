@@ -124,10 +124,10 @@ export default function Index() {
     <div className="flex flex-col min-h-screen bg-black">
       <TopBar isAdmin={isAdmin} />
       
-      <main className="flex-1 w-full flex items-center justify-center">
-        <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto px-4 flex items-center justify-center min-h-[calc(100vh-64px)]">
-          <div className="w-full max-w-3xl">
-            <div className="space-y-4 md:space-y-8">
+      <main className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-screen-xl mx-auto flex items-center justify-center">
+          <div className="w-full max-w-4xl">
+            <div className="grid place-items-center">
               <FeatureGrid unreadCount={unreadCount} />
             </div>
           </div>
