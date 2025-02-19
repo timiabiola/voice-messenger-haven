@@ -126,10 +126,10 @@ export default function Index() {
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center p-6">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-12">
         <div className="w-full max-w-3xl mx-auto space-y-8">
           {/* Welcome Section */}
-          <div className="text-center mb-12">
+          <div className="text-center">
             <h2 className="text-4xl font-bold text-amber-400 mb-4">
               Welcome to Voice Haven
             </h2>
@@ -137,7 +137,7 @@ export default function Index() {
           </div>
 
           {/* Feature Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 px-4 sm:px-0">
             {/* Messages */}
             <button 
               onClick={() => navigate('/inbox-0')}
