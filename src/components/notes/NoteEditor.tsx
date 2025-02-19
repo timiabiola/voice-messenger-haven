@@ -2,6 +2,7 @@
 import { X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 
 type NoteEditorProps = {
   isEditing: boolean;
@@ -12,7 +13,7 @@ type NoteEditorProps = {
   };
   onCancel: () => void;
   onSave: () => void;
-  onChange: (content: string) => void;
+  onChange: (field: 'title' | 'content', value: string) => void;
 };
 
 export default function NoteEditor({
@@ -48,13 +49,20 @@ export default function NoteEditor({
           </Button>
         </div>
       </div>
-      <Textarea
-        placeholder="Start writing your note here..."
-        value={currentNote.content}
-        onChange={(e) => onChange(e.target.value)}
-        className="min-h-[200px] focus:ring-1 focus:ring-primary"
-        autoFocus
-      />
+      <div className="space-y-4">
+        <Input
+          placeholder="Note title"
+          value={currentNote.title}
+          onChange={(e) => onChange('title', e.target.value)}
+          className="focus:ring-1 focus:ring-primary"
+        />
+        <Textarea
+          placeholder="Start writing your note here..."
+          value={currentNote.content}
+          onChange={(e) => onChange('content', e.target.value)}
+          className="min-h-[200px] focus:ring-1 focus:ring-primary"
+        />
+      </div>
     </div>
   );
 }

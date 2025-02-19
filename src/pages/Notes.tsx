@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PencilLine, Settings } from 'lucide-react';
@@ -101,8 +100,14 @@ export default function Notes() {
   };
 
   const handleNavigateToLoadTest = () => {
-    // This will be implemented in the next step when we create the load testing page
     navigate('/load-test');
+  };
+
+  const handleNoteChange = (field: 'title' | 'content', value: string) => {
+    setCurrentNote(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
   return (
@@ -162,7 +167,7 @@ export default function Notes() {
                 currentNote={currentNote}
                 onCancel={resetNoteState}
                 onSave={handleSaveNote}
-                onChange={(content) => setCurrentNote(prev => ({ ...prev, content }))}
+                onChange={handleNoteChange}
               />
             ) : (
               <>
