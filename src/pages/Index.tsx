@@ -30,44 +30,70 @@ export default function Index() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [messages, setMessages] = useState<Message[]>([]);
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUnreadMessages = async () => {
-      const { data: session } = await supabase.auth.getSession();
-      if (!session?.session?.user) return;
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error('Error checking session:', error);
+          navigate('/auth');
+          return;
+        }
 
-      const query = supabase
-        .from('messages')
-        .select(`
-          id,
-          content,
-          created_at,
-          status,
-          sender:profiles!messages_sender_id_fkey(first_name, last_name)
-        `)
-        .eq('status', 'unread')
-        .order('created_at', { ascending: false });
+        if (!session) {
+          console.log('No active session found');
+          navigate('/auth');
+          return;
+        }
 
-      if (!isAdmin) {
-        query.eq('recipient_id', session.session.user.id);
-      }
+        // Session exists, fetch messages
+        const fetchUnreadMessages = async () => {
+          const query = supabase
+            .from('messages')
+            .select(`
+              id,
+              content,
+              created_at,
+              status,
+              sender:profiles!messages_sender_id_fkey(first_name, last_name)
+            `)
+            .eq('status', 'unread')
+            .order('created_at', { ascending: false });
 
-      const { data, error } = await query;
+          if (!isAdmin) {
+            query.eq('recipient_id', session.user.id);
+          }
 
-      if (error) {
-        console.error('Error fetching messages:', error);
-        toast.error('Failed to fetch messages');
-        return;
-      }
+          const { data, error: fetchError } = await query;
 
-      if (data) {
-        setMessages(data as Message[]);
-        setUnreadCount(data.length);
+          if (fetchError) {
+            console.error('Error fetching messages:', fetchError);
+            toast.error('Failed to fetch messages');
+            return;
+          }
+
+          if (data) {
+            setMessages(data as Message[]);
+            setUnreadCount(data.length);
+          }
+        };
+
+        await fetchUnreadMessages();
+      } catch (error) {
+        console.error('Session check error:', error);
+        toast.error('Authentication error');
+        navigate('/auth');
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchUnreadMessages();
+    checkSession();
 
+    // Set up realtime subscription
     const channel = supabase
       .channel('messages-changes')
       .on(
@@ -90,16 +116,26 @@ export default function Index() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin]);
+  }, [isAdmin, navigate]);
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate('/auth');
+    } catch (error) {
+      console.error('Logout error:', error);
       toast.error('Failed to log out');
-      return;
     }
-    navigate('/auth');
   };
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
