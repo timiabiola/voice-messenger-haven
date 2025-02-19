@@ -47,7 +47,6 @@ const Microphone = () => {
 
   const handleSendRecording = async () => {
     setIsProcessing(true);
-
     try {
       await uploadMessage(getRecordingData());
       toast.success('Voice message sent successfully');
@@ -69,34 +68,36 @@ const Microphone = () => {
         onSend={handleSendRecording}
       />
 
-      <div className="flex-1 flex flex-col items-center px-4 md:px-6 space-y-4 mt-[72px] mb-[100px] max-w-xl mx-auto w-full">
-        <Recipients 
-          recipients={recipients}
-          onAddRecipient={(profile) => setRecipients([...recipients, profile])}
-          onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
-          isProcessing={isProcessing}
-        />
+      <div className="flex-1 flex flex-col items-center justify-center px-4 md:px-6">
+        <div className="w-full max-w-xl mx-auto space-y-6">
+          <Recipients 
+            recipients={recipients}
+            onAddRecipient={(profile) => setRecipients([...recipients, profile])}
+            onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
+            isProcessing={isProcessing}
+          />
 
-        <MessageOptions 
-          subject={subject}
-          onSubjectChange={setSubject}
-          isUrgent={isUrgent}
-          onUrgentChange={setIsUrgent}
-          isPrivate={isPrivate}
-          onPrivateChange={setIsPrivate}
-          isProcessing={isProcessing}
-        />
+          <MessageOptions 
+            subject={subject}
+            onSubjectChange={setSubject}
+            isUrgent={isUrgent}
+            onUrgentChange={setIsUrgent}
+            isPrivate={isPrivate}
+            onPrivateChange={setIsPrivate}
+            isProcessing={isProcessing}
+          />
 
-        <RecordingControls 
-          isRecording={isRecording}
-          isPaused={isPaused}
-          isProcessing={isProcessing}
-          recordingTime={recordingTime}
-          onStartRecording={startRecording}
-          onStopRecording={stopRecording}
-          onPauseRecording={pauseRecording}
-          onResumeRecording={resumeRecording}
-        />
+          <RecordingControls 
+            isRecording={isRecording}
+            isPaused={isPaused}
+            isProcessing={isProcessing}
+            recordingTime={recordingTime}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
+            onPauseRecording={pauseRecording}
+            onResumeRecording={resumeRecording}
+          />
+        </div>
       </div>
     </div>
   );
