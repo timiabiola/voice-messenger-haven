@@ -1,5 +1,5 @@
 
-import { LogOut, Shield } from 'lucide-react';
+import { Shield, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -13,22 +13,24 @@ export const TopBar = ({ isAdmin }: TopBarProps) => {
 
   const handleLogout = async () => {
     try {
-      await supabase.auth.signOut();
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       navigate('/auth');
     } catch (error) {
-      toast.error('Error signing out');
+      console.error('Logout error:', error);
+      toast.error('Failed to log out');
     }
   };
 
   return (
-    <div className="w-full py-4 px-6">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <div className="w-full py-4 px-4 md:px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
+      <div className="w-full max-w-[90vw] md:max-w-[80vw] lg:max-w-[1000px] mx-auto flex justify-between items-center">
         <button 
           onClick={handleLogout}
           className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2"
         >
-          <LogOut className="w-4 h-4" />
-          Logout
+          <LogOut className="w-5 h-5" />
+          <span>Logout</span>
         </button>
         {isAdmin && (
           <button 
