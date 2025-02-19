@@ -61,8 +61,8 @@ const Saved = () => {
   if (!savedItems?.length && currentPage === 1) {
     return (
       <div className="flex h-screen bg-black">
-        <main className="flex-1 flex flex-col">
-          <header className="h-16 flex items-center justify-between px-4 border-b border-amber-400/20">
+        <main className="flex-1 flex flex-col w-full">
+          <header className="h-16 flex items-center justify-between px-6 border-b border-amber-400/20">
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost"
@@ -92,8 +92,8 @@ const Saved = () => {
 
   return (
     <div className="flex h-screen bg-black">
-      <main className="flex-1 flex flex-col">
-        <header className="h-16 flex items-center justify-between px-4 border-b border-amber-400/20">
+      <main className="flex-1 flex flex-col w-full">
+        <header className="h-16 flex items-center justify-between px-6 border-b border-amber-400/20">
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost"
@@ -145,60 +145,62 @@ const Saved = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
-          {savedItems?.map((message) => (
-            <div
-              key={message.id}
-              className={`glass-panel rounded-lg p-4 transition-all ${
-                selectedMessages.includes(message.id) ? 'bg-amber-400/10' : ''
-              }`}
-            >
-              <div className="flex justify-between mb-2">
-                <div className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selectedMessages.includes(message.id)}
-                    onChange={() => toggleMessageSelect(message.id)}
-                    className="mt-1 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
-                  />
-                  <div>
-                    <h2 className="font-bold text-xl mb-2 text-amber-400">
-                      {message.id}
-                    </h2>
-                    <p className="text-amber-400/60">Message content here</p>
+        <div className="flex-1 overflow-y-auto p-6 space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+            {savedItems?.map((message) => (
+              <div
+                key={message.id}
+                className={`glass-panel rounded-lg p-4 transition-all ${
+                  selectedMessages.includes(message.id) ? 'bg-amber-400/10' : ''
+                }`}
+              >
+                <div className="flex justify-between mb-2">
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedMessages.includes(message.id)}
+                      onChange={() => toggleMessageSelect(message.id)}
+                      className="mt-1 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
+                    />
+                    <div>
+                      <h2 className="font-bold text-xl mb-2 text-amber-400">
+                        {message.id}
+                      </h2>
+                      <p className="text-amber-400/60">Message content here</p>
+                    </div>
                   </div>
                 </div>
+                
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {message.saved_items_tags?.map(({ tags }) => (
+                    <span 
+                      key={tags.name} 
+                      className="bg-amber-400/10 text-amber-400 rounded-full px-3 py-1 text-sm"
+                    >
+                      {isEditingTags ? (
+                        <span className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={editedTags.find((t) => t === tags.name) || ''}
+                            onChange={(e) => editTag(tags.name, e.target.value)}
+                            className="bg-transparent border-none focus:outline-none w-20 text-amber-400"
+                          />
+                          <button 
+                            onClick={() => deleteTag(tags.name)}
+                            className="text-amber-400/60 hover:text-amber-400"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </span>
+                      ) : (
+                        tags.name
+                      )}
+                    </span>
+                  ))}
+                </div>
               </div>
-              
-              <div className="flex flex-wrap gap-2 mt-3">
-                {message.saved_items_tags?.map(({ tags }) => (
-                  <span 
-                    key={tags.name} 
-                    className="bg-amber-400/10 text-amber-400 rounded-full px-3 py-1 text-sm"
-                  >
-                    {isEditingTags ? (
-                      <span className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={editedTags.find((t) => t === tags.name) || ''}
-                          onChange={(e) => editTag(tags.name, e.target.value)}
-                          className="bg-transparent border-none focus:outline-none w-20 text-amber-400"
-                        />
-                        <button 
-                          onClick={() => deleteTag(tags.name)}
-                          className="text-amber-400/60 hover:text-amber-400"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </span>
-                    ) : (
-                      tags.name
-                    )}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           {hasMore && (
             <div className="flex justify-center py-4">
