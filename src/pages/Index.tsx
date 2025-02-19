@@ -200,7 +200,7 @@ export default function Index() {
       </main>
 
       <button 
-        onClick={() => navigate('/new')}
+        onClick={() => navigate('/microphone')}
         className="fixed bottom-6 right-4 md:right-6 w-12 h-12 md:w-14 md:h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-300 transition-colors group"
       >
         <Mic className="w-5 h-5 md:w-6 md:h-6 text-black" />
