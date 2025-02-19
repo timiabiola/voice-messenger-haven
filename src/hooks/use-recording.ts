@@ -191,6 +191,11 @@ export function useRecording() {
     return audioChunksRef.current;
   };
 
+  // Add new function to convert chunks to playable audio
+  const createAudioFromChunks = () => {
+    return new Blob(audioChunksRef.current, { type: 'audio/webm;codecs=opus' });
+  };
+
   return {
     isRecording,
     isPaused,
@@ -201,6 +206,8 @@ export function useRecording() {
     stopRecording,
     pauseRecording,
     resumeRecording,
-    getRecordingData
+    getRecordingData,
+    createAudioFromChunks,
+    audioChunks: audioChunksRef.current
   };
 }
