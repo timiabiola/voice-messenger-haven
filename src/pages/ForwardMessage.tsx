@@ -114,24 +114,38 @@ const ForwardMessage = () => {
       source.start();
       const renderedBuffer = await offlineContext.startRendering();
 
-      // 5. Record the rendered output using MediaRecorder
+      // 5. Record the rendered output using MediaRecorder with improved timing
       const tempContext = new AudioContext();
+      await tempContext.resume(); // Ensure the context is active
+
       const dest = tempContext.createMediaStreamDestination();
       const source2 = tempContext.createBufferSource();
       source2.buffer = renderedBuffer;
       source2.connect(dest);
+      source2.connect(tempContext.destination); // Also connect to main output for debugging
+
       source2.start();
 
       const recordedChunks: Blob[] = [];
-      const mediaRecorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm;codecs=opus' });
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      const mediaRecorder = new MediaRecorder(dest.stream, options);
+
       mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) recordedChunks.push(event.data);
+        if (event.data && event.data.size > 0) {
+          recordedChunks.push(event.data);
+        }
       };
 
-      await new Promise((resolve) => {
-        mediaRecorder.onstop = () => resolve(undefined);
+      await new Promise<void>((resolve) => {
+        mediaRecorder.onstop = () => resolve();
         mediaRecorder.start();
-        source2.onended = () => mediaRecorder.stop();
+
+        source2.onended = () => {
+          // Add a small delay to ensure all data is captured
+          setTimeout(() => {
+            mediaRecorder.stop();
+          }, 100);
+        };
       });
 
       const finalBlob = new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
