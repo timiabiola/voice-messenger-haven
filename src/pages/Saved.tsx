@@ -52,7 +52,7 @@ const Saved = () => {
 
   if (isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-black">
+      <div className="flex min-h-[100dvh] items-center justify-center bg-black">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-amber-400"></div>
       </div>
     )
@@ -60,9 +60,9 @@ const Saved = () => {
 
   if (!savedItems?.length && currentPage === 1) {
     return (
-      <div className="flex h-screen bg-black">
+      <div className="flex min-h-[100dvh] bg-black">
         <main className="flex-1 flex flex-col w-full">
-          <header className="h-16 flex items-center justify-between px-6 border-b border-amber-400/20">
+          <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 border-b border-amber-400/20 bg-black/80 backdrop-blur-sm">
             <div className="flex items-center space-x-4">
               <Button 
                 variant="ghost"
@@ -72,7 +72,7 @@ const Saved = () => {
               >
                 <ChevronLeft className="w-6 h-6 text-amber-400" />
               </Button>
-              <h1 className="text-xl font-semibold text-amber-400">Saved Messages</h1>
+              <h1 className="text-lg font-semibold text-amber-400">Saved Messages</h1>
             </div>
             <Button
               variant="ghost"
@@ -91,9 +91,9 @@ const Saved = () => {
   }
 
   return (
-    <div className="flex h-screen bg-black">
+    <div className="flex min-h-[100dvh] bg-black">
       <main className="flex-1 flex flex-col w-full">
-        <header className="h-16 flex items-center justify-between px-6 border-b border-amber-400/20">
+        <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 border-b border-amber-400/20 bg-black/80 backdrop-blur-sm">
           <div className="flex items-center space-x-4">
             <Button 
               variant="ghost"
@@ -103,23 +103,25 @@ const Saved = () => {
             >
               <ChevronLeft className="w-6 h-6 text-amber-400" />
             </Button>
-            <h1 className="text-xl font-semibold text-amber-400">Saved Messages</h1>
+            <h1 className="text-lg font-semibold text-amber-400">Saved Messages</h1>
           </div>
           <div className="flex items-center gap-2">
             {selectedMessages.length > 0 && (
               <Button
                 variant="destructive"
+                size="sm"
                 onClick={() => setSelectedMessages([])}
-                className="gap-2"
+                className="gap-1"
               >
                 <Trash2 className="w-4 h-4" />
-                Delete Selected
+                <span className="sr-only sm:not-sr-only">Delete</span>
               </Button>
             )}
             
             {isEditingTags ? (
               <Button 
                 variant="default"
+                size="sm"
                 onClick={saveTagChanges}
                 className="bg-amber-400 hover:bg-amber-300 text-black"
               >
@@ -128,11 +130,12 @@ const Saved = () => {
             ) : (
               <Button
                 variant="outline"
+                size="sm"
                 onClick={startEditingTags}
                 className="border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
               >
-                <Edit2 className="w-4 h-4 mr-2" />
-                Edit Tags
+                <Edit2 className="w-4 h-4 sm:mr-2" />
+                <span className="sr-only sm:not-sr-only">Edit Tags</span>
               </Button>
             )}
             <Button
@@ -145,12 +148,12 @@ const Saved = () => {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-3">
+          <div className="grid grid-cols-1 gap-3">
             {savedItems?.map((message) => (
               <div
                 key={message.id}
-                className={`glass-panel rounded-lg p-4 transition-all ${
+                className={`glass-panel rounded-lg p-4 transition-all active:scale-[0.98] touch-manipulation ${
                   selectedMessages.includes(message.id) ? 'bg-amber-400/10' : ''
                 }`}
               >
@@ -160,13 +163,13 @@ const Saved = () => {
                       type="checkbox"
                       checked={selectedMessages.includes(message.id)}
                       onChange={() => toggleMessageSelect(message.id)}
-                      className="mt-1 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
+                      className="mt-1 w-5 h-5 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
                     />
-                    <div>
-                      <h2 className="font-bold text-xl mb-2 text-amber-400">
+                    <div className="min-w-0 flex-1">
+                      <h2 className="font-bold text-base text-amber-400 mb-1 truncate">
                         {message.id}
                       </h2>
-                      <p className="text-amber-400/60">Message content here</p>
+                      <p className="text-sm text-amber-400/60 line-clamp-2">Message content here</p>
                     </div>
                   </div>
                 </div>
@@ -175,21 +178,21 @@ const Saved = () => {
                   {message.saved_items_tags?.map(({ tags }) => (
                     <span 
                       key={tags.name} 
-                      className="bg-amber-400/10 text-amber-400 rounded-full px-3 py-1 text-sm"
+                      className="bg-amber-400/10 text-amber-400 rounded-full px-2.5 py-0.5 text-xs"
                     >
                       {isEditingTags ? (
-                        <span className="flex items-center gap-2">
+                        <span className="flex items-center gap-1">
                           <input
                             type="text"
                             value={editedTags.find((t) => t === tags.name) || ''}
                             onChange={(e) => editTag(tags.name, e.target.value)}
-                            className="bg-transparent border-none focus:outline-none w-20 text-amber-400"
+                            className="bg-transparent border-none focus:outline-none w-16 text-amber-400 text-xs px-0"
                           />
                           <button 
                             onClick={() => deleteTag(tags.name)}
-                            className="text-amber-400/60 hover:text-amber-400"
+                            className="text-amber-400/60 hover:text-amber-400 p-1"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-3 h-3" />
                           </button>
                         </span>
                       ) : (
@@ -207,7 +210,7 @@ const Saved = () => {
               <Button
                 variant="outline"
                 onClick={() => setCurrentPage(currentPage + 1)}
-                className="w-full max-w-xs border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
+                className="w-full border-amber-400/20 text-amber-400 hover:bg-amber-400/10"
               >
                 Load More
               </Button>
