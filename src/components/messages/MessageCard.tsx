@@ -1,177 +1,107 @@
 
-import { useState, useEffect } from 'react';
-import { Play, Pause, Share2, Bookmark, ChevronDown, MessageCircle } from 'lucide-react';
+import { AlertTriangle, Lock, Play, Square, Forward } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { formatDistanceToNow } from 'date-fns';
 
-interface VoiceMessage {
-  id: string;
-  title: string;
-  subject: string;
-  audio_url: string;
-  created_at: string;
-  sender: {
-    first_name: string;
-    last_name: string;
-    email: string;
+interface MessageCardProps {
+  message: {
+    id: string;
+    title: string;
+    subject: string;
+    audio_url: string;
+    created_at: string;
+    is_urgent: boolean;
+    is_private: boolean;
+    sender: {
+      first_name: string | null;
+      last_name: string | null;
+      email: string;
+    };
   };
-  is_urgent: boolean;
-  is_private: boolean;
 }
 
-export const MessageCard = ({ message }: { message: VoiceMessage }) => {
+export const MessageCard = ({ message }: MessageCardProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [audioReady, setAudioReady] = useState(false);
-  const [audio] = useState(() => new Audio(message.audio_url));
-  const waveform = Array(40).fill(0).map(() => Math.random() * 100);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const handleTimeUpdate = () => {
-      setCurrentTime(audio.currentTime);
-    };
+  const handlePlayback = () => {
+    if (!audioRef.current) return;
 
-    const handleLoadedMetadata = () => {
-      if (Number.isFinite(audio.duration)) {
-        setDuration(audio.duration);
-        setAudioReady(true);
-      }
-    };
-
-    const handleEnded = () => {
-      setIsPlaying(false);
-      setCurrentTime(0);
-    };
-
-    audio.addEventListener('timeupdate', handleTimeUpdate);
-    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
-    audio.addEventListener('ended', handleEnded);
-
-    audio.preload = 'metadata';
-
-    return () => {
-      audio.removeEventListener('timeupdate', handleTimeUpdate);
-      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      audio.removeEventListener('ended', handleEnded);
-      audio.pause();
-      audio.src = '';
-    };
-  }, [audio]);
-
-  const togglePlayPause = () => {
-    if (!audioReady) return;
-    
     if (isPlaying) {
-      audio.pause();
+      audioRef.current.pause();
+      setIsPlaying(false);
     } else {
-      audio.play().catch(error => {
-        console.error('Error playing audio:', error);
+      audioRef.current.play().catch(error => {
+        console.error('Playback error:', error);
       });
+      setIsPlaying(true);
     }
-    setIsPlaying(!isPlaying);
   };
 
-  const formatTime = (seconds: number) => {
-    if (!Number.isFinite(seconds)) return '0:00';
-    
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  const handleForward = () => {
+    navigate('/forward', {
+      state: {
+        originalMessage: {
+          id: message.id,
+          audio_url: message.audio_url,
+          subject: message.subject
+        }
+      }
+    });
   };
 
-  const progress = duration > 0 ? (currentTime / duration) : 0;
+  const senderName = `${message.sender.first_name || ''} ${message.sender.last_name || ''}`.trim() || message.sender.email;
 
   return (
-    <div className="relative bg-gray-800/30 backdrop-blur-lg rounded-2xl p-6 mb-4">
-      <div className="flex items-center justify-between mb-8">
-        <div>
-          <h3 className="text-gray-100 font-medium">
-            {message.sender.first_name} {message.sender.last_name}
-          </h3>
-          <p className="text-gray-400 text-sm">
-            {new Date(message.created_at).toLocaleString()}
+    <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-4 space-y-4">
+      <audio 
+        ref={audioRef}
+        src={message.audio_url}
+        onEnded={() => setIsPlaying(false)}
+        className="hidden"
+      />
+      
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-medium text-amber-400 mb-1 truncate">{message.subject}</h3>
+          <p className="text-sm text-gray-400 truncate">From: {senderName}</p>
+          <p className="text-xs text-gray-500 mt-1">
+            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
           </p>
         </div>
-        <button className="text-gray-400 hover:text-gray-300">
-          <ChevronDown className="w-6 h-6" />
+        
+        <div className="flex items-center gap-2">
+          {message.is_urgent && (
+            <span className="shrink-0">
+              <AlertTriangle className="w-4 h-4 text-red-400" />
+            </span>
+          )}
+          {message.is_private && (
+            <span className="shrink-0">
+              <Lock className="w-4 h-4 text-amber-400" />
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <button
+          onClick={handlePlayback}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95"
+        >
+          {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          <span>{isPlaying ? 'Stop' : 'Play'}</span>
         </button>
-      </div>
 
-      <div className="mb-8">
-        <div className="flex items-center h-24 gap-px">
-          {waveform.map((height, i) => (
-            <div key={i} className="flex-1 h-full flex items-center">
-              <div 
-                className={`w-full rounded-full transition-all duration-300 ${
-                  i / waveform.length < progress 
-                    ? 'bg-blue-500/80' 
-                    : 'bg-gray-600/50'
-                }`}
-                style={{ 
-                  height: `${height}%`,
-                  transform: `scaleY(${isPlaying ? '1' : '0.95'})`,
-                  transition: 'transform 0.2s ease'
-                }}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-6">
-        <div className="flex justify-between text-sm text-gray-400">
-          <span>{formatTime(currentTime)}</span>
-          <span>{formatTime(duration)}</span>
-        </div>
-
-        <div className="relative h-1 bg-gray-700/50 rounded-full">
-          <div 
-            className="absolute h-full bg-blue-500/80 rounded-full"
-            style={{ width: `${progress * 100}%` }}
-          />
-          <div 
-            className="absolute h-3 w-3 bg-blue-500 rounded-full shadow-lg -mt-1"
-            style={{ left: `${progress * 100}%` }}
-          />
-        </div>
-
-        <div className="flex items-center justify-between px-4">
-          <button 
-            className={`w-16 h-16 rounded-full ${
-              audioReady 
-                ? 'bg-blue-500/80 hover:bg-blue-500 cursor-pointer' 
-                : 'bg-gray-600/50 cursor-not-allowed'
-            } flex items-center justify-center transition-all duration-300 transform hover:scale-105`}
-            onClick={togglePlayPause}
-            disabled={!audioReady}
-          >
-            {isPlaying ? (
-              <Pause className="w-8 h-8 text-white" />
-            ) : (
-              <Play className="w-8 h-8 text-white ml-1" />
-            )}
-          </button>
-        </div>
-
-        <div className="flex justify-center space-x-8 pt-4">
-          <button className="group flex flex-col items-center">
-            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
-              <Share2 className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
-            </div>
-            <span className="text-xs text-gray-500 mt-1">Forward</span>
-          </button>
-          <button className="group flex flex-col items-center">
-            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
-              <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
-            </div>
-            <span className="text-xs text-gray-500 mt-1">Reply</span>
-          </button>
-          <button className="group flex flex-col items-center">
-            <div className="p-2 rounded-full bg-gray-800/50 group-hover:bg-gray-700/50 transition-colors">
-              <Bookmark className="w-5 h-5 text-gray-400 group-hover:text-gray-300" />
-            </div>
-            <span className="text-xs text-gray-500 mt-1">Save</span>
-          </button>
-        </div>
+        <button
+          onClick={handleForward}
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-amber-400 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95"
+        >
+          <Forward className="w-4 h-4" />
+          <span>Forward</span>
+        </button>
       </div>
     </div>
   );
