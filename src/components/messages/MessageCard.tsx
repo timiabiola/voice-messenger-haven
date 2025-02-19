@@ -1,6 +1,6 @@
 
 import { AlertTriangle, Lock, Play, Square, Forward } from 'lucide-react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -23,20 +23,39 @@ interface MessageCardProps {
 
 export const MessageCard = ({ message }: MessageCardProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
 
-  const handlePlayback = () => {
+  useEffect(() => {
+    // Pre-load the audio when component mounts
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
+  }, [message.audio_url]);
+
+  const handlePlayback = async () => {
     if (!audioRef.current) return;
 
-    if (isPlaying) {
-      audioRef.current.pause();
-      setIsPlaying(false);
-    } else {
-      audioRef.current.play().catch(error => {
-        console.error('Playback error:', error);
-      });
-      setIsPlaying(true);
+    try {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        setIsLoading(true);
+        // Ensure audio is loaded
+        await audioRef.current.load();
+        const playPromise = audioRef.current.play();
+        if (playPromise !== undefined) {
+          await playPromise;
+          setIsPlaying(true);
+        }
+      }
+    } catch (error) {
+      console.error('Playback error:', error);
+      toast.error('Failed to play audio message');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,6 +71,17 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     });
   };
 
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
+  };
+
+  const handleAudioError = (e: Event) => {
+    console.error('Audio playback error:', e);
+    setIsPlaying(false);
+    setIsLoading(false);
+    toast.error('Error playing audio message');
+  };
+
   const senderName = `${message.sender.first_name || ''} ${message.sender.last_name || ''}`.trim() || message.sender.email;
 
   return (
@@ -59,7 +89,9 @@ export const MessageCard = ({ message }: MessageCardProps) => {
       <audio 
         ref={audioRef}
         src={message.audio_url}
-        onEnded={() => setIsPlaying(false)}
+        onEnded={handleAudioEnded}
+        onError={handleAudioError}
+        preload="none"
         className="hidden"
       />
       
@@ -89,10 +121,11 @@ export const MessageCard = ({ message }: MessageCardProps) => {
       <div className="flex items-center justify-between gap-4">
         <button
           onClick={handlePlayback}
-          className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95"
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-          <span>{isPlaying ? 'Stop' : 'Play'}</span>
+          <span>{isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}</span>
         </button>
 
         <button
