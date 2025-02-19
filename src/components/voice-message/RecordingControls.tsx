@@ -57,9 +57,10 @@ export const RecordingControls = ({
             </button>
             <button 
               className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} bg-red-500 rounded-full flex items-center justify-center text-white hover:bg-red-600 transition-colors ${
-                isRecording ? 'animate-pulse' : ''
+                isRecording && !isPaused ? 'animate-pulse' : ''
               }`}
-              disabled={true}
+              onClick={isPaused ? onResumeRecording : onPauseRecording}
+              disabled={isProcessing}
             >
               <Mic className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
             </button>

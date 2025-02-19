@@ -119,7 +119,12 @@ export function useRecording() {
       });
       
       mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
+      
+      // Only reset chunks if we're starting a new recording
+      if (!currentRecordingId) {
+        audioChunksRef.current = [];
+        setRecordingTime(0);
+      }
 
       mediaRecorder.ondataavailable = async (event) => {
         console.log('Received audio chunk:', event.data.size, 'bytes');
@@ -133,7 +138,6 @@ export function useRecording() {
       console.log('MediaRecorder started');
       setIsRecording(true);
       setIsPaused(false);
-      setRecordingTime(0);
     } catch (error) {
       console.error('Error accessing microphone:', error);
       toast.error('Could not access microphone. Please check permissions.');
@@ -158,6 +162,8 @@ export function useRecording() {
       // Save final state
       await saveRecordingState(audioChunksRef.current, 'completed');
       setCurrentRecordingId(null);
+      // Reset recording time when stopping
+      setRecordingTime(0);
       console.log('Recording stopped, tracks cleaned up');
     }
   };
