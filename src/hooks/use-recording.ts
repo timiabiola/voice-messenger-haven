@@ -100,9 +100,16 @@ export function useRecording() {
     }
   };
 
-  const startRecording = async () => {
+  const requestMicrophonePermissions = async () => {
     try {
-      console.log('Requesting microphone access...');
+      // First check if permissions are already granted
+      const permissions = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+      
+      if (permissions.state === 'denied') {
+        throw new Error('Microphone access is blocked. Please enable it in your device settings.');
+      }
+
+      // Request microphone access
       const stream = await navigator.mediaDevices.getUserMedia({ 
         audio: {
           echoCancellation: true,
@@ -111,6 +118,25 @@ export function useRecording() {
           sampleRate: 44100,
         } 
       });
+
+      return stream;
+    } catch (error) {
+      console.error('Error requesting microphone permissions:', error);
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          throw new Error('Please grant microphone permissions in your device settings to record audio.');
+        } else if (error.name === 'NotFoundError') {
+          throw new Error('No microphone found. Please ensure your device has a working microphone.');
+        }
+      }
+      throw error;
+    }
+  };
+
+  const startRecording = async () => {
+    try {
+      console.log('Requesting microphone access...');
+      const stream = await requestMicrophonePermissions();
       
       console.log('Microphone access granted, initializing MediaRecorder...');
       streamRef.current = stream;
@@ -140,7 +166,8 @@ export function useRecording() {
       setIsPaused(false);
     } catch (error) {
       console.error('Error accessing microphone:', error);
-      toast.error('Could not access microphone. Please check permissions.');
+      toast.error(error instanceof Error ? error.message : 'Could not access microphone. Please check permissions.');
+      throw error;
     }
   };
 
