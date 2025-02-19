@@ -88,10 +88,10 @@ export default function Index() {
   }, [isAdmin]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="p-4">
-        <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto space-y-6">
+      <main className="flex-1 w-full flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl px-4 space-y-6">
           <h1 className="text-3xl font-bold text-primary text-center">
             Welcome to Voice Haven
           </h1>
