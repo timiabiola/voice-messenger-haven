@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -103,7 +102,6 @@ export default function Index() {
 
   return (
     <div className="flex flex-col min-h-screen bg-black">
-      {/* Top Bar */}
       <div className="w-full py-4 px-6 bg-black/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex justify-between items-center">
           <button 
@@ -125,24 +123,11 @@ export default function Index() {
         </div>
       </div>
 
-      {/* Main Content */}
       <main className="flex-1 w-full pt-16 pb-8">
         <div className="container mx-auto px-4 md:px-6 lg:px-8">
           <div className="max-w-6xl mx-auto">
             <div className="space-y-12">
-              {/* Welcome Section */}
-              <div className="text-center md:text-left">
-                <h1 className="text-4xl md:text-5xl font-bold text-amber-400 mb-4">
-                  Welcome to Voice Haven
-                </h1>
-                <p className="text-gray-400 text-lg">
-                  Your secure space for voice messaging
-                </p>
-              </div>
-
-              {/* Feature Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Messages */}
                 <button 
                   onClick={() => navigate('/inbox-0')}
                   className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
@@ -163,7 +148,6 @@ export default function Index() {
                   </div>
                 </button>
 
-                {/* Notes */}
                 <button 
                   onClick={() => navigate('/notes')}
                   className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
@@ -179,7 +163,6 @@ export default function Index() {
                   </div>
                 </button>
 
-                {/* Contacts */}
                 <button 
                   onClick={() => navigate('/contacts')}
                   className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
@@ -195,7 +178,6 @@ export default function Index() {
                   </div>
                 </button>
 
-                {/* Saved Items */}
                 <button 
                   onClick={() => navigate('/saved')}
                   className="group p-6 bg-zinc-900/50 rounded-2xl border border-zinc-800 hover:border-amber-400/50 transition-all"
@@ -216,7 +198,6 @@ export default function Index() {
         </div>
       </main>
 
-      {/* Record Button */}
       <button 
         onClick={() => navigate('/new')}
         className="fixed bottom-6 right-6 w-14 h-14 bg-amber-400 rounded-full flex items-center justify-center shadow-lg hover:bg-amber-300 transition-colors group"
