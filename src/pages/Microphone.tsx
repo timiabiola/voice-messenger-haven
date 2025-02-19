@@ -77,23 +77,27 @@ const Microphone = () => {
         style={{ minHeight: `calc(100vh - ${HEADER_HEIGHT}px)` }}
       >
         <div className="w-full max-w-xl mx-auto">
-          <div className="flex flex-col items-center space-y-6">
-            <Recipients 
-              recipients={recipients}
-              onAddRecipient={(profile) => setRecipients([...recipients, profile])}
-              onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
-              isProcessing={isProcessing}
-            />
+          <div className="flex flex-col items-center text-center space-y-8">
+            <div className="w-full flex flex-col items-center text-center space-y-2">
+              <Recipients 
+                recipients={recipients}
+                onAddRecipient={(profile) => setRecipients([...recipients, profile])}
+                onRemoveRecipient={(profileId) => setRecipients(recipients.filter(r => r.id !== profileId))}
+                isProcessing={isProcessing}
+              />
+            </div>
 
-            <MessageOptions 
-              subject={subject}
-              onSubjectChange={setSubject}
-              isUrgent={isUrgent}
-              onUrgentChange={setIsUrgent}
-              isPrivate={isPrivate}
-              onPrivateChange={setIsPrivate}
-              isProcessing={isProcessing}
-            />
+            <div className="w-full flex flex-col items-center text-center space-y-2">
+              <MessageOptions 
+                subject={subject}
+                onSubjectChange={setSubject}
+                isUrgent={isUrgent}
+                onUrgentChange={setIsUrgent}
+                isPrivate={isPrivate}
+                onPrivateChange={setIsPrivate}
+                isProcessing={isProcessing}
+              />
+            </div>
 
             <RecordingControls 
               isRecording={isRecording}
