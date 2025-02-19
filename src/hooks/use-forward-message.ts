@@ -33,7 +33,6 @@ export const useForwardMessage = () => {
     
     setOriginalMessage(state.originalMessage);
     messageUpload.setSubject(`Fwd: ${state.originalMessage.subject}`);
-    audioContext.current = new AudioContext();
   }, [location.state, navigate, messageUpload.setSubject]);
 
   const handleSendRecording = async () => {
@@ -51,23 +50,30 @@ export const useForwardMessage = () => {
         return;
       }
 
+      // Initialize AudioContext only when needed
+      if (!audioContext.current) {
+        audioContext.current = new AudioContext();
+      }
+
       // Decode preamble
       const preambleBlob = new Blob(preambleChunks, { type: 'audio/webm;codecs=opus' });
       const preambleArrayBuffer = await preambleBlob.arrayBuffer();
-      const preambleAudioBuffer = await audioContext.current!.decodeAudioData(preambleArrayBuffer);
+      const preambleAudioBuffer = await audioContext.current.decodeAudioData(preambleArrayBuffer);
 
-      // Fetch and decode original message
+      // Fetch and decode original message silently
+      console.log('Fetching original message:', originalMessage.audio_url);
       const originalAudioResponse = await fetch(originalMessage.audio_url);
       if (!originalAudioResponse.ok) {
         throw new Error('Failed to fetch original message audio');
       }
       const originalAudioBlob = await originalAudioResponse.blob();
       const originalArrayBuffer = await originalAudioBlob.arrayBuffer();
-      const originalAudioBuffer = await audioContext.current!.decodeAudioData(originalArrayBuffer);
+      const originalAudioBuffer = await audioContext.current.decodeAudioData(originalArrayBuffer);
 
-      // Combine audio buffers
+      // Combine audio buffers without playing them
+      console.log('Combining audio buffers');
       const combinedBuffer = await combineAudioBuffers(
-        audioContext.current!,
+        audioContext.current,
         preambleAudioBuffer,
         originalAudioBuffer
       );
@@ -76,7 +82,7 @@ export const useForwardMessage = () => {
       const renderedBuffer = await renderAudioBuffer(
         combinedBuffer,
         combinedBuffer.numberOfChannels,
-        audioContext.current!.sampleRate
+        audioContext.current.sampleRate
       );
 
       // Record final audio
@@ -93,6 +99,14 @@ export const useForwardMessage = () => {
     } finally {
       recording.setIsProcessing(false);
       recording.stopRecording();
+      // Clean up AudioContext
+      if (audioContext.current?.state !== 'closed') {
+        try {
+          await audioContext.current?.close();
+        } catch (error) {
+          console.error('Error closing AudioContext:', error);
+        }
+      }
     }
   };
 
