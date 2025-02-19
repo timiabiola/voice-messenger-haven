@@ -89,10 +89,14 @@ export default function Index() {
     <div className="flex flex-col min-h-screen bg-black">
       <TopBar isAdmin={isAdmin} />
       
-      <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-12">
-        <div className="w-full max-w-3xl mx-auto space-y-8">
-          <WelcomeSection />
-          <FeatureGrid unreadCount={unreadCount} />
+      <main className="flex-1 w-full flex flex-col items-center justify-center">
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl px-4 flex flex-col items-center">
+          <div className="w-full">
+            <div className="space-y-8 w-full">
+              <WelcomeSection />
+              <FeatureGrid unreadCount={unreadCount} />
+            </div>
+          </div>
         </div>
       </main>
 
