@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -88,20 +87,16 @@ export default function Index() {
   }, [isAdmin]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <HomeHeader unreadCount={unreadCount} isAdmin={isAdmin} />
-      <main className="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-start p-4">
-        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-          <div className="grid gap-6 justify-items-center">
-            <h1 className="text-3xl font-bold text-primary text-center w-full">
+      <main className="flex-1 w-full flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
+          <div className="grid gap-6">
+            <h1 className="text-3xl font-bold text-primary text-center">
               Welcome to Voice Haven
             </h1>
-            <div className="w-full">
-              <RecentMessages messages={messages} unreadCount={unreadCount} />
-            </div>
-            <div className="w-full">
-              <FeatureGrid unreadCount={unreadCount} />
-            </div>
+            <RecentMessages messages={messages} unreadCount={unreadCount} />
+            <FeatureGrid unreadCount={unreadCount} />
           </div>
         </div>
       </main>

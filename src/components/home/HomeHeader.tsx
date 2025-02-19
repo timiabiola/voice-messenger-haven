@@ -25,8 +25,8 @@ export const HomeHeader = ({ unreadCount, isAdmin }: HomeHeaderProps) => {
 
   return (
     <header className="sticky top-0 left-0 right-0 z-10 bg-background/80 backdrop-blur-md border-b border-border">
-      <div className="max-w-md md:max-w-lg lg:max-w-xl mx-auto">
-        <div className="flex justify-between items-center p-4">
+      <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto px-4">
+        <div className="flex justify-between items-center py-4">
           <Button
             variant="ghost"
             onClick={handleLogout}
@@ -48,7 +48,7 @@ export const HomeHeader = ({ unreadCount, isAdmin }: HomeHeaderProps) => {
             </Button>
           )}
         </div>
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4">
+        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
           <h1 className="text-2xl font-bold text-primary">Welcome to the App</h1>
           {isAdmin && (
             <Button

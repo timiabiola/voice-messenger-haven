@@ -9,10 +9,10 @@ interface GridLayoutProps {
 
 const GridLayout = ({ children }: GridLayoutProps) => {
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
-      <main className="min-h-[calc(100vh-8rem)] flex flex-col items-center justify-start p-4">
-        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto">
+      <main className="flex-1 w-full flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md md:max-w-lg lg:max-w-xl px-4">
           {children}
         </div>
       </main>
