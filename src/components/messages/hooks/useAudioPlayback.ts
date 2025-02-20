@@ -28,7 +28,6 @@ export const useAudioPlayback = (audio_url: string) => {
         return;
       }
 
-      console.log('Fetching audio with auth token');
       const response = await fetch(audio_url, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
@@ -53,8 +52,6 @@ export const useAudioPlayback = (audio_url: string) => {
         audioRef.current.src = blobUrl;
         await audioRef.current.load();
       }
-
-      console.log('Audio loaded successfully');
     } catch (error) {
       console.error('Error loading audio:', error);
       
@@ -107,7 +104,6 @@ export const useAudioPlayback = (audio_url: string) => {
         audioRef.current.currentTime = 0;
       }
 
-      console.log('Starting playback');
       await audioRef.current.play();
       setIsPlaying(true);
 
