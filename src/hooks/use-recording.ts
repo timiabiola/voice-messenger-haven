@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { requestMicrophonePermissions } from '@/utils/microphone-permissions';
 import { saveRecordingState } from '@/utils/recording-state';
@@ -36,11 +37,11 @@ export function useRecording() {
 
   const getSupportedMimeType = () => {
     const types = [
-      'audio/webm;codecs=opus',
-      'audio/webm',
-      'audio/ogg;codecs=opus',
-      'audio/mp4;codecs=opus',
-      'audio/mpeg'
+      'audio/mp4;codecs=mp4a.40.2', // AAC in MP4 container
+      'audio/mp4',
+      'audio/aac',
+      'audio/webm;codecs=opus', // Fallback for browsers that don't support MP4
+      'audio/webm'
     ];
     
     for (const type of types) {
@@ -70,7 +71,6 @@ export function useRecording() {
       
       mediaRecorderRef.current = mediaRecorder;
       
-      // Only reset chunks if we're starting a new recording
       if (!currentRecordingId) {
         audioChunksRef.current = [];
         setRecordingTime(0);
@@ -165,7 +165,7 @@ export function useRecording() {
     stopRecording,
     pauseRecording,
     resumeRecording,
-    getRecordingData,
+    getRecordingData: () => audioChunksRef.current,
     createAudioFromChunks,
     audioChunks: audioChunksRef.current
   };

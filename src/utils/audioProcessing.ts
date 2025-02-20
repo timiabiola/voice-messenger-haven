@@ -45,9 +45,18 @@ export const recordAudioBuffer = async (renderedBuffer: AudioBuffer): Promise<Bl
 
   source.start();
 
+  // Set up MediaRecorder options for AAC in MP4
+  let recorderOptions = { mimeType: 'audio/mp4;codecs=mp4a.40.2' };
+  if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+    recorderOptions = { mimeType: 'audio/mp4' };
+    if (!MediaRecorder.isTypeSupported(recorderOptions.mimeType)) {
+      console.warn('MP4/AAC not supported, falling back to WebM/Opus');
+      recorderOptions = { mimeType: 'audio/webm;codecs=opus' };
+    }
+  }
+
   const recordedChunks: Blob[] = [];
-  const options = { mimeType: 'audio/webm;codecs=opus' };
-  const mediaRecorder = new MediaRecorder(dest.stream, options);
+  const mediaRecorder = new MediaRecorder(dest.stream, recorderOptions);
 
   mediaRecorder.ondataavailable = (event) => {
     if (event.data && event.data.size > 0) {
@@ -62,9 +71,9 @@ export const recordAudioBuffer = async (renderedBuffer: AudioBuffer): Promise<Bl
     source.onended = () => {
       setTimeout(() => {
         mediaRecorder.stop();
-      }, 100);
+      }, 100); // Add small delay to ensure all audio is captured
     };
   });
 
-  return new Blob(recordedChunks, { type: 'audio/webm;codecs=opus' });
+  return new Blob(recordedChunks, { type: recorderOptions.mimeType });
 };

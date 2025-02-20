@@ -29,15 +29,20 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         controls={false}
         className="hidden"
       >
-        {/* Primary format - WebM with Opus codec */}
+        {/* Primary format - MP4 with AAC codec */}
+        <source 
+          src={audioUrlWithCache} 
+          type="audio/mp4;codecs=mp4a.40.2"
+        />
+        {/* Secondary format - AAC */}
+        <source 
+          src={audioUrlWithCache} 
+          type="audio/aac"
+        />
+        {/* Fallback format - WebM with Opus codec */}
         <source 
           src={audioUrlWithCache} 
           type="audio/webm;codecs=opus"
-        />
-        {/* Fallback format - MP4 with AAC codec */}
-        <source 
-          src={audioUrlWithCache.replace('.webm', '.m4a')} 
-          type="audio/mp4;codecs=mp4a.40.2"
         />
         {/* Generic fallback */}
         <source 
