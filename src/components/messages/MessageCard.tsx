@@ -5,6 +5,9 @@ import { MessageActions } from './MessageActions';
 import { useAudioPlayback } from './hooks/useAudioPlayback';
 
 export const MessageCard = ({ message }: MessageCardProps) => {
+  // Add cache buster to audio URL
+  const audioUrlWithCache = `${message.audio_url}?t=${Date.now()}`;
+  
   const {
     isPlaying,
     isLoading,
@@ -12,7 +15,7 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     handlePlayback,
     handleAudioEnded,
     handleAudioError
-  } = useAudioPlayback(message.audio_url);
+  } = useAudioPlayback(audioUrlWithCache);
 
   return (
     <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-4 space-y-4">
@@ -28,17 +31,17 @@ export const MessageCard = ({ message }: MessageCardProps) => {
       >
         {/* Primary format - WebM with Opus codec */}
         <source 
-          src={message.audio_url} 
+          src={audioUrlWithCache} 
           type="audio/webm;codecs=opus"
         />
         {/* Fallback format - MP4 with AAC codec */}
         <source 
-          src={message.audio_url.replace('.webm', '.m4a')} 
+          src={audioUrlWithCache.replace('.webm', '.m4a')} 
           type="audio/mp4;codecs=mp4a.40.2"
         />
         {/* Generic fallback */}
         <source 
-          src={message.audio_url} 
+          src={audioUrlWithCache} 
           type="audio/*"
         />
       </audio>

@@ -1,5 +1,5 @@
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useAuthSession } from './useAuthSession';
@@ -10,11 +10,22 @@ export const useAudioPlayback = (audio_url: string) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const retryTimeoutRef = useRef<number>();
   const navigate = useNavigate();
   
   const { validateAndRefreshSession } = useAuthSession();
   const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
   const { audioBlob, createBlob, clearBlob } = useAudioBlob();
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (retryTimeoutRef.current) {
+        window.clearTimeout(retryTimeoutRef.current);
+      }
+      clearBlob();
+    };
+  }, [clearBlob]);
 
   const loadAudio = async () => {
     try {
@@ -92,6 +103,7 @@ export const useAudioPlayback = (audio_url: string) => {
         setUserInteracted(true);
         if (audioRef.current) {
           try {
+            // Initialize audio on first interaction for iOS
             await audioRef.current.play();
             audioRef.current.pause();
             audioRef.current.currentTime = 0;
@@ -142,7 +154,7 @@ export const useAudioPlayback = (audio_url: string) => {
   };
 
   const handleAudioError = (event: React.SyntheticEvent<HTMLAudioElement, Event>) => {
-    console.error('Audio playback error:', {
+    const errorDetails = {
       error: audioRef.current?.error,
       event: event,
       src: audioRef.current?.currentSrc,
@@ -151,12 +163,24 @@ export const useAudioPlayback = (audio_url: string) => {
         src: source.src,
         type: source.type
       }))
-    });
+    };
+    
+    console.error('Audio playback error:', errorDetails);
+    
     setIsPlaying(false);
     setIsLoading(false);
-    toast.error('Error playing audio message');
-    clearBlob();
-    loadAudio();
+    
+    if (isMobile) {
+      clearBlob();
+      // Retry loading after a delay on mobile
+      retryTimeoutRef.current = window.setTimeout(() => {
+        loadAudio();
+      }, 1000);
+    } else {
+      toast.error('Error playing audio message');
+      clearBlob();
+      loadAudio();
+    }
   };
 
   return {
