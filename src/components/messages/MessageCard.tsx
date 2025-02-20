@@ -25,7 +25,23 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         webkit-playsinline="true"
         controls={false}
         className="hidden"
-      />
+      >
+        {/* Primary format - WebM with Opus codec */}
+        <source 
+          src={message.audio_url} 
+          type="audio/webm;codecs=opus"
+        />
+        {/* Fallback format - MP4 with AAC codec */}
+        <source 
+          src={message.audio_url.replace('.webm', '.m4a')} 
+          type="audio/mp4;codecs=mp4a.40.2"
+        />
+        {/* Generic fallback */}
+        <source 
+          src={message.audio_url} 
+          type="audio/*"
+        />
+      </audio>
       
       <MessageHeader message={message} />
       <MessageActions 

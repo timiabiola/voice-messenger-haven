@@ -32,7 +32,7 @@ export const useAudioPlayback = (audio_url: string) => {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           'Cache-Control': 'no-cache',
-          'Accept': 'audio/webm,audio/*;q=0.9,*/*;q=0.8' // Prefer WebM but accept fallbacks
+          'Accept': 'audio/webm,audio/mp4,audio/*;q=0.9,*/*;q=0.8'
         }
       });
 
@@ -54,15 +54,7 @@ export const useAudioPlayback = (audio_url: string) => {
       const blobUrl = await createBlob(response);
 
       if (audioRef.current) {
-        // Create a new source element with the correct type
-        const source = document.createElement('source');
-        source.src = blobUrl;
-        source.type = contentType || 'audio/webm;codecs=opus';
-        
-        // Clear existing sources and add the new one
-        audioRef.current.innerHTML = '';
-        audioRef.current.appendChild(source);
-        
+        // Let the browser handle format selection through source elements
         await audioRef.current.load();
       }
     } catch (error) {
