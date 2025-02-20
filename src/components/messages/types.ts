@@ -8,6 +8,7 @@ export interface Message {
   is_urgent: boolean;
   is_private: boolean;
   sender: {
+    id: string;
     first_name: string | null;
     last_name: string | null;
     email: string;

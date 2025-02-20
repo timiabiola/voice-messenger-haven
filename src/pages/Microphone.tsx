@@ -42,10 +42,16 @@ const Microphone = () => {
 
   useEffect(() => {
     const selectedProfile = location.state?.selectedProfile;
+    const replySubject = location.state?.replySubject;
+    
     if (selectedProfile) {
       setRecipients([selectedProfile]);
     }
-  }, [location.state, setRecipients]);
+    
+    if (replySubject) {
+      setSubject(replySubject);
+    }
+  }, [location.state, setRecipients, setSubject]);
 
   const handleSendRecording = async () => {
     setIsProcessing(true);

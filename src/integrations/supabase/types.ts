@@ -839,6 +839,7 @@ export type Database = {
           is_private: boolean | null
           is_urgent: boolean | null
           phone_number: string | null
+          sender: Json | null
           sender_id: string | null
           subject: string | null
           title: string | null
@@ -854,6 +855,7 @@ export type Database = {
           is_private?: boolean | null
           is_urgent?: boolean | null
           phone_number?: string | null
+          sender?: Json | null
           sender_id?: string | null
           subject?: string | null
           title?: string | null
@@ -869,6 +871,7 @@ export type Database = {
           is_private?: boolean | null
           is_urgent?: boolean | null
           phone_number?: string | null
+          sender?: Json | null
           sender_id?: string | null
           subject?: string | null
           title?: string | null
@@ -1026,6 +1029,12 @@ export type Database = {
           error_cat: Database["public"]["Enums"]["delivery_error_category"]
         }
         Returns: undefined
+      }
+      get_sender_profile: {
+        Args: {
+          sender_id: string
+        }
+        Returns: Json
       }
       has_role:
         | {
