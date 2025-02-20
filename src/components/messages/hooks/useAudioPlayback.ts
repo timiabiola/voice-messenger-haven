@@ -30,6 +30,7 @@ export const useAudioPlayback = (audio_url: string) => {
     try {
       setIsLoading(true);
       
+      // First try to get the current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
@@ -50,14 +51,26 @@ export const useAudioPlayback = (audio_url: string) => {
         return;
       }
 
-      // Validate the session by making a test request
+      // Try to validate session first
       const { error: validationError } = await supabase.auth.getUser();
       if (validationError) {
         console.error('Session validation error:', validationError);
-        // Force refresh the session
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          toast.error('Your session has expired. Please sign in again.');
+        
+        try {
+          // Try to refresh the session
+          const { error: refreshError } = await supabase.auth.refreshSession();
+          if (refreshError) {
+            if (refreshError.message.includes('refresh_token_not_found')) {
+              console.error('Invalid refresh token, redirecting to auth');
+              toast.error('Your session has expired. Please sign in again.');
+              navigate('/auth');
+              return;
+            }
+            throw refreshError;
+          }
+        } catch (refreshError) {
+          console.error('Session refresh failed:', refreshError);
+          toast.error('Please sign in again to continue');
           navigate('/auth');
           return;
         }
@@ -68,10 +81,16 @@ export const useAudioPlayback = (audio_url: string) => {
         return;
       }
 
+      // Get fresh session after potential refresh
+      const { data: { session: freshSession } } = await supabase.auth.getSession();
+      if (!freshSession) {
+        throw new Error('No session after refresh');
+      }
+
       console.log('Fetching audio with auth token');
       const response = await fetch(audio_url, {
         headers: {
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${freshSession.access_token}`,
           'Cache-Control': 'no-cache'
         }
       });
@@ -107,7 +126,10 @@ export const useAudioPlayback = (audio_url: string) => {
       
       // Check if it's an auth error
       if (error instanceof Error && 
-          (error.message.includes('auth') || error.message.includes('401') || error.message.includes('403'))) {
+          (error.message.includes('auth') || 
+           error.message.includes('401') || 
+           error.message.includes('403') ||
+           error.message.includes('refresh_token_not_found'))) {
         toast.error('Please sign in again to continue');
         navigate('/auth');
         return;
@@ -139,7 +161,7 @@ export const useAudioPlayback = (audio_url: string) => {
         return;
       }
 
-      // First check session before any playback
+      // Check session before any playback attempt
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         toast.error('Please sign in to play messages');
@@ -177,7 +199,9 @@ export const useAudioPlayback = (audio_url: string) => {
       
       // Handle auth errors specifically
       if (error instanceof Error && 
-          (error.message.includes('auth') || error.message.includes('unauthorized'))) {
+          (error.message.includes('auth') || 
+           error.message.includes('unauthorized') ||
+           error.message.includes('refresh_token_not_found'))) {
         toast.error('Please sign in again to continue');
         navigate('/auth');
         return;
