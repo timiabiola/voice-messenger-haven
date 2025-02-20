@@ -27,9 +27,8 @@ export function useMessageUpload() {
     console.log('Starting voice message upload process...');
 
     // Create a single Blob with the correct MIME type
-    const audioBlob = new Blob(audioChunks, { 
-      type: 'audio/webm;codecs=opus'
-    });
+    const mimeType = 'audio/mp4;codecs=mp4a.40.2';
+    const audioBlob = new Blob(audioChunks, { type: mimeType });
     
     // Calculate duration based on the audio chunks
     let duration = 0;
@@ -50,7 +49,7 @@ export function useMessageUpload() {
           resolve(Math.min(estimatedDuration, 300));
         }, 3000);
 
-        audio.addEventListener('loadedmetadata', () => {
+        const handleLoadedMetadata = () => {
           clearTimeout(timeoutId);
           if (Number.isFinite(audio.duration) && audio.duration > 0) {
             const calculatedDuration = Math.round(audio.duration);
@@ -61,15 +60,17 @@ export function useMessageUpload() {
             const estimatedDuration = Math.ceil(audioBlob.size / 1024);
             resolve(Math.min(estimatedDuration, 300));
           }
-        });
+        };
 
-        audio.addEventListener('error', (e) => {
+        const handleError = (e: Event) => {
           clearTimeout(timeoutId);
           cleanup();
           const estimatedDuration = Math.ceil(audioBlob.size / 1024);
           resolve(Math.min(estimatedDuration, 300));
-        });
+        };
 
+        audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+        audio.addEventListener('error', handleError);
         audio.src = objectUrl;
       });
 
@@ -83,14 +84,13 @@ export function useMessageUpload() {
 
     console.log('Final audio duration:', duration, 'seconds');
     
-    const fileName = `voice_message_${Date.now()}.webm`;
+    const fileName = `voice_message_${Date.now()}.m4a`;
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
 
-    // Explicitly set content type for proper MIME type handling
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice_messages')
       .upload(fileName, audioBlob, {
-        contentType: 'audio/webm;codecs=opus',
+        contentType: mimeType,
         cacheControl: '3600',
         upsert: false
       });

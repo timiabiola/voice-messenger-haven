@@ -151,6 +151,7 @@ export function useRecording() {
   const createAudioFromChunks = () => {
     if (audioChunksRef.current.length === 0) return null;
     
+    // Use the MIME type from the first chunk, or get a supported type
     const mimeType = audioChunksRef.current[0].type || getSupportedMimeType();
     return new Blob(audioChunksRef.current, { type: mimeType });
   };
