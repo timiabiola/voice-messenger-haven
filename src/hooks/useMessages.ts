@@ -37,6 +37,7 @@ export const useMessages = () => {
           is_urgent,
           is_private,
           sender:profiles (
+            id,
             first_name,
             last_name,
             email
