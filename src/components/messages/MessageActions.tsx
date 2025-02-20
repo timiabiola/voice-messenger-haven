@@ -1,5 +1,5 @@
 
-import { Play, Square, Forward } from 'lucide-react';
+import { Play, Square, Forward, Reply } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Message } from './types';
 
@@ -25,16 +25,35 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
     });
   };
 
+  const handleReply = () => {
+    navigate('/microphone', {
+      state: {
+        selectedProfile: message.sender,
+        replySubject: `Re: ${message.subject}`
+      }
+    });
+  };
+
   return (
     <div className="flex items-center justify-between gap-4">
-      <button
-        onClick={onPlayPause}
-        disabled={isLoading}
-        className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-        <span>{isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}</span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onPlayPause}
+          disabled={isLoading}
+          className="flex items-center gap-2 px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isPlaying ? <Square className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+          <span>{isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}</span>
+        </button>
+
+        <button
+          onClick={handleReply}
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-amber-400 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95"
+        >
+          <Reply className="w-4 h-4" />
+          <span>Reply</span>
+        </button>
+      </div>
 
       <button
         onClick={handleForward}
