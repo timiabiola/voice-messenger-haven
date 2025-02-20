@@ -31,7 +31,8 @@ export const useAudioPlayback = (audio_url: string) => {
       const response = await fetch(audio_url, {
         headers: {
           Authorization: `Bearer ${session.access_token}`,
-          'Cache-Control': 'no-cache'
+          'Cache-Control': 'no-cache',
+          'Accept': 'audio/webm,audio/*;q=0.9,*/*;q=0.8' // Prefer WebM but accept fallbacks
         }
       });
 
@@ -46,10 +47,16 @@ export const useAudioPlayback = (audio_url: string) => {
         throw new Error(`Failed to fetch audio: ${response.status}`);
       }
 
+      // Log content type for debugging
+      const contentType = response.headers.get('content-type');
+      console.log('Audio content type:', contentType);
+
       const blobUrl = await createBlob(response);
 
       if (audioRef.current) {
         audioRef.current.src = blobUrl;
+        // Set MIME type explicitly on audio element
+        audioRef.current.type = contentType || 'audio/webm;codecs=opus';
         await audioRef.current.load();
       }
     } catch (error) {
@@ -86,9 +93,13 @@ export const useAudioPlayback = (audio_url: string) => {
       if (isMobile && !userInteracted) {
         setUserInteracted(true);
         if (audioRef.current) {
-          await audioRef.current.play().catch(() => {});
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
+          try {
+            await audioRef.current.play();
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+          } catch (error) {
+            console.error('Mobile playback test failed:', error);
+          }
         }
       }
 
@@ -137,7 +148,8 @@ export const useAudioPlayback = (audio_url: string) => {
       error: audioRef.current?.error,
       event: event,
       src: audioRef.current?.currentSrc,
-      readyState: audioRef.current?.readyState
+      readyState: audioRef.current?.readyState,
+      type: audioRef.current?.type // Log the audio type
     });
     setIsPlaying(false);
     setIsLoading(false);

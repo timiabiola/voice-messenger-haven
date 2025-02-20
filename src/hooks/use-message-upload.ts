@@ -26,9 +26,10 @@ export function useMessageUpload() {
 
     console.log('Starting voice message upload process...');
 
-    // Create a single Blob from all chunks with the correct MIME type
-    const audioBlob = new Blob(audioChunks, { type: 'audio/webm;codecs=opus' });
-    const fileName = `voice_message_${Date.now()}.webm`;
+    // Create a single Blob with the correct MIME type
+    const audioBlob = new Blob(audioChunks, { 
+      type: 'audio/webm;codecs=opus'
+    });
     
     // Calculate duration based on the audio chunks
     let duration = 0;
@@ -45,10 +46,8 @@ export function useMessageUpload() {
 
         const timeoutId = setTimeout(() => {
           cleanup();
-          // If timeout occurs, estimate duration based on blob size
-          // Assuming typical opus compression ratio
-          const estimatedDuration = Math.ceil(audioBlob.size / 1024); // Rough estimate
-          resolve(Math.min(estimatedDuration, 300)); // Cap at 5 minutes
+          const estimatedDuration = Math.ceil(audioBlob.size / 1024);
+          resolve(Math.min(estimatedDuration, 300));
         }, 3000);
 
         audio.addEventListener('loadedmetadata', () => {
@@ -59,7 +58,6 @@ export function useMessageUpload() {
             resolve(calculatedDuration);
           } else {
             cleanup();
-            // Fallback to blob size estimation
             const estimatedDuration = Math.ceil(audioBlob.size / 1024);
             resolve(Math.min(estimatedDuration, 300));
           }
@@ -68,7 +66,6 @@ export function useMessageUpload() {
         audio.addEventListener('error', (e) => {
           clearTimeout(timeoutId);
           cleanup();
-          // Fallback to blob size estimation
           const estimatedDuration = Math.ceil(audioBlob.size / 1024);
           resolve(Math.min(estimatedDuration, 300));
         });
@@ -79,20 +76,23 @@ export function useMessageUpload() {
       duration = await durationPromise;
     } catch (error) {
       console.error('Error calculating duration:', error);
-      // Last resort fallback
       duration = Math.ceil(audioBlob.size / 1024);
     }
 
-    // Ensure we have a valid duration
-    duration = Math.max(1, Math.min(duration, 300)); // Between 1 second and 5 minutes
+    duration = Math.max(1, Math.min(duration, 300));
 
     console.log('Final audio duration:', duration, 'seconds');
-    console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
     
+    const fileName = `voice_message_${Date.now()}.webm`;
+    console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
+
+    // Explicitly set content type for proper MIME type handling
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice_messages')
       .upload(fileName, audioBlob, {
-        contentType: 'audio/webm;codecs=opus'
+        contentType: 'audio/webm;codecs=opus',
+        cacheControl: '3600',
+        upsert: false
       });
 
     if (uploadError) {
