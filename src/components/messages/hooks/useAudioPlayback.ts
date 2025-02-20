@@ -1,96 +1,37 @@
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuthSession } from './useAuthSession';
+import { useMobileInteraction } from './useMobileInteraction';
+import { useAudioBlob } from './useAudioBlob';
 
 export const useAudioPlayback = (audio_url: string) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [audioBlob, setAudioBlob] = useState<string | null>(null);
-  const [userInteracted, setUserInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-
-  useEffect(() => {
-    if (isMobile) {
-      const handleFirstTouch = () => {
-        setUserInteracted(true);
-        document.removeEventListener('touchstart', handleFirstTouch);
-      };
-      
-      document.addEventListener('touchstart', handleFirstTouch);
-      return () => document.removeEventListener('touchstart', handleFirstTouch);
-    }
-  }, [isMobile]);
+  
+  const { validateAndRefreshSession } = useAuthSession();
+  const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
+  const { audioBlob, createBlob, clearBlob } = useAudioBlob();
 
   const loadAudio = async () => {
     try {
       setIsLoading(true);
       
-      // First try to get the current session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error('Session error:', sessionError);
-        toast.error('Session expired. Please sign in again.');
-        navigate('/auth');
-        return;
-      }
-
-      if (!session) {
-        console.log('No active session found');
-        navigate('/auth', { 
-          state: { 
-            returnTo: window.location.pathname,
-            message: 'Please sign in to play audio messages'
-          } 
-        });
-        return;
-      }
-
-      // Try to validate session first
-      const { error: validationError } = await supabase.auth.getUser();
-      if (validationError) {
-        console.error('Session validation error:', validationError);
-        
-        try {
-          // Try to refresh the session
-          const { error: refreshError } = await supabase.auth.refreshSession();
-          if (refreshError) {
-            if (refreshError.message.includes('refresh_token_not_found')) {
-              console.error('Invalid refresh token, redirecting to auth');
-              toast.error('Your session has expired. Please sign in again.');
-              navigate('/auth');
-              return;
-            }
-            throw refreshError;
-          }
-        } catch (refreshError) {
-          console.error('Session refresh failed:', refreshError);
-          toast.error('Please sign in again to continue');
-          navigate('/auth');
-          return;
-        }
-      }
+      const session = await validateAndRefreshSession();
+      if (!session) return;
 
       if (audioBlob && audioRef.current?.src === audioBlob) {
         setIsLoading(false);
         return;
       }
 
-      // Get fresh session after potential refresh
-      const { data: { session: freshSession } } = await supabase.auth.getSession();
-      if (!freshSession) {
-        throw new Error('No session after refresh');
-      }
-
       console.log('Fetching audio with auth token');
       const response = await fetch(audio_url, {
         headers: {
-          Authorization: `Bearer ${freshSession.access_token}`,
+          Authorization: `Bearer ${session.access_token}`,
           'Cache-Control': 'no-cache'
         }
       });
@@ -106,14 +47,7 @@ export const useAudioPlayback = (audio_url: string) => {
         throw new Error(`Failed to fetch audio: ${response.status}`);
       }
 
-      const blob = await response.blob();
-      
-      if (audioBlob) {
-        URL.revokeObjectURL(audioBlob);
-      }
-
-      const blobUrl = URL.createObjectURL(blob);
-      setAudioBlob(blobUrl);
+      const blobUrl = await createBlob(response);
 
       if (audioRef.current) {
         audioRef.current.src = blobUrl;
@@ -124,7 +58,6 @@ export const useAudioPlayback = (audio_url: string) => {
     } catch (error) {
       console.error('Error loading audio:', error);
       
-      // Check if it's an auth error
       if (error instanceof Error && 
           (error.message.includes('auth') || 
            error.message.includes('401') || 
@@ -136,22 +69,11 @@ export const useAudioPlayback = (audio_url: string) => {
       }
       
       toast.error('Failed to load audio message');
-      if (audioBlob) {
-        URL.revokeObjectURL(audioBlob);
-        setAudioBlob(null);
-      }
+      clearBlob();
     } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (audioBlob) {
-        URL.revokeObjectURL(audioBlob);
-      }
-    };
-  }, [audioBlob]);
 
   const handlePlayback = async () => {
     try {
@@ -161,13 +83,8 @@ export const useAudioPlayback = (audio_url: string) => {
         return;
       }
 
-      // Check session before any playback attempt
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error('Please sign in to play messages');
-        navigate('/auth');
-        return;
-      }
+      const session = await validateAndRefreshSession();
+      if (!session) return;
 
       if (isMobile && !userInteracted) {
         setUserInteracted(true);
@@ -197,7 +114,6 @@ export const useAudioPlayback = (audio_url: string) => {
     } catch (error) {
       console.error('Playback error:', error);
       
-      // Handle auth errors specifically
       if (error instanceof Error && 
           (error.message.includes('auth') || 
            error.message.includes('unauthorized') ||
@@ -230,11 +146,7 @@ export const useAudioPlayback = (audio_url: string) => {
     setIsPlaying(false);
     setIsLoading(false);
     toast.error('Error playing audio message');
-
-    if (audioBlob) {
-      URL.revokeObjectURL(audioBlob);
-      setAudioBlob(null);
-    }
+    clearBlob();
     loadAudio();
   };
 
