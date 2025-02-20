@@ -1,33 +1,37 @@
 
-import { Search, MoreVertical } from 'lucide-react';
+import { AlertTriangle, Lock } from 'lucide-react';
+import { formatDistanceToNow } from 'date-fns';
+import type { Message } from './types';
 
-type MessageHeaderProps = {
-  currentCategory: string;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-};
+interface MessageHeaderProps {
+  message: Message;
+}
 
-const MessageHeader = ({ currentCategory, searchQuery, setSearchQuery }: MessageHeaderProps) => {
+export const MessageHeader = ({ message }: MessageHeaderProps) => {
+  const senderName = `${message.sender.first_name || ''} ${message.sender.last_name || ''}`.trim() || message.sender.email;
+
   return (
-    <header className="h-16 flex items-center justify-between px-4 border-b border-border">
-      <h1 className="text-xl font-semibold text-foreground capitalize">{currentCategory}</h1>
-      <div className="flex items-center space-x-2">
-        <div className="relative">
-          <Search className="w-5 h-5 text-muted-foreground absolute left-3 top-1/2 transform -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search messages..."
-            className="pl-10 pr-4 py-2 border border-border rounded-lg bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
-        <button className="p-2 hover:bg-accent/10 rounded-full">
-          <MoreVertical className="w-5 h-5 text-muted-foreground" />
-        </button>
+    <div className="flex items-start justify-between gap-4">
+      <div className="flex-1 min-w-0">
+        <h3 className="font-medium text-amber-400 mb-1 truncate">{message.subject}</h3>
+        <p className="text-sm text-gray-400 truncate">From: {senderName}</p>
+        <p className="text-xs text-gray-500 mt-1">
+          {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+        </p>
       </div>
-    </header>
+      
+      <div className="flex items-center gap-2">
+        {message.is_urgent && (
+          <span className="shrink-0">
+            <AlertTriangle className="w-4 h-4 text-red-400" />
+          </span>
+        )}
+        {message.is_private && (
+          <span className="shrink-0">
+            <Lock className="w-4 h-4 text-amber-400" />
+          </span>
+        )}
+      </div>
+    </div>
   );
 };
-
-export default MessageHeader;
