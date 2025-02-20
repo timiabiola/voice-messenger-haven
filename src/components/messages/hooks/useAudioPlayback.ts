@@ -54,9 +54,15 @@ export const useAudioPlayback = (audio_url: string) => {
       const blobUrl = await createBlob(response);
 
       if (audioRef.current) {
-        audioRef.current.src = blobUrl;
-        // Set MIME type explicitly on audio element
-        audioRef.current.type = contentType || 'audio/webm;codecs=opus';
+        // Create a new source element with the correct type
+        const source = document.createElement('source');
+        source.src = blobUrl;
+        source.type = contentType || 'audio/webm;codecs=opus';
+        
+        // Clear existing sources and add the new one
+        audioRef.current.innerHTML = '';
+        audioRef.current.appendChild(source);
+        
         await audioRef.current.load();
       }
     } catch (error) {
@@ -149,7 +155,10 @@ export const useAudioPlayback = (audio_url: string) => {
       event: event,
       src: audioRef.current?.currentSrc,
       readyState: audioRef.current?.readyState,
-      type: audioRef.current?.type // Log the audio type
+      sources: Array.from(audioRef.current?.getElementsByTagName('source') || []).map(source => ({
+        src: source.src,
+        type: source.type
+      }))
     });
     setIsPlaying(false);
     setIsLoading(false);
