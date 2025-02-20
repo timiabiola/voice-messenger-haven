@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MessageCardProps {
   message: {
@@ -27,34 +28,34 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
-  // Log when audio URL changes
+  // Pre-load audio when component mounts
   useEffect(() => {
-    console.log('Audio URL:', message.audio_url);
+    const preloadAudio = async () => {
+      try {
+        const response = await fetch(message.audio_url);
+        if (!response.ok) {
+          throw new Error('Failed to fetch audio');
+        }
+        const blob = await response.blob();
+        if (audioRef.current) {
+          audioRef.current.src = URL.createObjectURL(blob);
+        }
+      } catch (error) {
+        console.error('Error preloading audio:', error);
+      }
+    };
+
+    preloadAudio();
+
+    // Cleanup blob URL on unmount
+    return () => {
+      if (audioRef.current?.src) {
+        URL.revokeObjectURL(audioRef.current.src);
+      }
+    };
   }, [message.audio_url]);
-
-  // Handle audio element initialization
-  useEffect(() => {
-    if (audioRef.current) {
-      // Set up audio element
-      audioRef.current.preload = 'metadata';
-      
-      // Log when audio metadata is loaded
-      const handleLoadedMetadata = () => {
-        console.log('Audio metadata loaded:', {
-          duration: audioRef.current?.duration,
-          readyState: audioRef.current?.readyState
-        });
-      };
-
-      audioRef.current.addEventListener('loadedmetadata', handleLoadedMetadata);
-      
-      // Cleanup
-      return () => {
-        audioRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
-      };
-    }
-  }, []);
 
   const handlePlayback = async () => {
     if (!audioRef.current) {
@@ -64,40 +65,24 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     }
 
     try {
-      console.log('Current audio state:', {
-        paused: audioRef.current.paused,
-        readyState: audioRef.current.readyState,
-        currentSrc: audioRef.current.currentSrc
-      });
+      setIsLoading(true);
 
       if (isPlaying) {
-        console.log('Pausing audio');
         audioRef.current.pause();
         setIsPlaying(false);
-      } else {
-        setIsLoading(true);
-        console.log('Starting audio playback');
-        
-        // Reset audio if it was played before
-        if (audioRef.current.currentTime > 0) {
-          audioRef.current.currentTime = 0;
-        }
+        return;
+      }
 
-        try {
-          await audioRef.current.load();
-          console.log('Audio loaded successfully');
-          
-          const playPromise = audioRef.current.play();
-          if (playPromise !== undefined) {
-            await playPromise;
-            console.log('Audio playing successfully');
-            setIsPlaying(true);
-          }
-        } catch (playError) {
-          console.error('Error during play:', playError);
-          toast.error('Failed to play audio');
-          throw playError;
-        }
+      // Reset audio position if needed
+      if (audioRef.current.currentTime > 0) {
+        audioRef.current.currentTime = 0;
+      }
+
+      // Play audio
+      const playPromise = audioRef.current.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+        setIsPlaying(true);
       }
     } catch (error) {
       console.error('Playback error:', error);
@@ -121,7 +106,6 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   };
 
   const handleAudioEnded = () => {
-    console.log('Audio playback ended');
     setIsPlaying(false);
   };
 
@@ -142,13 +126,10 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     <div className="bg-zinc-900/50 rounded-lg border border-zinc-800 p-4 space-y-4">
       <audio 
         ref={audioRef}
-        src={message.audio_url}
         onEnded={handleAudioEnded}
         onError={handleAudioError}
-        onLoadStart={() => console.log('Audio load started')}
-        onLoadedData={() => console.log('Audio data loaded')}
-        onCanPlay={() => console.log('Audio can play')}
-        preload="metadata"
+        preload="none"
+        playsInline // Important for iOS
         className="hidden"
       />
       
