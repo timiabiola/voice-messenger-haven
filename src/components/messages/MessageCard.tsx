@@ -28,47 +28,80 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [audioBlob, setAudioBlob] = useState<string | null>(null);
+  const [userInteracted, setUserInteracted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
+
+  // Initialize mobile audio context
+  useEffect(() => {
+    if (isMobile) {
+      const handleFirstTouch = () => {
+        setUserInteracted(true);
+        document.removeEventListener('touchstart', handleFirstTouch);
+      };
+      
+      document.addEventListener('touchstart', handleFirstTouch);
+      return () => document.removeEventListener('touchstart', handleFirstTouch);
+    }
+  }, [isMobile]);
 
   // Load audio with proper authentication
   const loadAudio = async () => {
     try {
       setIsLoading(true);
       
-      // Check if we already have the audio blob
-      if (audioBlob) {
-        return;
-      }
-
+      // Check session first
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
+        console.log('No active session, redirecting to auth');
         navigate('/auth');
         return;
       }
 
+      // If we already have a valid blob URL, no need to reload
+      if (audioBlob && audioRef.current?.src === audioBlob) {
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('Fetching audio with auth token');
       const response = await fetch(message.audio_url, {
         headers: {
-          Authorization: `Bearer ${session.access_token}`
+          Authorization: `Bearer ${session.access_token}`,
+          'Cache-Control': 'no-cache'
         }
       });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch audio');
+        throw new Error(`Failed to fetch audio: ${response.status}`);
       }
 
       const blob = await response.blob();
+      
+      // Cleanup old blob URL if it exists
+      if (audioBlob) {
+        URL.revokeObjectURL(audioBlob);
+      }
+
       const blobUrl = URL.createObjectURL(blob);
       setAudioBlob(blobUrl);
 
       if (audioRef.current) {
         audioRef.current.src = blobUrl;
+        // Important: load() must be called before play() on iOS
         await audioRef.current.load();
       }
+
+      console.log('Audio loaded successfully');
     } catch (error) {
       console.error('Error loading audio:', error);
       toast.error('Failed to load audio message');
+      // Cleanup on error
+      if (audioBlob) {
+        URL.revokeObjectURL(audioBlob);
+        setAudioBlob(null);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -84,17 +117,23 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   }, [audioBlob]);
 
   const handlePlayback = async () => {
-    if (!audioRef.current) {
-      console.error('No audio element found');
-      toast.error('Audio player not initialized');
-      return;
-    }
-
     try {
-      if (isPlaying) {
+      // If already playing, stop playback
+      if (isPlaying && audioRef.current) {
         audioRef.current.pause();
         setIsPlaying(false);
         return;
+      }
+
+      // On mobile, ensure user has interacted
+      if (isMobile && !userInteracted) {
+        setUserInteracted(true);
+        // Initialize audio context with a silent play/pause
+        if (audioRef.current) {
+          await audioRef.current.play().catch(() => {});
+          audioRef.current.pause();
+          audioRef.current.currentTime = 0;
+        }
       }
 
       // Load audio if not already loaded
@@ -102,21 +141,28 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         await loadAudio();
       }
 
-      // Reset audio position if needed
+      if (!audioRef.current) {
+        throw new Error('Audio player not initialized');
+      }
+
+      // Reset position if needed
       if (audioRef.current.currentTime > 0) {
         audioRef.current.currentTime = 0;
       }
 
-      // Play audio
-      const playPromise = audioRef.current.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-        setIsPlaying(true);
-      }
+      console.log('Starting playback');
+      await audioRef.current.play();
+      setIsPlaying(true);
+
     } catch (error) {
       console.error('Playback error:', error);
       toast.error('Failed to play audio message');
       setIsPlaying(false);
+      
+      // Attempt to reload audio on error
+      if (error instanceof Error && error.message.includes('fetch')) {
+        loadAudio();
+      }
     }
   };
 
@@ -140,12 +186,18 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     console.error('Audio playback error:', {
       error: audioRef.current?.error,
       event: event,
-      src: audioRef.current?.currentSrc
+      src: audioRef.current?.currentSrc,
+      readyState: audioRef.current?.readyState
     });
     setIsPlaying(false);
     setIsLoading(false);
     toast.error('Error playing audio message');
-    // Attempt to reload audio on error
+
+    // Cleanup and retry on error
+    if (audioBlob) {
+      URL.revokeObjectURL(audioBlob);
+      setAudioBlob(null);
+    }
     loadAudio();
   };
 
@@ -159,6 +211,8 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         onError={handleAudioError}
         preload="none"
         playsInline // Important for iOS
+        webkit-playsinline="true"
+        controls={false}
         className="hidden"
       />
       
