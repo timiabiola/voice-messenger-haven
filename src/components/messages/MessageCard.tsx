@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MessageCardProps {
   message: {
@@ -26,36 +27,61 @@ interface MessageCardProps {
 export const MessageCard = ({ message }: MessageCardProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Pre-load audio when component mounts
+  // Load audio with proper authentication
+  const loadAudio = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Check if we already have the audio blob
+      if (audioBlob) {
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate('/auth');
+        return;
+      }
+
+      const response = await fetch(message.audio_url, {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch audio');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      setAudioBlob(blobUrl);
+
+      if (audioRef.current) {
+        audioRef.current.src = blobUrl;
+        await audioRef.current.load();
+      }
+    } catch (error) {
+      console.error('Error loading audio:', error);
+      toast.error('Failed to load audio message');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Cleanup blob URL on unmount
   useEffect(() => {
-    const preloadAudio = async () => {
-      try {
-        const response = await fetch(message.audio_url);
-        if (!response.ok) {
-          throw new Error('Failed to fetch audio');
-        }
-        const blob = await response.blob();
-        if (audioRef.current) {
-          audioRef.current.src = URL.createObjectURL(blob);
-        }
-      } catch (error) {
-        console.error('Error preloading audio:', error);
-      }
-    };
-
-    preloadAudio();
-
-    // Cleanup blob URL on unmount
     return () => {
-      if (audioRef.current?.src) {
-        URL.revokeObjectURL(audioRef.current.src);
+      if (audioBlob) {
+        URL.revokeObjectURL(audioBlob);
       }
     };
-  }, [message.audio_url]);
+  }, [audioBlob]);
 
   const handlePlayback = async () => {
     if (!audioRef.current) {
@@ -65,12 +91,15 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     }
 
     try {
-      setIsLoading(true);
-
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
         return;
+      }
+
+      // Load audio if not already loaded
+      if (!audioBlob) {
+        await loadAudio();
       }
 
       // Reset audio position if needed
@@ -88,8 +117,6 @@ export const MessageCard = ({ message }: MessageCardProps) => {
       console.error('Playback error:', error);
       toast.error('Failed to play audio message');
       setIsPlaying(false);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -118,6 +145,8 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     setIsPlaying(false);
     setIsLoading(false);
     toast.error('Error playing audio message');
+    // Attempt to reload audio on error
+    loadAudio();
   };
 
   const senderName = `${message.sender.first_name || ''} ${message.sender.last_name || ''}`.trim() || message.sender.email;
