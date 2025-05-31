@@ -38,10 +38,10 @@ export const RecordingControls = ({
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  // Update audio source when recording changes
+  // Update audio source when recording changes or chunks update
   useEffect(() => {
     updateAudioSource();
-  }, [audioChunks]);
+  }, [audioChunks, isRecording]);
 
   // Cleanup audio URL on unmount
   useEffect(() => {
@@ -55,6 +55,8 @@ export const RecordingControls = ({
   const updateAudioSource = () => {
     if (!audioRef.current) return;
     
+    console.log('updateAudioSource called, chunks:', audioChunks.length);
+    
     // Clean up previous URL
     if (currentAudioUrl.current) {
       URL.revokeObjectURL(currentAudioUrl.current);
@@ -62,7 +64,12 @@ export const RecordingControls = ({
     }
     
     const audioBlob = createAudioFromChunks();
-    if (!audioBlob) return;
+    if (!audioBlob) {
+      console.log('No audio blob created');
+      return;
+    }
+    
+    console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
     
     const url = URL.createObjectURL(audioBlob);
     currentAudioUrl.current = url;
@@ -74,7 +81,12 @@ export const RecordingControls = ({
   };
 
   const handlePlayback = () => {
-    if (!audioRef.current || audioChunks.length === 0) return;
+    if (!audioRef.current || audioChunks.length === 0) {
+      console.log('Cannot play: no audio ref or chunks');
+      return;
+    }
+
+    console.log('Playback clicked, chunks:', audioChunks.length, 'isPlaying:', isPlaying);
 
     if (isPlaying) {
       audioRef.current.pause();
@@ -126,14 +138,14 @@ export const RecordingControls = ({
           )}
         </button>
 
-        {/* Play button - only show if we have recorded audio */}
-        {hasRecordedAudio && (
+        {/* Play button - only show if we have recorded audio and not currently recording */}
+        {hasRecordedAudio && !isRecording && (
           <button 
             className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} ${
               isPlaying ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
             } rounded-full flex items-center justify-center text-white transition-colors`}
             onClick={handlePlayback}
-            disabled={isProcessing || isRecording}
+            disabled={isProcessing}
           >
             {isPlaying ? (
               <Square className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />

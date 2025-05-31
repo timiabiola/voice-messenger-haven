@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { requestMicrophonePermissions } from '@/utils/microphone-permissions';
 import { saveRecordingState } from '@/utils/recording-state';
@@ -11,6 +10,7 @@ export function useRecording() {
   const [recordingTime, setRecordingTime] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentRecordingId, setCurrentRecordingId] = useState<string | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -73,6 +73,7 @@ export function useRecording() {
       
       if (!currentRecordingId) {
         audioChunksRef.current = [];
+        setAudioChunks([]);
         setRecordingTime(0);
       }
 
@@ -80,6 +81,7 @@ export function useRecording() {
         console.log('Received audio chunk:', event.data.size, 'bytes');
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
+          setAudioChunks([...audioChunksRef.current]);
           const newId = await saveRecordingState(
             audioChunksRef.current,
             'in_progress',
@@ -104,24 +106,34 @@ export function useRecording() {
   const stopRecording = async () => {
     console.log('Stopping recording...');
     if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.stop();
-      if (streamRef.current) {
-        streamRef.current.getTracks().forEach(track => {
-          console.log('Stopping track:', track.kind);
-          track.stop();
-        });
-        streamRef.current = null;
-      }
-      setIsRecording(false);
-      setIsPaused(false);
-      clearInterval(timerRef.current);
-      
-      // Save final state
-      await saveRecordingState(audioChunksRef.current, 'completed', recordingTime, currentRecordingId);
-      setCurrentRecordingId(null);
-      // Reset recording time when stopping
-      setRecordingTime(0);
-      console.log('Recording stopped, tracks cleaned up');
+      return new Promise<void>((resolve) => {
+        if (mediaRecorderRef.current) {
+          mediaRecorderRef.current.onstop = async () => {
+            console.log('MediaRecorder stopped, total chunks:', audioChunksRef.current.length);
+            setAudioChunks([...audioChunksRef.current]);
+            
+            await saveRecordingState(audioChunksRef.current, 'completed', recordingTime, currentRecordingId);
+            setCurrentRecordingId(null);
+            
+            resolve();
+          };
+          
+          mediaRecorderRef.current.stop();
+        }
+        
+        if (streamRef.current) {
+          streamRef.current.getTracks().forEach(track => {
+            console.log('Stopping track:', track.kind);
+            track.stop();
+          });
+          streamRef.current = null;
+        }
+        setIsRecording(false);
+        setIsPaused(false);
+        clearInterval(timerRef.current);
+        setRecordingTime(0);
+        console.log('Recording stopped, tracks cleaned up');
+      });
     }
   };
 
@@ -149,10 +161,13 @@ export function useRecording() {
   };
 
   const createAudioFromChunks = () => {
-    if (audioChunksRef.current.length === 0) return null;
+    if (audioChunksRef.current.length === 0) {
+      console.log('No audio chunks available for blob creation');
+      return null;
+    }
     
-    // Use the MIME type from the first chunk, or get a supported type
     const mimeType = audioChunksRef.current[0].type || getSupportedMimeType();
+    console.log('Creating audio blob with MIME type:', mimeType, 'chunks:', audioChunksRef.current.length);
     return new Blob(audioChunksRef.current, { type: mimeType });
   };
 
@@ -168,6 +183,6 @@ export function useRecording() {
     resumeRecording,
     getRecordingData: () => audioChunksRef.current,
     createAudioFromChunks,
-    audioChunks: audioChunksRef.current
+    audioChunks
   };
 }
