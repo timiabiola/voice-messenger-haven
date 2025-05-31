@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -25,7 +24,9 @@ const Microphone = () => {
     stopRecording,
     pauseRecording,
     resumeRecording,
-    getRecordingData
+    getRecordingData,
+    audioChunks,
+    createAudioFromChunks
   } = useRecording();
 
   const {
@@ -102,6 +103,8 @@ const Microphone = () => {
             isPaused={isPaused}
             isProcessing={isProcessing}
             recordingTime={recordingTime}
+            audioChunks={audioChunks}
+            createAudioFromChunks={createAudioFromChunks}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onPauseRecording={pauseRecording}
