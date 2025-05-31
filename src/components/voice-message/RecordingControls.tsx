@@ -53,12 +53,17 @@ export const RecordingControls = ({
   }, []);
 
   const updateAudioSource = () => {
-    if (!audioRef.current) return;
+    console.log('=== updateAudioSource called ===');
+    if (!audioRef.current) {
+      console.error('No audio element reference');
+      return;
+    }
     
     console.log('updateAudioSource called, chunks:', audioChunks.length);
     
     // Clean up previous URL
     if (currentAudioUrl.current) {
+      console.log('Cleaning up previous audio URL');
       URL.revokeObjectURL(currentAudioUrl.current);
       currentAudioUrl.current = null;
     }
@@ -75,27 +80,81 @@ export const RecordingControls = ({
     currentAudioUrl.current = url;
     audioRef.current.src = url;
     
+    console.log('Audio element src set to:', url);
+    
+    // Add comprehensive error handling
+    audioRef.current.onerror = (e) => {
+      console.error('Audio element error:', e);
+      const audio = audioRef.current as HTMLAudioElement;
+      if (audio.error) {
+        console.error('Audio error details:', {
+          code: audio.error.code,
+          message: audio.error.message
+        });
+      }
+    };
+    
+    audioRef.current.onloadedmetadata = () => {
+      const audio = audioRef.current as HTMLAudioElement;
+      console.log('Audio metadata loaded:', {
+        duration: audio.duration,
+        readyState: audio.readyState
+      });
+    };
+    
+    audioRef.current.oncanplay = () => {
+      console.log('Audio can play');
+    };
+    
     audioRef.current.onended = () => {
+      console.log('Audio playback ended');
       setIsPlaying(false);
     };
   };
 
   const handlePlayback = () => {
-    if (!audioRef.current || audioChunks.length === 0) {
-      console.log('Cannot play: no audio ref or chunks');
+    console.log('=== handlePlayback called ===');
+    
+    if (!audioRef.current) {
+      console.error('No audio element reference');
+      return;
+    }
+    
+    if (audioChunks.length === 0) {
+      console.error('No audio chunks available');
       return;
     }
 
     console.log('Playback clicked, chunks:', audioChunks.length, 'isPlaying:', isPlaying);
+    console.log('Audio element state:', {
+      src: audioRef.current.src,
+      readyState: audioRef.current.readyState,
+      paused: audioRef.current.paused,
+      duration: audioRef.current.duration,
+      currentTime: audioRef.current.currentTime
+    });
 
     if (isPlaying) {
+      console.log('Pausing audio...');
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play().catch(error => {
-        console.error('Playback error:', error);
-      });
-      setIsPlaying(true);
+      console.log('Attempting to play audio...');
+      const playPromise = audioRef.current.play();
+      
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => {
+            console.log('Audio playback started successfully');
+            setIsPlaying(true);
+          })
+          .catch(error => {
+            console.error('Playback error:', error);
+            console.error('Error name:', error.name);
+            console.error('Error message:', error.message);
+            setIsPlaying(false);
+          });
+      }
     }
   };
 

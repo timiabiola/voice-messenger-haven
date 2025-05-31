@@ -78,10 +78,17 @@ export function useRecording() {
       }
 
       mediaRecorder.ondataavailable = async (event) => {
-        console.log('Received audio chunk:', event.data.size, 'bytes');
+        console.log('ondataavailable fired - event.data:', {
+          size: event.data.size,
+          type: event.data.type,
+          timestamp: new Date().toISOString()
+        });
+        
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
           setAudioChunks([...audioChunksRef.current]);
+          console.log('Audio chunks updated. Total chunks:', audioChunksRef.current.length, 'Total size:', audioChunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0), 'bytes');
+          
           const newId = await saveRecordingState(
             audioChunksRef.current,
             'in_progress',
@@ -89,11 +96,21 @@ export function useRecording() {
             currentRecordingId
           );
           if (newId) setCurrentRecordingId(newId);
+        } else {
+          console.warn('Received empty audio chunk');
         }
       };
 
-      mediaRecorder.start(100);
-      console.log('MediaRecorder started');
+      mediaRecorder.onerror = (event) => {
+        console.error('MediaRecorder error:', event);
+      };
+
+      mediaRecorder.onstart = () => {
+        console.log('MediaRecorder started successfully');
+      };
+
+      mediaRecorder.start(1000);
+      console.log('MediaRecorder.start() called with 1000ms timeslice');
       setIsRecording(true);
       setIsPaused(false);
     } catch (error) {
@@ -161,14 +178,28 @@ export function useRecording() {
   };
 
   const createAudioFromChunks = () => {
+    console.log('=== createAudioFromChunks called ===');
+    console.log('audioChunksRef.current.length:', audioChunksRef.current.length);
+    
     if (audioChunksRef.current.length === 0) {
-      console.log('No audio chunks available for blob creation');
+      console.error('No audio chunks available for blob creation');
       return null;
     }
     
+    audioChunksRef.current.forEach((chunk, index) => {
+      console.log(`Chunk ${index}: size=${chunk.size}, type="${chunk.type}"`);
+    });
+    
     const mimeType = audioChunksRef.current[0].type || getSupportedMimeType();
     console.log('Creating audio blob with MIME type:', mimeType, 'chunks:', audioChunksRef.current.length);
-    return new Blob(audioChunksRef.current, { type: mimeType });
+    
+    const blob = new Blob(audioChunksRef.current, { type: mimeType });
+    console.log('Created blob:', {
+      size: blob.size,
+      type: blob.type
+    });
+    
+    return blob;
   };
 
   return {
