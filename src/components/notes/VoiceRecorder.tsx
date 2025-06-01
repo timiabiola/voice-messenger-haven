@@ -8,12 +8,16 @@ interface VoiceRecorderProps {
   onRecordingComplete: (audioBlob: Blob, duration: number) => void;
   existingAudioUrl?: string;
   existingDuration?: number;
+  onDelete?: () => void;
+  readOnly?: boolean;
 }
 
 export const VoiceRecorder = ({
   onRecordingComplete,
   existingAudioUrl,
   existingDuration,
+  onDelete,
+  readOnly = false,
 }: VoiceRecorderProps) => {
   const { toast } = useToast();
   const [isRecording, setIsRecording] = useState(false);
@@ -58,6 +62,8 @@ export const VoiceRecorder = ({
   }, []);
 
   const startRecording = async () => {
+    if (readOnly) return;
+    
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
@@ -137,6 +143,11 @@ export const VoiceRecorder = ({
     setAudioUrl(null);
     setDuration(0);
     setIsPlaying(false);
+    
+    // Call the onDelete callback if provided
+    if (onDelete) {
+      onDelete();
+    }
   };
 
   // Mobile layout - larger touch targets
@@ -149,6 +160,7 @@ export const VoiceRecorder = ({
             size="lg"
             variant="outline"
             className="w-full gap-2"
+            disabled={readOnly}
           >
             <Mic className="w-5 h-5" />
             Start Recording
@@ -216,6 +228,7 @@ export const VoiceRecorder = ({
           onClick={startRecording}
           variant="outline"
           className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+          disabled={readOnly}
         >
           <Mic className="w-4 h-4" />
           Record Voice Note

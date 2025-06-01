@@ -211,6 +211,7 @@ export default function NoteEditor({
                 onRecordingComplete={handleRecordingComplete}
                 existingAudioUrl={existingAudioUrl}
                 existingDuration={existingDuration}
+                onDelete={handleExistingAudioDelete}
               />
               
               {/* Optional text note with voice */}
