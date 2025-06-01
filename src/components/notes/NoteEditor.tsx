@@ -131,23 +131,8 @@ export default function NoteEditor({
           {selectedNote ? 'Edit Note' : 'New Note'}
         </h2>
         
-        {/* Desktop buttons - show on screens 480px and up */}
+        {/* Desktop cancel button only - keep in header */}
         <div className="hidden min-[480px]:flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsVoiceMode(!isVoiceMode)}
-            className={cn(
-              "gap-2 transition-colors",
-              isVoiceMode 
-                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                : "hover:bg-accent hover:text-accent-foreground"
-            )}
-            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
-          >
-            <Mic className="w-4 h-4" />
-            {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
-          </Button>
           <Button 
             variant="outline" 
             size="sm" 
@@ -156,15 +141,6 @@ export default function NoteEditor({
             title="Cancel (Esc)"
           >
             Cancel
-          </Button>
-          <Button 
-            size="sm" 
-            onClick={handleSave}
-            disabled={isUploading}
-            className="hover:bg-primary/90 transition-colors"
-            title="Save note (Ctrl+S)"
-          >
-            {isUploading ? 'Uploading...' : 'Save'}
           </Button>
         </div>
 
@@ -230,6 +206,34 @@ export default function NoteEditor({
             />
           )}
         </div>
+      </div>
+
+      {/* Desktop buttons below content - show on screens 480px and up */}
+      <div className="hidden min-[480px]:flex items-center justify-end gap-2 p-4 border-t border-border">
+        <Button
+          variant="outline"
+          size="default"
+          onClick={() => setIsVoiceMode(!isVoiceMode)}
+          className={cn(
+            "gap-2 transition-colors",
+            isVoiceMode 
+              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+              : "hover:bg-accent hover:text-accent-foreground"
+          )}
+          title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
+        >
+          <Mic className="w-4 h-4" />
+          {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
+        </Button>
+        <Button 
+          size="default" 
+          onClick={handleSave}
+          disabled={isUploading}
+          className="hover:bg-primary/90 transition-colors"
+          title="Save note (Ctrl+S)"
+        >
+          {isUploading ? 'Uploading...' : 'Save Note'}
+        </Button>
       </div>
 
       {/* Mobile floating buttons - only show on small screens */}

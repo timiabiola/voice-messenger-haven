@@ -139,50 +139,6 @@ export default function NoteViewer({
             
             {/* Desktop actions - show on screens 480px and up */}
             <div className="hidden min-[480px]:flex items-center gap-2">
-              {onNewNote && (
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  onClick={onNewNote}
-                  className="gap-2"
-                  title="Create new note (Ctrl+N)"
-                >
-                  <Plus className="w-4 h-4" />
-                  New Note
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onEdit}
-                className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-                title="Edit note (Ctrl+E)"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit
-              </Button>
-              {onMove && (
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={() => setShowMoveDialog(true)}
-                  className="gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
-                  title="Move to folder"
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  Move
-                </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onDelete}
-                className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                title="Delete note"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
@@ -273,6 +229,54 @@ export default function NoteViewer({
               {note.content || (note.audio_url && !isMobile ? 'Voice note' : 'No content')}
             </div>
           </div>
+        </div>
+
+        {/* Desktop action buttons below content - show on screens 480px and up */}
+        <div className="hidden min-[480px]:flex items-center justify-end gap-2 p-4 border-t border-border">
+          {onNewNote && (
+            <Button 
+              variant="default" 
+              size="default" 
+              onClick={onNewNote}
+              className="gap-2"
+              title="Create new note (Ctrl+N)"
+            >
+              <Plus className="w-4 h-4" />
+              New Note
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="default" 
+            onClick={onEdit}
+            className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+            title="Edit note (Ctrl+E)"
+          >
+            <Pencil className="w-4 h-4" />
+            Edit Note
+          </Button>
+          {onMove && (
+            <Button 
+              variant="outline" 
+              size="default" 
+              onClick={() => setShowMoveDialog(true)}
+              className="gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+              title="Move to folder"
+            >
+              <FolderOpen className="w-4 h-4" />
+              Move
+            </Button>
+          )}
+          <Button 
+            variant="outline" 
+            size="default" 
+            onClick={onDelete}
+            className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            title="Delete note"
+          >
+            <Trash2 className="w-4 h-4" />
+            Delete
+          </Button>
         </div>
 
         {/* Mobile floating action button for edit - only on small screens */}
