@@ -74,7 +74,6 @@ export const useSaveMessage = (messageId?: string) => {
           is_read: true,
           is_flagged: false,
         })
-        .select()
         .single();
 
       if (error) throw error;
