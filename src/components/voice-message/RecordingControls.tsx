@@ -1,6 +1,9 @@
 import { Mic, Play, Square } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState, useRef, useEffect } from 'react';
+import { PlaybackProgress } from './PlaybackProgress';
+import { PlaybackTime } from './PlaybackTime';
+import { LoadingSpinner } from './LoadingSpinner';
 
 interface RecordingControlsProps {
   isRecording: boolean;
@@ -29,6 +32,10 @@ export const RecordingControls = ({
 }: RecordingControlsProps) => {
   const isMobile = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [error, setError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentAudioUrl = useRef<string | null>(null);
 
@@ -52,6 +59,57 @@ export const RecordingControls = ({
     };
   }, []);
 
+  // Add audio event listeners
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleTimeUpdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    const handleLoadStart = () => {
+      setIsLoading(true);
+      setError(null);
+    };
+
+    const handleLoadedMetadata = () => {
+      setDuration(audio.duration);
+      setIsLoading(false);
+    };
+
+    const handleCanPlay = () => {
+      setIsLoading(false);
+    };
+
+    const handleError = () => {
+      setError('Failed to load audio');
+      setIsLoading(false);
+      setIsPlaying(false);
+    };
+
+    const handleEnded = () => {
+      setIsPlaying(false);
+      setCurrentTime(0);
+    };
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadstart', handleLoadStart);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('canplay', handleCanPlay);
+    audio.addEventListener('error', handleError);
+    audio.addEventListener('ended', handleEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadstart', handleLoadStart);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('canplay', handleCanPlay);
+      audio.removeEventListener('error', handleError);
+      audio.removeEventListener('ended', handleEnded);
+    };
+  }, []);
+
   const updateAudioSource = () => {
     console.log('=== updateAudioSource called ===');
     if (!audioRef.current) {
@@ -68,6 +126,11 @@ export const RecordingControls = ({
       currentAudioUrl.current = null;
     }
     
+    // Reset playback state when audio source changes
+    setCurrentTime(0);
+    setDuration(0);
+    setIsPlaying(false);
+    
     const audioBlob = createAudioFromChunks();
     if (!audioBlob) {
       console.log('No audio blob created');
@@ -81,35 +144,6 @@ export const RecordingControls = ({
     audioRef.current.src = url;
     
     console.log('Audio element src set to:', url);
-    
-    // Add comprehensive error handling
-    audioRef.current.onerror = (e) => {
-      console.error('Audio element error:', e);
-      const audio = audioRef.current as HTMLAudioElement;
-      if (audio.error) {
-        console.error('Audio error details:', {
-          code: audio.error.code,
-          message: audio.error.message
-        });
-      }
-    };
-    
-    audioRef.current.onloadedmetadata = () => {
-      const audio = audioRef.current as HTMLAudioElement;
-      console.log('Audio metadata loaded:', {
-        duration: audio.duration,
-        readyState: audio.readyState
-      });
-    };
-    
-    audioRef.current.oncanplay = () => {
-      console.log('Audio can play');
-    };
-    
-    audioRef.current.onended = () => {
-      console.log('Audio playback ended');
-      setIsPlaying(false);
-    };
   };
 
   const handlePlayback = () => {
@@ -126,13 +160,6 @@ export const RecordingControls = ({
     }
 
     console.log('Playback clicked, chunks:', audioChunks.length, 'isPlaying:', isPlaying);
-    console.log('Audio element state:', {
-      src: audioRef.current.src,
-      readyState: audioRef.current.readyState,
-      paused: audioRef.current.paused,
-      duration: audioRef.current.duration,
-      currentTime: audioRef.current.currentTime
-    });
 
     if (isPlaying) {
       console.log('Pausing audio...');
@@ -140,6 +167,7 @@ export const RecordingControls = ({
       setIsPlaying(false);
     } else {
       console.log('Attempting to play audio...');
+      setError(null);
       const playPromise = audioRef.current.play();
       
       if (playPromise !== undefined) {
@@ -150,11 +178,17 @@ export const RecordingControls = ({
           })
           .catch(error => {
             console.error('Playback error:', error);
-            console.error('Error name:', error.name);
-            console.error('Error message:', error.message);
+            setError('Playback failed');
             setIsPlaying(false);
           });
       }
+    }
+  };
+
+  const handleSeek = (time: number) => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = time;
+      setCurrentTime(time);
     }
   };
 
@@ -201,12 +235,23 @@ export const RecordingControls = ({
         {hasRecordedAudio && !isRecording && (
           <button 
             className={`${isMobile ? 'w-16 h-16' : 'w-20 h-20'} ${
-              isPlaying ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-            } rounded-full flex items-center justify-center text-white transition-colors`}
+              error 
+                ? 'bg-red-600 hover:bg-red-700' 
+                : isPlaying 
+                  ? 'bg-red-600 hover:bg-red-700' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+            } rounded-full flex items-center justify-center text-white transition-all ${
+              isLoading ? 'opacity-75' : ''
+            } ${isPlaying && !isLoading ? 'ring-4 ring-blue-300 ring-opacity-50' : ''}`}
             onClick={handlePlayback}
-            disabled={isProcessing}
+            disabled={isProcessing || isLoading || !!error}
+            title={error || (isPlaying ? 'Stop' : 'Play')}
           >
-            {isPlaying ? (
+            {isLoading ? (
+              <LoadingSpinner size={isMobile ? 'md' : 'lg'} />
+            ) : error ? (
+              <span className="text-sm">!</span>
+            ) : isPlaying ? (
               <Square className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
             ) : (
               <Play className={`${isMobile ? 'w-8 h-8' : 'w-10 h-10'}`} />
@@ -214,6 +259,36 @@ export const RecordingControls = ({
           </button>
         )}
       </div>
+
+      {/* Playback progress and time - only show when audio is available */}
+      {hasRecordedAudio && !isRecording && (
+        <div className="w-full max-w-xs space-y-2 animate-in fade-in duration-300">
+          <PlaybackProgress 
+            currentTime={currentTime}
+            duration={duration}
+            onSeek={handleSeek}
+            isLoading={isLoading}
+            isPlaying={isPlaying}
+          />
+          <div className="flex items-center justify-between">
+            <PlaybackTime 
+              currentTime={currentTime}
+              duration={duration}
+              isLoading={isLoading}
+            />
+            {isPlaying && !isLoading && (
+              <span className="text-xs text-blue-600 animate-pulse">
+                Playing...
+              </span>
+            )}
+          </div>
+          {error && (
+            <div className="text-sm text-red-500 text-center animate-in fade-in">
+              {error}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
