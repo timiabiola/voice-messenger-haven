@@ -1,4 +1,3 @@
-
 import { ChevronLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -6,10 +5,11 @@ import { useIsMobile } from '@/hooks/use-mobile';
 interface HeaderProps {
   isRecording: boolean;
   isProcessing: boolean;
+  hasRecording: boolean;
   onSend: () => void;
 }
 
-export const Header = ({ isRecording, isProcessing, onSend }: HeaderProps) => {
+export const Header = ({ isRecording, isProcessing, hasRecording, onSend }: HeaderProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -24,12 +24,12 @@ export const Header = ({ isRecording, isProcessing, onSend }: HeaderProps) => {
       <h1 className="text-base font-medium text-foreground">New Voice Message</h1>
       <button 
         className={`text-primary font-medium px-3 py-2 rounded-lg transition-colors ${
-          !isRecording || isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/10'
+          !hasRecording || isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/10'
         }`}
-        disabled={!isRecording || isProcessing}
+        disabled={!hasRecording || isProcessing}
         onClick={onSend}
       >
-        Send
+        {isProcessing ? 'Sending...' : 'Send'}
       </button>
     </header>
   );

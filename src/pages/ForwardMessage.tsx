@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Header } from '@/components/voice-message/Header';
 import { Recipients } from '@/components/voice-message/Recipients';
@@ -16,6 +15,9 @@ const ForwardMessage = () => {
     stopRecording,
     pauseRecording,
     resumeRecording,
+    clearRecording,
+    audioChunks,
+    createAudioFromChunks,
     isUrgent,
     setIsUrgent,
     isPrivate,
@@ -27,12 +29,16 @@ const ForwardMessage = () => {
     handleSendRecording
   } = useForwardMessage();
 
+  // Check if we have recorded audio available
+  const hasRecording = audioChunks.length > 0;
+
   return (
     <div className="flex flex-col min-h-[100dvh] w-full bg-black">
       <div className="h-[64px] w-full">
         <Header 
           isRecording={isRecording}
           isProcessing={isProcessing}
+          hasRecording={hasRecording}
           onSend={handleSendRecording}
         />
       </div>
@@ -68,10 +74,13 @@ const ForwardMessage = () => {
             isPaused={isPaused}
             isProcessing={isProcessing}
             recordingTime={recordingTime}
+            audioChunks={audioChunks}
+            createAudioFromChunks={createAudioFromChunks}
             onStartRecording={startRecording}
             onStopRecording={stopRecording}
             onPauseRecording={pauseRecording}
             onResumeRecording={resumeRecording}
+            clearRecording={clearRecording}
           />
         </div>
       </div>

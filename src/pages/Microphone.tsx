@@ -70,12 +70,16 @@ const Microphone = () => {
     }
   };
 
+  // Check if we have recorded audio available
+  const hasRecording = audioChunks.length > 0;
+
   return (
     <div className="flex flex-col min-h-[100dvh] w-full bg-black">
       <div className="h-[64px] w-full">
         <Header 
           isRecording={isRecording}
           isProcessing={isProcessing}
+          hasRecording={hasRecording}
           onSend={handleSendRecording}
         />
       </div>
