@@ -31,11 +31,18 @@ export default function NoteEditor({
   onChange,
 }: NoteEditorProps) {
   const { toast } = useToast();
-  const [isVoiceMode, setIsVoiceMode] = useState(false);
+  // Initialize voice mode based on whether we're editing a voice note
+  const [isVoiceMode, setIsVoiceMode] = useState(() => {
+    return selectedNote?.audio_url ? true : false;
+  });
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioDuration, setAudioDuration] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+  // New state to track existing audio
+  const [existingAudioUrl, setExistingAudioUrl] = useState<string | undefined>(selectedNote?.audio_url);
+  const [existingDuration, setExistingDuration] = useState<number | undefined>(selectedNote?.duration);
+  const [shouldDeleteExistingAudio, setShouldDeleteExistingAudio] = useState(false);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -46,6 +53,18 @@ export default function NoteEditor({
     window.addEventListener('resize', checkScreenSize);
     return () => window.removeEventListener('resize', checkScreenSize);
   }, []);
+
+  // Update existing audio when selectedNote changes
+  useEffect(() => {
+    if (selectedNote?.audio_url) {
+      setExistingAudioUrl(selectedNote.audio_url);
+      setExistingDuration(selectedNote.duration);
+      setShouldDeleteExistingAudio(false);
+    } else {
+      setExistingAudioUrl(undefined);
+      setExistingDuration(undefined);
+    }
+  }, [selectedNote]);
 
   // Keyboard shortcuts for desktop
   useEffect(() => {
@@ -75,7 +94,17 @@ export default function NoteEditor({
     setAudioDuration(duration);
   };
 
+  const handleExistingAudioDelete = () => {
+    setShouldDeleteExistingAudio(true);
+    setExistingAudioUrl(undefined);
+    setExistingDuration(undefined);
+  };
+
   const handleSave = async () => {
+    let finalAudioUrl = existingAudioUrl;
+    let finalDuration = existingDuration;
+
+    // If we have a new recording, upload it
     if (isVoiceMode && audioBlob && userId) {
       setIsUploading(true);
       try {
@@ -92,7 +121,8 @@ export default function NoteEditor({
           .from('voice-recordings')
           .getPublicUrl(fileName);
 
-        await onSave(publicUrl, audioDuration);
+        finalAudioUrl = publicUrl;
+        finalDuration = audioDuration;
       } catch (error) {
         console.error('Error uploading audio:', error);
         toast({
@@ -100,12 +130,19 @@ export default function NoteEditor({
           title: "Error",
           description: "Failed to upload voice recording"
         });
+        setIsUploading(false);
+        return;
       } finally {
         setIsUploading(false);
       }
-    } else {
-      await onSave();
+    } else if (shouldDeleteExistingAudio) {
+      // Clear audio if it was deleted
+      finalAudioUrl = undefined;
+      finalDuration = undefined;
     }
+
+    // Save the note with the appropriate audio URL
+    await onSave(finalAudioUrl, finalDuration);
   };
 
   const clearAudio = () => {
@@ -172,8 +209,8 @@ export default function NoteEditor({
             <div className="space-y-4">
               <VoiceRecorder
                 onRecordingComplete={handleRecordingComplete}
-                existingAudioUrl={selectedNote?.audio_url}
-                existingDuration={selectedNote?.duration}
+                existingAudioUrl={existingAudioUrl}
+                existingDuration={existingDuration}
               />
               
               {/* Optional text note with voice */}
