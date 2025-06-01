@@ -45,7 +45,7 @@ const Saved = () => {
           subject,
           audio_url,
           created_at,
-          sender:profiles!voice_messages_sender_id_fkey(
+          sender:profiles!fk_voice_messages_sender(
             id,
             first_name,
             last_name,

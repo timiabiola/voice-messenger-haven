@@ -51,7 +51,7 @@ export const useSaveMessage = (messageId?: string) => {
         .select(`
           subject, 
           sender_id,
-          sender:profiles!voice_messages_sender_id_fkey(
+          sender:profiles!fk_voice_messages_sender(
             id,
             first_name,
             last_name,
