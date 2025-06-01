@@ -1,10 +1,10 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import { combineAudioBuffers, renderAudioBuffer, recordAudioBuffer } from '@/utils/audioProcessing';
 import { useRecording } from './use-recording';
 import { useMessageUpload } from './use-message-upload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ForwardMessageState {
   originalMessage: {
@@ -31,8 +31,32 @@ export const useForwardMessage = () => {
       return;
     }
     
-    setOriginalMessage(state.originalMessage);
-    messageUpload.setSubject(`Fwd: ${state.originalMessage.subject}`);
+    // Check if the message is private
+    const checkMessagePrivacy = async () => {
+      const { data, error } = await supabase
+        .from('voice_messages')
+        .select('is_private')
+        .eq('id', state.originalMessage.id)
+        .single();
+      
+      if (error) {
+        console.error('Error checking message privacy:', error);
+        toast.error('Failed to verify message');
+        navigate('/');
+        return;
+      }
+      
+      if (data?.is_private) {
+        toast.error('Private messages cannot be forwarded');
+        navigate('/inbox');
+        return;
+      }
+      
+      setOriginalMessage(state.originalMessage);
+      messageUpload.setSubject(`Fwd: ${state.originalMessage.subject}`);
+    };
+    
+    checkMessagePrivacy();
   }, [location.state, navigate, messageUpload.setSubject]);
 
   const handleSendRecording = async () => {

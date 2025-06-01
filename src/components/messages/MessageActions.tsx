@@ -1,5 +1,4 @@
-
-import { Play, Square, Forward, Reply } from 'lucide-react';
+import { Play, Square, Forward, Reply, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Message } from './types';
 
@@ -55,13 +54,33 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
         </button>
       </div>
 
-      <button
-        onClick={handleForward}
-        className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-amber-400 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95"
-      >
-        <Forward className="w-4 h-4" />
-        <span>Forward</span>
-      </button>
+      {message.is_private ? (
+        <div 
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-900/50 text-zinc-400 rounded-full text-sm font-medium cursor-not-allowed border border-zinc-800 relative group"
+          title="This message cannot be forwarded"
+        >
+          <Lock className="w-4 h-4 text-zinc-500" />
+          <span className="text-zinc-500">Private</span>
+          
+          {/* Tooltip on hover */}
+          <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+            <div className="bg-zinc-800 text-zinc-300 text-xs px-2 py-1 rounded whitespace-nowrap">
+              Cannot be forwarded
+              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
+                <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800" />
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={handleForward}
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 text-amber-400 rounded-full text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95"
+        >
+          <Forward className="w-4 h-4" />
+          <span>Forward</span>
+        </button>
+      )}
     </div>
   );
 };
