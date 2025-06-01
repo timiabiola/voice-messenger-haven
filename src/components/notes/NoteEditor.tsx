@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { X, Mic, Save, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -204,15 +205,18 @@ export default function NoteEditor({
 
         {/* Mobile buttons in header - only on very small screens */}
         <div className="flex min-[480px]:hidden items-center gap-2">
-          <Button
-            variant={isVoiceMode ? "default" : "outline"}
-            size="icon"
-            onClick={() => setIsVoiceMode(!isVoiceMode)}
-            className="flex-shrink-0"
-            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
-          >
-            <Mic className={`w-5 h-5 ${isVoiceMode ? '' : 'text-muted-foreground'}`} />
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button
+              variant="outline"
+              size="icon"
+              className="flex-shrink-0 cursor-not-allowed opacity-50"
+              disabled
+              title="Voice mode coming soon"
+            >
+              <Mic className="w-5 h-5 text-muted-foreground" />
+            </Button>
+            <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+          </div>
         </div>
       </div>
 
@@ -285,21 +289,19 @@ export default function NoteEditor({
 
       {/* Desktop buttons below content - show on screens 480px and up */}
       <div className="hidden min-[480px]:flex items-center justify-end gap-2 p-4 border-t border-border">
-        <Button
-          variant="outline"
-          size="default"
-          onClick={() => setIsVoiceMode(!isVoiceMode)}
-          className={cn(
-            "gap-2 transition-colors",
-            isVoiceMode 
-              ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-              : "hover:bg-accent hover:text-accent-foreground"
-          )}
-          title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
-        >
-          <Mic className="w-4 h-4" />
-          {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
-        </Button>
+        <div className="flex flex-col items-center mr-4">
+          <Button
+            variant="outline"
+            size="default"
+            className="gap-2 transition-colors cursor-not-allowed opacity-50"
+            disabled
+            title="Voice mode coming soon"
+          >
+            <Mic className="w-4 h-4" />
+            Voice Mode
+          </Button>
+          <span className="text-xs text-muted-foreground mt-1">Coming Soon</span>
+        </div>
         <Button 
           size="default" 
           onClick={handleSave}
@@ -315,15 +317,18 @@ export default function NoteEditor({
       <div className="min-[480px]:hidden">
         {/* Voice/Text toggle button */}
         <div className="fixed bottom-20 left-4 z-50">
-          <Button
-            size="lg"
-            variant={isVoiceMode ? "default" : "outline"}
-            onClick={() => setIsVoiceMode(!isVoiceMode)}
-            className="rounded-full w-14 h-14 shadow-lg"
-            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
-          >
-            <Mic className={`w-5 h-5 ${isVoiceMode ? '' : 'text-muted-foreground'}`} />
-          </Button>
+          <div className="flex flex-col items-center">
+            <Button
+              size="lg"
+              variant="outline"
+              className="rounded-full w-14 h-14 shadow-lg cursor-not-allowed opacity-50"
+              disabled
+              title="Voice mode coming soon"
+            >
+              <Mic className="w-5 h-5 text-muted-foreground" />
+            </Button>
+            <span className="text-xs text-muted-foreground mt-1 bg-background/80 px-2 py-1 rounded">Coming Soon</span>
+          </div>
         </div>
         
         {/* Save button */}
