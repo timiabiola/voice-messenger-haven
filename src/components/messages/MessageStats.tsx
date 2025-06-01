@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { AlertCircle, CheckCircle, Clock, RefreshCw } from 'lucide-react';
@@ -37,10 +36,9 @@ export default function MessageStats() {
     try {
       setIsLoading(true);
       
-      // Fetch delivery stats
+      // Fetch delivery stats using secure function
       const { data: deliveryData, error: deliveryError } = await supabase
-        .from('message_delivery_stats')
-        .select('*');
+        .rpc('get_message_delivery_stats');
       
       if (deliveryError) throw deliveryError;
       
