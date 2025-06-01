@@ -1,5 +1,9 @@
 -- Ensure users can read voice messages they have access to
-CREATE POLICY IF NOT EXISTS "Users can view messages sent to them"
+-- First drop the policy if it exists
+DROP POLICY IF EXISTS "Users can view messages sent to them" ON voice_messages;
+
+-- Create the policy
+CREATE POLICY "Users can view messages sent to them"
 ON voice_messages
 FOR SELECT
 TO authenticated
