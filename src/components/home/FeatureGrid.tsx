@@ -1,5 +1,4 @@
-
-import { MessageSquare, PenSquare, Users, Bookmark } from 'lucide-react';
+import { MessageSquare, PenSquare, Users, Bookmark, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FeatureButton } from './FeatureButton';
 
@@ -11,7 +10,7 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full max-w-lg sm:max-w-2xl">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 w-full max-w-lg sm:max-w-2xl lg:max-w-4xl">
       <FeatureButton
         icon={MessageSquare}
         title="Messages"
@@ -36,6 +35,12 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
         title="Saved items"
         description="Access your saved content"
         onClick={() => navigate('/saved')}
+      />
+      <FeatureButton
+        icon={Bot}
+        title="AI Assistant"
+        description="Chat with AI voice agents"
+        onClick={() => navigate('/ai-assistant')}
       />
     </div>
   );

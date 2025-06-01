@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -14,6 +13,7 @@ import Trash from '@/pages/Trash';
 import New from '@/pages/New';
 import ViewMode from '@/pages/ViewMode';
 import NotFound from '@/pages/NotFound';
+import AIAssistant from '@/pages/AIAssistant';
 import { Toaster } from 'sonner';
 import ForwardMessage from '@/pages/ForwardMessage';
 
@@ -44,6 +44,7 @@ function App() {
           <Route path="/trash" element={<Trash />} />
           <Route path="/new" element={<New />} />
           <Route path="/view-mode" element={<ViewMode />} />
+          <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
