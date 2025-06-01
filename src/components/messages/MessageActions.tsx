@@ -99,7 +99,7 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
           >
             <Forward className="w-4 h-4" />
             <span className="hidden sm:inline">Forward</span>
-          </div>
+          </button>
         )}
       </div>
     </div>
