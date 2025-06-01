@@ -37,7 +37,7 @@ const Inbox = () => {
   );
 
   return (
-    <AppLayout onSearch={handleSearch}>
+    <AppLayout onSearch={handleSearch} unreadCount={messages.length}>
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full pt-20">
         <div className="container mx-auto px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 max-w-[1400px]">
           <div className="space-y-4 py-4">

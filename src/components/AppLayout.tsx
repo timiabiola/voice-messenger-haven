@@ -8,9 +8,10 @@ import { useLocation } from 'react-router-dom';
 interface AppLayoutProps {
   children: React.ReactNode;
   onSearch?: (query: string) => void;
+  unreadCount?: number;
 }
 
-const AppLayout = ({ children, onSearch }: AppLayoutProps) => {
+const AppLayout = ({ children, onSearch, unreadCount = 0 }: AppLayoutProps) => {
   const isMobile = useIsMobile();
   const location = useLocation();
   const showSearch = location.pathname.includes('inbox');
@@ -21,7 +22,7 @@ const AppLayout = ({ children, onSearch }: AppLayoutProps) => {
       <main className="flex-1 min-h-screen w-full">
         {children}
       </main>
-      <BottomNav />
+      <BottomNav unreadCount={unreadCount} />
     </div>
   );
 };

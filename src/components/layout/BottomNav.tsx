@@ -7,8 +7,13 @@ import {
   Bookmark,
   NotepadText
 } from 'lucide-react';
+import { NotificationBadge } from '@/components/ui/NotificationBadge';
 
-export const BottomNav = () => {
+interface BottomNavProps {
+  unreadCount?: number;
+}
+
+export const BottomNav = ({ unreadCount = 0 }: BottomNavProps) => {
   const location = useLocation();
   
   const isActive = (path: string) => location.pathname === path;
@@ -36,7 +41,7 @@ export const BottomNav = () => {
         <Bookmark className="w-6 h-6" />
         <span className="text-xs mt-1">Saved</span>
       </Link>
-      <Link to="/notes" className={`flex flex-col items-center justify-center px-3 py-2 rounded-xl 
+      <Link to="/notes" className={`flex flex-col items-center justify-center px-3 py-2 rounded-xl relative
         transition-colors ${isActive('/notes') ? 'text-primary' : 'text-muted-foreground'}`}>
         <NotepadText className="w-6 h-6" />
         <span className="text-xs mt-1">Notes</span>

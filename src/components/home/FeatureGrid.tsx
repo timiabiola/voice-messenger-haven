@@ -1,3 +1,4 @@
+
 import { MessageSquare, PenSquare, Users, Bookmark, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FeatureButton } from './FeatureButton';
@@ -18,7 +19,8 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
           title="Messages"
           description="View your messages"
           onClick={() => navigate('/inbox')}
-          badge={unreadCount > 0 ? `${unreadCount} unread` : undefined}
+          showNotificationBadge={true}
+          notificationCount={unreadCount}
         />
         <FeatureButton
           icon={PenSquare}
