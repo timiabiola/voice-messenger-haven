@@ -21,8 +21,12 @@ export const MessageHeader = ({ message }: MessageHeaderProps) => {
       
       {message.is_urgent && (
         <div className="flex items-center">
-          <span className="shrink-0" title="Urgent message">
-            <AlertTriangle className="w-4 h-4 text-red-400" />
+          <span 
+            className="shrink-0 flex items-center gap-1 px-2 py-1 bg-red-900/30 rounded-full border border-red-700/50" 
+            title="Urgent message"
+          >
+            <AlertTriangle className="w-3 h-3 text-red-400" />
+            <span className="text-xs text-red-400 font-medium">Urgent</span>
           </span>
         </div>
       )}
