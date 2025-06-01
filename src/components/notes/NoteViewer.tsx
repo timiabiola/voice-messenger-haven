@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Pencil, Trash2, FolderOpen, MoreVertical, ArrowLeft, Mic } from 'lucide-react';
+import { X, Pencil, Trash2, FolderOpen, MoreVertical, ArrowLeft, Mic, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ type NoteViewerProps = {
   onEdit: () => void;
   onDelete: () => void;
   onMove?: (noteId: string, folderId: string | null) => void;
+  onNewNote?: () => void;
 };
 
 export default function NoteViewer({
@@ -32,6 +33,7 @@ export default function NoteViewer({
   onEdit,
   onDelete,
   onMove,
+  onNewNote,
 }: NoteViewerProps) {
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [noteTags, setNoteTags] = useState<NoteTag[]>([]);
@@ -114,14 +116,16 @@ export default function NoteViewer({
         <div className="p-4 border-b border-border">
           <div className="flex items-start gap-2">
             {/* Mobile back button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="md:hidden flex-shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Button>
+            {isMobile && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onClose}
+                className="flex-shrink-0"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+            )}
             
             <div className="flex-1 min-w-0">
               <h2 className="text-xl md:text-2xl font-semibold text-foreground truncate">
@@ -136,86 +140,102 @@ export default function NoteViewer({
             </div>
             
             {/* Desktop actions */}
-            <div className="hidden md:flex items-center gap-2">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onEdit}
-                className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
-                title="Edit note (Ctrl+E)"
-              >
-                <Pencil className="w-4 h-4" />
-                Edit
-              </Button>
-              {onMove && (
+            {!isMobile && (
+              <div className="flex items-center gap-2">
+                {onNewNote && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    onClick={onNewNote}
+                    className="gap-2"
+                    title="Create new note (Ctrl+N)"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Note
+                  </Button>
+                )}
                 <Button 
                   variant="outline" 
                   size="sm" 
-                  onClick={() => setShowMoveDialog(true)}
-                  className="gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
-                  title="Move to folder"
+                  onClick={onEdit}
+                  className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                  title="Edit note (Ctrl+E)"
                 >
-                  <FolderOpen className="w-4 h-4" />
-                  Move
+                  <Pencil className="w-4 h-4" />
+                  Edit
                 </Button>
-              )}
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onDelete}
-                className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                title="Delete note"
-              >
-                <Trash2 className="w-4 h-4" />
-                Delete
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                onClick={onClose}
-                className="hover:bg-accent transition-colors"
-                title="Close (Esc)"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            </div>
+                {onMove && (
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setShowMoveDialog(true)}
+                    className="gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                    title="Move to folder"
+                  >
+                    <FolderOpen className="w-4 h-4" />
+                    Move
+                  </Button>
+                )}
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={onDelete}
+                  className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                  title="Delete note"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={onClose}
+                  className="hover:bg-accent transition-colors"
+                  title="Close (Esc)"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
 
             {/* Mobile action buttons - more visible */}
-            <div className="md:hidden flex items-center gap-1">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onEdit}
-                className="text-primary"
-              >
-                <Pencil className="w-5 h-5" />
-              </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  {onMove && (
-                    <>
-                      <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
-                        <FolderOpen className="w-4 h-4 mr-2" />
-                        Move to Folder
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
-                  <DropdownMenuItem 
-                    onClick={onDelete}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete Note
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            {isMobile && (
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={onEdit}
+                  className="text-primary"
+                >
+                  <Pencil className="w-5 h-5" />
+                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreVertical className="w-5 h-5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {onMove && (
+                      <>
+                        <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
+                          <FolderOpen className="w-4 h-4 mr-2" />
+                          Move to Folder
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    <DropdownMenuItem 
+                      onClick={onDelete}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Delete Note
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
           </div>
 
           {/* Tags - make more mobile friendly */}

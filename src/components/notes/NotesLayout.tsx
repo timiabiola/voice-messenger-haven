@@ -51,7 +51,7 @@ export const NotesLayout = ({
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
       {/* Sidebar Panel - Always visible on desktop */}
-      <aside className="w-64 flex-shrink-0 glass-panel rounded-lg hidden md:flex flex-col overflow-hidden">
+      <aside className="w-64 flex-shrink-0 glass-panel rounded-lg flex flex-col overflow-hidden">
         {sidebar}
       </aside>
 
@@ -59,7 +59,7 @@ export const NotesLayout = ({
       <div className={cn(
         "glass-panel rounded-lg transition-all duration-300 overflow-hidden flex-col",
         showEditor 
-          ? "w-80 flex-shrink-0 hidden md:flex" // Always show on md and up
+          ? "w-80 flex-shrink-0 flex" // Always show on desktop
           : "flex-1 flex"
       )}>
         {list}

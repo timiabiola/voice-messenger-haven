@@ -220,6 +220,7 @@ export default function Notes() {
       onEdit={() => startEditNote(selectedNote)}
       onDelete={() => handleDeleteNote()}
       onMove={handleMoveNote}
+      onNewNote={startNewNote}
     />
   ) : isEditing ? (
     <NoteEditor
