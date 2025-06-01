@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAdmin } from '@/hooks/useAdmin';
@@ -7,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar } from '@/components/home/TopBar';
 import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { RecordButton } from '@/components/home/RecordButton';
+import { RecentSavedMessages } from '@/components/saved/RecentSavedMessages';
 
 interface Message {
   id: string;
@@ -124,8 +124,9 @@ export default function Index() {
       
       <main className="flex-1 w-full pt-4 pb-24">
         <div className="w-full px-4 sm:px-6 md:px-8 mx-auto">
-          <div className="flex flex-col items-center justify-center">
+          <div className="flex flex-col items-center justify-center space-y-8">
             <FeatureGrid unreadCount={unreadCount} />
+            <RecentSavedMessages />
           </div>
         </div>
       </main>

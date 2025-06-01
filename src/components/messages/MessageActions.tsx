@@ -1,6 +1,7 @@
-import { Play, Square, Forward, Reply, Lock } from 'lucide-react';
+import { Play, Square, Forward, Reply, Lock, Bookmark } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import type { Message } from './types';
+import { useSaveMessage } from '@/hooks/useSaveMessage';
 
 interface MessageActionsProps {
   message: Message;
@@ -11,6 +12,7 @@ interface MessageActionsProps {
 
 export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: MessageActionsProps) => {
   const navigate = useNavigate();
+  const { isSaved, isLoading: isSaveLoading, toggleSave } = useSaveMessage(message.id);
 
   const handleForward = () => {
     navigate('/forward', {
@@ -51,6 +53,20 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
         >
           <Reply className="w-4 h-4" />
           <span>Reply</span>
+        </button>
+
+        <button
+          onClick={toggleSave}
+          disabled={isSaveLoading}
+          className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed ${
+            isSaved 
+              ? 'bg-amber-400 text-black hover:bg-amber-300' 
+              : 'bg-zinc-800 text-amber-400 hover:bg-zinc-700'
+          }`}
+          title={isSaved ? 'Unsave message' : 'Save message'}
+        >
+          <Bookmark className={`w-4 h-4 ${isSaved ? 'fill-current' : ''}`} />
+          <span>{isSaved ? 'Saved' : 'Save'}</span>
         </button>
       </div>
 

@@ -1,4 +1,3 @@
-
 import { ReactNode } from 'react'
 
 export type SavedSectionItem = {
@@ -10,10 +9,18 @@ export type SavedSectionItem = {
 
 export type SavedItem = {
   id: string
-  is_read: boolean
-  is_flagged: boolean
-  tag?: string
-  category?: string
+  category: string
+  content: string | null
+  created_at: string
+  created_by: string | null
+  deleted_at: string | null
+  is_flagged: boolean | null
+  is_read: boolean | null
+  sender_id: string | null
+  tag: string | null
+  title: string
+  updated_at: string
+  user_id: string
   saved_items_tags?: {
     tags: {
       name: string

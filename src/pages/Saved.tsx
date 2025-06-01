@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { 
   Settings, 
   ChevronLeft,
@@ -11,6 +10,8 @@ import { useNavigate } from 'react-router-dom'
 import { useSavedItems } from '@/hooks/useSavedItems'
 import EmptyState from '@/components/layout/EmptyState'
 import { Button } from '@/components/ui/button'
+import { SavedMessageCard } from '@/components/saved/SavedMessageCard'
+import { supabase } from '@/integrations/supabase/client'
 
 const Saved = () => {
   const navigate = useNavigate()
@@ -19,8 +20,61 @@ const Saved = () => {
   const [editedTags, setEditedTags] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedTags, setSelectedTags] = useState<string[]>([])
+  const [voiceMessages, setVoiceMessages] = useState<any[]>([])
 
   const { savedItems, isLoading, hasMore } = useSavedItems(selectedTags, currentPage)
+
+  // Fetch voice message data for saved items
+  useEffect(() => {
+    const fetchVoiceMessages = async () => {
+      if (!savedItems || savedItems.length === 0) return;
+
+      // Filter for voice message saved items
+      const voiceMessageItems = savedItems.filter(item => item.category === 'voice_message');
+      const messageIds = voiceMessageItems.map(item => item.content).filter(Boolean);
+
+      if (messageIds.length === 0) {
+        setVoiceMessages([]);
+        return;
+      }
+
+      const { data: messages, error } = await supabase
+        .from('voice_messages')
+        .select(`
+          id,
+          subject,
+          audio_url,
+          created_at,
+          sender:profiles!voice_messages_sender_id_fkey(
+            id,
+            first_name,
+            last_name,
+            email
+          )
+        `)
+        .in('id', messageIds);
+
+      if (error) {
+        console.error('Error fetching voice messages:', error);
+        return;
+      }
+
+      // Combine saved items with voice message data
+      const combinedData = voiceMessageItems.map(savedItem => {
+        const message = messages?.find(m => m.id === savedItem.content);
+        return {
+          id: savedItem.id,
+          saved_at: savedItem.created_at,
+          voice_message: message || null,
+          saved_items_tags: savedItem.saved_items_tags
+        };
+      }).filter(item => item.voice_message !== null);
+
+      setVoiceMessages(combinedData);
+    };
+
+    fetchVoiceMessages();
+  }, [savedItems]);
 
   const toggleMessageSelect = (messageId: string) => {
     setSelectedMessages(
@@ -58,7 +112,7 @@ const Saved = () => {
     )
   }
 
-  if (!savedItems?.length && currentPage === 1) {
+  if (voiceMessages.length === 0 && currentPage === 1) {
     return (
       <div className="flex min-h-[100dvh] bg-black">
         <main className="flex-1 flex flex-col w-full">
@@ -82,8 +136,16 @@ const Saved = () => {
               <Settings className="w-6 h-6 text-amber-400" />
             </Button>
           </header>
-          <div className="flex-1">
-            <EmptyState />
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="text-center space-y-4">
+              <p className="text-gray-400">No saved messages yet</p>
+              <Button
+                onClick={() => navigate('/inbox')}
+                className="bg-amber-400 hover:bg-amber-300 text-black"
+              >
+                Go to Inbox
+              </Button>
+            </div>
           </div>
         </main>
       </div>
@@ -149,58 +211,41 @@ const Saved = () => {
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-          <div className="grid grid-cols-1 gap-3">
-            {savedItems?.map((message) => (
-              <div
-                key={message.id}
-                className={`glass-panel rounded-lg p-4 transition-all active:scale-[0.98] touch-manipulation ${
-                  selectedMessages.includes(message.id) ? 'bg-amber-400/10' : ''
-                }`}
-              >
-                <div className="flex justify-between mb-2">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedMessages.includes(message.id)}
-                      onChange={() => toggleMessageSelect(message.id)}
-                      className="mt-1 w-5 h-5 rounded border-amber-400/20 text-amber-400 focus:ring-amber-400"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <h2 className="font-bold text-base text-amber-400 mb-1 truncate">
-                        {message.id}
-                      </h2>
-                      <p className="text-sm text-amber-400/60 line-clamp-2">Message content here</p>
-                    </div>
-                  </div>
-                </div>
+          <div className="space-y-3">
+            {voiceMessages.map((savedItem) => (
+              <div key={savedItem.id} className="relative">
+                <SavedMessageCard savedItem={savedItem} />
                 
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {message.saved_items_tags?.map(({ tags }) => (
-                    <span 
-                      key={tags.name} 
-                      className="bg-amber-400/10 text-amber-400 rounded-full px-2.5 py-0.5 text-xs"
-                    >
-                      {isEditingTags ? (
-                        <span className="flex items-center gap-1">
-                          <input
-                            type="text"
-                            value={editedTags.find((t) => t === tags.name) || ''}
-                            onChange={(e) => editTag(tags.name, e.target.value)}
-                            className="bg-transparent border-none focus:outline-none w-16 text-amber-400 text-xs px-0"
-                          />
-                          <button 
-                            onClick={() => deleteTag(tags.name)}
-                            className="text-amber-400/60 hover:text-amber-400 p-1"
-                          >
-                            <Trash2 className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ) : (
-                        tags.name
-                      )}
-                    </span>
-                  ))}
-                </div>
+                {/* Tags section */}
+                {savedItem.saved_items_tags && savedItem.saved_items_tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2 px-4">
+                    {savedItem.saved_items_tags.map(({ tags }) => (
+                      <span 
+                        key={tags.name} 
+                        className="bg-amber-400/10 text-amber-400 rounded-full px-2.5 py-0.5 text-xs"
+                      >
+                        {isEditingTags ? (
+                          <span className="flex items-center gap-1">
+                            <input
+                              type="text"
+                              value={editedTags.find((t) => t === tags.name) || ''}
+                              onChange={(e) => editTag(tags.name, e.target.value)}
+                              className="bg-transparent border-none focus:outline-none w-16 text-amber-400 text-xs px-0"
+                            />
+                            <button 
+                              onClick={() => deleteTag(tags.name)}
+                              className="text-amber-400/60 hover:text-amber-400 p-1"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </span>
+                        ) : (
+                          tags.name
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>
