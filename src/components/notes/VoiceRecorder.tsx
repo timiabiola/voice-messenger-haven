@@ -124,14 +124,23 @@ export const VoiceRecorder = ({
   };
 
   const togglePlayback = () => {
-    if (!audioUrl) return;
+    if (!audioUrl) {
+      console.log('[Voice Playback] No audio URL available');
+      return;
+    }
+
+    console.log('[Voice Playback] Attempting to play:', audioUrl);
 
     if (!audioRef.current) {
       audioRef.current = new Audio(audioUrl);
-      audioRef.current.onended = () => setIsPlaying(false);
+      audioRef.current.onended = () => {
+        console.log('[Voice Playback] Audio ended');
+        setIsPlaying(false);
+      };
       
       audioRef.current.onerror = (e) => {
-        console.error('Audio playback error:', e);
+        console.error('[Voice Playback] Audio error event:', e);
+        console.error('[Voice Playback] Audio element error:', audioRef.current?.error);
         setIsPlaying(false);
         toast({
           variant: "destructive",
@@ -142,13 +151,18 @@ export const VoiceRecorder = ({
     }
 
     if (isPlaying) {
+      console.log('[Voice Playback] Pausing audio');
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
+      console.log('[Voice Playback] Playing audio');
       audioRef.current.play()
-        .then(() => setIsPlaying(true))
+        .then(() => {
+          console.log('[Voice Playback] Play started successfully');
+          setIsPlaying(true);
+        })
         .catch((error) => {
-          console.error('Error playing audio:', error);
+          console.error('[Voice Playback] Play error:', error);
           setIsPlaying(false);
           toast({
             variant: "destructive",

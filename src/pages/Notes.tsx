@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { PencilLine, Settings } from 'lucide-react';
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate, Navigate } from 'react-router-dom';
+import { PencilLine, Settings, Search, Plus } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import FolderSidebar from '@/components/notes/FolderSidebar';
@@ -20,6 +20,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ensureStorageBucket } from '@/lib/supabase-storage';
+
+const MOBILE_BREAKPOINT = 768;
 
 export default function Notes() {
   const navigate = useNavigate();
@@ -64,6 +67,12 @@ export default function Notes() {
         return;
       }
       setUserId(user.id);
+      
+      // Check if voice recordings bucket exists
+      const bucketExists = await ensureStorageBucket();
+      if (!bucketExists) {
+        console.warn('[Notes] Voice recordings bucket not found - voice notes may not work');
+      }
     };
 
     getCurrentUser();

@@ -101,6 +101,14 @@ export default function NoteEditor({
   };
 
   const handleSave = async () => {
+    console.log('[Voice Save] Starting save process', {
+      isVoiceMode,
+      hasAudioBlob: !!audioBlob,
+      existingAudioUrl,
+      shouldDeleteExistingAudio,
+      userId
+    });
+    
     let finalAudioUrl = existingAudioUrl;
     let finalDuration = existingDuration;
 
@@ -110,21 +118,32 @@ export default function NoteEditor({
       try {
         // Upload audio to Supabase storage
         const fileName = `voice-notes/${userId}/${Date.now()}.webm`;
+        console.log('[Voice Save] Uploading to:', fileName);
+        
         const { data, error } = await supabase.storage
           .from('voice-recordings')
-          .upload(fileName, audioBlob);
+          .upload(fileName, audioBlob, {
+            contentType: 'audio/webm',
+            upsert: false
+          });
 
-        if (error) throw error;
+        if (error) {
+          console.error('[Voice Save] Upload error:', error);
+          throw error;
+        }
+
+        console.log('[Voice Save] Upload successful:', data);
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from('voice-recordings')
           .getPublicUrl(fileName);
 
+        console.log('[Voice Save] Public URL:', publicUrl);
         finalAudioUrl = publicUrl;
         finalDuration = audioDuration;
       } catch (error) {
-        console.error('Error uploading audio:', error);
+        console.error('[Voice Save] Error uploading audio:', error);
         toast({
           variant: "destructive",
           title: "Error",
@@ -137,11 +156,13 @@ export default function NoteEditor({
       }
     } else if (shouldDeleteExistingAudio) {
       // Clear audio if it was deleted
+      console.log('[Voice Save] Deleting existing audio');
       finalAudioUrl = undefined;
       finalDuration = undefined;
     }
 
     // Save the note with the appropriate audio URL
+    console.log('[Voice Save] Calling onSave with:', { finalAudioUrl, finalDuration });
     await onSave(finalAudioUrl, finalDuration);
   };
 
