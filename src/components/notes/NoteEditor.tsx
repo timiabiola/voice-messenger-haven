@@ -35,7 +35,7 @@ export default function NoteEditor({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioDuration, setAudioDuration] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
 
   useEffect(() => {
     const checkScreenSize = () => {
@@ -118,83 +118,68 @@ export default function NoteEditor({
       {/* Header with actions */}
       <div className="flex items-center justify-between p-4 border-b border-border gap-2">
         {/* Mobile back/cancel button */}
-        {isMobile && (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onCancel}
-            className="flex-shrink-0"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onCancel}
+          className="min-[480px]:hidden flex-shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
         
         <h2 className="text-lg font-semibold flex-1 truncate">
           {selectedNote ? 'Edit Note' : 'New Note'}
         </h2>
         
-        {/* Desktop buttons */}
-        {!isMobile && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsVoiceMode(!isVoiceMode)}
-              className={cn(
-                "gap-2 transition-colors",
-                isVoiceMode 
-                  ? "bg-primary text-primary-foreground hover:bg-primary/90" 
-                  : "hover:bg-accent hover:text-accent-foreground"
-              )}
-              title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
-            >
-              <Mic className="w-4 h-4" />
-              {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={onCancel}
-              className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
-              title="Cancel (Esc)"
-            >
-              Cancel
-            </Button>
-            <Button 
-              size="sm" 
-              onClick={handleSave}
-              disabled={isUploading}
-              className="hover:bg-primary/90 transition-colors"
-              title="Save note (Ctrl+S)"
-            >
-              {isUploading ? 'Uploading...' : 'Save'}
-            </Button>
-          </div>
-        )}
+        {/* Desktop buttons - show on screens 480px and up */}
+        <div className="hidden min-[480px]:flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsVoiceMode(!isVoiceMode)}
+            className={cn(
+              "gap-2 transition-colors",
+              isVoiceMode 
+                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                : "hover:bg-accent hover:text-accent-foreground"
+            )}
+            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
+          >
+            <Mic className="w-4 h-4" />
+            {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={onCancel}
+            className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            title="Cancel (Esc)"
+          >
+            Cancel
+          </Button>
+          <Button 
+            size="sm" 
+            onClick={handleSave}
+            disabled={isUploading}
+            className="hover:bg-primary/90 transition-colors"
+            title="Save note (Ctrl+S)"
+          >
+            {isUploading ? 'Uploading...' : 'Save'}
+          </Button>
+        </div>
 
-        {/* Mobile buttons - more visible */}
-        {isMobile && (
-          <div className="flex items-center gap-2">
-            <Button
-              variant={isVoiceMode ? "default" : "outline"}
-              size="sm"
-              onClick={() => setIsVoiceMode(!isVoiceMode)}
-              className="gap-1"
-            >
-              <Mic className="w-4 h-4" />
-              {!isMobile && (isVoiceMode ? 'Text' : 'Voice')}
-            </Button>
-            <Button 
-              size="sm"
-              onClick={handleSave}
-              disabled={isUploading}
-              className="gap-1"
-            >
-              <Save className="w-4 h-4" />
-              {!isMobile && (isUploading ? 'Saving...' : 'Save')}
-            </Button>
-          </div>
-        )}
+        {/* Mobile buttons in header - only on very small screens */}
+        <div className="flex min-[480px]:hidden items-center gap-2">
+          <Button
+            variant={isVoiceMode ? "default" : "outline"}
+            size="icon"
+            onClick={() => setIsVoiceMode(!isVoiceMode)}
+            className="flex-shrink-0"
+            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
+          >
+            <Mic className={`w-5 h-5 ${isVoiceMode ? '' : 'text-muted-foreground'}`} />
+          </Button>
+        </div>
       </div>
 
       {/* Content area */}
@@ -247,19 +232,33 @@ export default function NoteEditor({
         </div>
       </div>
 
-      {/* Mobile floating save button */}
-      {isMobile && (
-        <div className="fixed bottom-20 right-4 z-10">
+      {/* Mobile floating buttons - only show on small screens */}
+      <div className="min-[480px]:hidden">
+        {/* Voice/Text toggle button */}
+        <div className="fixed bottom-20 left-4 z-50">
+          <Button
+            size="lg"
+            variant={isVoiceMode ? "default" : "outline"}
+            onClick={() => setIsVoiceMode(!isVoiceMode)}
+            className="rounded-full w-14 h-14 shadow-lg"
+            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
+          >
+            <Mic className={`w-5 h-5 ${isVoiceMode ? '' : 'text-muted-foreground'}`} />
+          </Button>
+        </div>
+        
+        {/* Save button */}
+        <div className="fixed bottom-20 right-4 z-50">
           <Button
             size="lg"
             onClick={handleSave}
             disabled={isUploading}
-            className="rounded-full w-14 h-14 shadow-lg"
+            className="rounded-full w-14 h-14 shadow-lg bg-primary hover:bg-primary/90"
           >
             <Save className="w-5 h-5" />
           </Button>
         </div>
-      )}
+      </div>
     </div>
   );
 }
