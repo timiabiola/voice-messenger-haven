@@ -30,7 +30,12 @@ export function useNotes(userId: string | null) {
           .order('created_at', { ascending: false });
 
         if (notesError) throw notesError;
-        setNotes(notesData || []);
+        // Cast the type to match our interface
+        const typedNotes = (notesData || []).map(note => ({
+          ...note,
+          type: (note.type as 'text' | 'voice') || 'text'
+        }));
+        setNotes(typedNotes);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast({
@@ -101,12 +106,17 @@ export function useNotes(userId: string | null) {
         .single();
 
       if (error) throw error;
-      setNotes(prev => [data, ...prev]);
+      // Cast the type to match our interface
+      const typedNote: Note = {
+        ...data,
+        type: (data.type as 'text' | 'voice') || 'text'
+      };
+      setNotes(prev => [typedNote, ...prev]);
       toast({
         title: "Success",
         description: "Note created successfully"
       });
-      return data;
+      return typedNote;
     } catch (error) {
       console.error('Error creating note:', error);
       toast({
@@ -139,12 +149,17 @@ export function useNotes(userId: string | null) {
         .single();
 
       if (error) throw error;
-      setNotes(prev => prev.map(note => note.id === noteId ? data : note));
+      // Cast the type to match our interface
+      const typedNote: Note = {
+        ...data,
+        type: (data.type as 'text' | 'voice') || 'text'
+      };
+      setNotes(prev => prev.map(note => note.id === noteId ? typedNote : note));
       toast({
         title: "Success",
         description: "Note updated successfully"
       });
-      return data;
+      return typedNote;
     } catch (error) {
       console.error('Error updating note:', error);
       toast({
