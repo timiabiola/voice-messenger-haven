@@ -10,7 +10,6 @@ export interface AgentVersion {
 export interface Agent {
   id: string;
   name: string;
-  emoji: string;
   role: string;
   description: string;
   tagline: string;
@@ -23,7 +22,6 @@ export const agents: Agent[] = [
   {
     id: 'syndra',
     name: 'SYNDRA',
-    emoji: '👩‍💼',
     role: 'Agency Development Specialist',
     description: 'Expert guidance for building and scaling your agency',
     tagline: 'Your strategic partner for agency growth and success',
@@ -56,9 +54,8 @@ export const agents: Agent[] = [
     ]
   },
   {
-    id: 'auntmn',
-    name: 'AUNTMN',
-    emoji: '🎤',
+    id: 'autumn',
+    name: 'AUTUMN',
     role: 'Interview Prep Coach',
     description: 'Master your interviews with personalized coaching and real-time feedback',
     tagline: 'Land your dream job with confidence',
@@ -71,7 +68,7 @@ export const agents: Agent[] = [
     ],
     versions: [
       {
-        id: 'auntmn-voice',
+        id: 'autumn-voice',
         name: 'Voice Coach',
         icon: '🎯',
         type: 'voice',

@@ -21,12 +21,9 @@ export const AgentCard = ({ agent }: AgentCardProps) => {
       <div className={`p-6 bg-gradient-to-br ${agent.gradient} relative overflow-hidden`}>
         <div className="absolute inset-0 bg-black/20"></div>
         <div className="relative z-10">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="text-4xl filter drop-shadow-lg">{agent.emoji}</span>
-            <div>
-              <h3 className="text-2xl font-bold text-white">{agent.name}</h3>
-              <p className="text-white/90">{agent.role}</p>
-            </div>
+          <div className="mb-2">
+            <h3 className="text-2xl font-bold text-white">{agent.name}</h3>
+            <p className="text-white/90">{agent.role}</p>
           </div>
           <p className="text-white/80 italic mt-2">"{agent.tagline}"</p>
         </div>

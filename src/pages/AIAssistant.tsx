@@ -2,7 +2,6 @@ import { ChevronLeft, Settings, Bot } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { AgentCard } from '@/components/ai-assistant/AgentCard';
-import { FeatureSection } from '@/components/ai-assistant/FeatureSection';
 import { agents } from '@/data/aiAgents';
 
 const AIAssistant = () => {
@@ -50,14 +49,11 @@ const AIAssistant = () => {
             </div>
 
             {/* Agent Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {agents.map((agent) => (
                 <AgentCard key={agent.id} agent={agent} />
               ))}
             </div>
-
-            {/* Features Section */}
-            <FeatureSection />
           </div>
         </div>
       </main>
