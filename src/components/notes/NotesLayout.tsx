@@ -32,16 +32,16 @@ export const NotesLayout = ({
 
   // Mobile layout - show one panel at a time
   if (isMobile) {
-    if (showEditor) {
+    if (showEditor && editor) {
       return (
-        <div className="h-[calc(100vh-8rem)] glass-panel rounded-lg">
+        <div className="h-[calc(100vh-8rem)] glass-panel rounded-lg overflow-hidden">
           {editor}
         </div>
       );
     }
     
     return (
-      <div className="h-[calc(100vh-8rem)] glass-panel rounded-lg">
+      <div className="h-[calc(100vh-8rem)] glass-panel rounded-lg overflow-hidden">
         {list}
       </div>
     );
@@ -50,22 +50,24 @@ export const NotesLayout = ({
   // Desktop layout - show multiple panels
   return (
     <div className="flex h-[calc(100vh-8rem)] gap-4">
-      {/* Sidebar Panel */}
-      <aside className="w-64 flex-col glass-panel rounded-lg hidden md:flex">
+      {/* Sidebar Panel - Always visible on desktop */}
+      <aside className="w-64 flex-shrink-0 glass-panel rounded-lg hidden md:flex flex-col overflow-hidden">
         {sidebar}
       </aside>
 
-      {/* Notes List Panel */}
+      {/* Notes List Panel - Responsive width based on editor state */}
       <div className={cn(
-        "glass-panel rounded-lg transition-all duration-300",
-        showEditor ? "w-96 flex-shrink-0 hidden lg:block" : "flex-1"
+        "glass-panel rounded-lg transition-all duration-300 overflow-hidden flex-col",
+        showEditor 
+          ? "w-80 flex-shrink-0 hidden md:flex" // Always show on md and up
+          : "flex-1 flex"
       )}>
         {list}
       </div>
 
-      {/* Editor/Viewer Panel */}
-      {showEditor && (
-        <div className="flex-1 glass-panel rounded-lg animate-in slide-in-from-right">
+      {/* Editor/Viewer Panel - Takes remaining space */}
+      {showEditor && editor && (
+        <div className="flex-1 glass-panel rounded-lg animate-in slide-in-from-right overflow-hidden flex flex-col min-w-0">
           {editor}
         </div>
       )}

@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { X, Mic, Save } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Mic, Save, ArrowLeft, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
 import { VoiceRecorder } from './VoiceRecorder';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { cn } from '@/lib/utils';
 
 type NoteEditorProps = {
   isEditing: boolean;
@@ -34,6 +35,38 @@ export default function NoteEditor({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioDuration, setAudioDuration] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Keyboard shortcuts for desktop
+  useEffect(() => {
+    if (isMobile || !isEditing) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + S to save
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        handleSave();
+      }
+      // Escape to cancel
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        onCancel();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isMobile, isEditing, onCancel]);
 
   if (!isEditing) return null;
 
@@ -75,11 +108,26 @@ export default function NoteEditor({
     }
   };
 
+  const clearAudio = () => {
+    setAudioBlob(null);
+    setAudioDuration(0);
+  };
+
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-background">
       {/* Header with actions */}
-      <div className="flex justify-between items-center p-4 border-b border-border">
-        <h2 className="text-lg font-semibold">
+      <div className="flex items-center justify-between p-4 border-b border-border gap-2">
+        {/* Mobile back/cancel button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onCancel}
+          className="md:hidden flex-shrink-0"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </Button>
+        
+        <h2 className="text-lg font-semibold flex-1 truncate">
           {selectedNote ? 'Edit Note' : 'New Note'}
         </h2>
         
@@ -89,7 +137,13 @@ export default function NoteEditor({
             variant="outline"
             size="sm"
             onClick={() => setIsVoiceMode(!isVoiceMode)}
-            className="gap-2"
+            className={cn(
+              "gap-2 transition-colors",
+              isVoiceMode 
+                ? "bg-primary text-primary-foreground hover:bg-primary/90" 
+                : "hover:bg-accent hover:text-accent-foreground"
+            )}
+            title={isVoiceMode ? "Switch to text mode" : "Switch to voice mode"}
           >
             <Mic className="w-4 h-4" />
             {isVoiceMode ? 'Text Mode' : 'Voice Mode'}
@@ -98,42 +152,41 @@ export default function NoteEditor({
             variant="outline" 
             size="sm" 
             onClick={onCancel}
+            className="hover:bg-destructive hover:text-destructive-foreground transition-colors"
+            title="Cancel (Esc)"
           >
-            <X className="w-4 h-4 mr-1" />
             Cancel
           </Button>
           <Button 
             size="sm" 
             onClick={handleSave}
             disabled={isUploading}
+            className="hover:bg-primary/90 transition-colors"
+            title="Save note (Ctrl+S)"
           >
-            {isUploading ? 'Uploading...' : selectedNote ? 'Update' : 'Save'}
+            {isUploading ? 'Uploading...' : 'Save'}
           </Button>
         </div>
 
-        {/* Mobile buttons - more compact */}
-        <div className="flex md:hidden items-center gap-1">
+        {/* Mobile buttons - more visible */}
+        <div className="flex md:hidden items-center gap-2">
           <Button
-            variant="ghost"
-            size="icon"
+            variant={isVoiceMode ? "default" : "outline"}
+            size="sm"
             onClick={() => setIsVoiceMode(!isVoiceMode)}
+            className="gap-1"
           >
-            <Mic className={`w-5 h-5 ${isVoiceMode ? 'text-primary' : ''}`} />
+            <Mic className="w-4 h-4" />
+            {!isMobile && (isVoiceMode ? 'Text' : 'Voice')}
           </Button>
           <Button 
-            variant="ghost" 
-            size="icon"
-            onClick={onCancel}
-          >
-            <X className="w-5 h-5" />
-          </Button>
-          <Button 
-            variant="ghost"
-            size="icon"
+            size="sm"
             onClick={handleSave}
             disabled={isUploading}
+            className="gap-1"
           >
-            <Save className="w-5 h-5" />
+            <Save className="w-4 h-4" />
+            {!isMobile && (isUploading ? 'Saving...' : 'Save')}
           </Button>
         </div>
       </div>
@@ -145,25 +198,62 @@ export default function NoteEditor({
             placeholder="Note title"
             value={currentNote.title}
             onChange={(e) => onChange('title', e.target.value)}
-            className="focus:ring-1 focus:ring-primary"
+            className="text-lg font-medium"
           />
           
           {isVoiceMode ? (
-            <VoiceRecorder
-              onRecordingComplete={handleRecordingComplete}
-              existingAudioUrl={selectedNote?.audio_url}
-              existingDuration={selectedNote?.duration}
-            />
+            <div className="space-y-4">
+              <VoiceRecorder
+                onRecordingComplete={handleRecordingComplete}
+                existingAudioUrl={selectedNote?.audio_url}
+                existingDuration={selectedNote?.duration}
+              />
+              
+              {/* Optional text note with voice */}
+              <Textarea
+                placeholder="Add optional text notes..."
+                value={currentNote.content}
+                onChange={(e) => onChange('content', e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+              
+              {audioBlob && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearAudio}
+                  className="w-full gap-2"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Clear Recording
+                </Button>
+              )}
+            </div>
           ) : (
             <Textarea
               placeholder="Start writing your note here..."
               value={currentNote.content}
               onChange={(e) => onChange('content', e.target.value)}
-              className="min-h-[200px] md:min-h-[400px] resize-none focus:ring-1 focus:ring-primary"
+              className="min-h-[200px] md:min-h-[400px] resize-none"
+              autoFocus
             />
           )}
         </div>
       </div>
+
+      {/* Mobile floating save button */}
+      {isMobile && (
+        <div className="fixed bottom-20 right-4 z-10">
+          <Button
+            size="lg"
+            onClick={handleSave}
+            disabled={isUploading}
+            className="rounded-full w-14 h-14 shadow-lg"
+          >
+            <Save className="w-5 h-5" />
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

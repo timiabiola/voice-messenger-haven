@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Play, Pause, Trash2 } from 'lucide-react';
+import { Mic, Square, Play, Pause, Trash2, Volume2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { formatDuration } from '@/utils/audio';
@@ -21,12 +21,23 @@ export const VoiceRecorder = ({
   const [duration, setDuration] = useState(0);
   const [audioUrl, setAudioUrl] = useState<string | null>(existingAudioUrl || null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const startTimeRef = useRef<number>(0);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
 
   useEffect(() => {
     if (existingAudioUrl) {
@@ -128,14 +139,83 @@ export const VoiceRecorder = ({
     setIsPlaying(false);
   };
 
+  // Mobile layout - larger touch targets
+  if (isMobile) {
+    return (
+      <div className="space-y-4">
+        {!isRecording && !audioUrl ? (
+          <Button
+            onClick={startRecording}
+            size="lg"
+            variant="outline"
+            className="w-full gap-2"
+          >
+            <Mic className="w-5 h-5" />
+            Start Recording
+          </Button>
+        ) : isRecording ? (
+          <div className="flex items-center justify-between p-4 bg-accent/10 rounded-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-sm font-medium">Recording...</span>
+              <span className="text-sm text-muted-foreground">
+                {formatDuration(duration)}
+              </span>
+            </div>
+            <Button
+              onClick={stopRecording}
+              size="icon"
+              variant="destructive"
+            >
+              <Square className="w-4 h-4" />
+            </Button>
+          </div>
+        ) : audioUrl ? (
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 p-4 bg-accent/10 rounded-lg">
+              <Button
+                onClick={togglePlayback}
+                size="icon"
+                variant="outline"
+              >
+                {isPlaying ? (
+                  <Pause className="w-4 h-4" />
+                ) : (
+                  <Play className="w-4 h-4" />
+                )}
+              </Button>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Volume2 className="w-4 h-4 text-muted-foreground" />
+                  <span className="text-sm font-medium">Voice Note</span>
+                </div>
+                <span className="text-sm text-muted-foreground">
+                  {formatDuration(duration)}
+                </span>
+              </div>
+              <Button
+                onClick={deleteRecording}
+                size="icon"
+                variant="ghost"
+                className="text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  // Desktop layout - enhanced with better UX
   return (
-    <div className="flex items-center gap-3 p-3 bg-accent/5 rounded-lg">
+    <div className="flex items-center gap-3 p-4 bg-accent/5 rounded-lg border border-border/50 hover:border-border/80 transition-colors">
       {!isRecording && !audioUrl ? (
         <Button
           onClick={startRecording}
-          size="sm"
           variant="outline"
-          className="gap-2"
+          className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
         >
           <Mic className="w-4 h-4" />
           Record Voice Note
@@ -144,22 +224,26 @@ export const VoiceRecorder = ({
         <>
           <Button
             onClick={stopRecording}
-            size="icon"
+            size="default"
             variant="destructive"
-            className="animate-pulse"
+            className="animate-pulse hover:animate-none"
           >
             <Square className="w-4 h-4" />
           </Button>
-          <span className="text-sm text-muted-foreground">
-            Recording... {formatDuration(duration)}
-          </span>
+          <div className="flex items-center gap-2 flex-1">
+            <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-sm font-medium">Recording...</span>
+            <span className="text-sm text-muted-foreground">
+              {formatDuration(duration)}
+            </span>
+          </div>
         </>
       ) : audioUrl ? (
         <>
           <Button
             onClick={togglePlayback}
-            size="icon"
             variant="outline"
+            className="hover:bg-primary hover:text-primary-foreground transition-colors"
           >
             {isPlaying ? (
               <Pause className="w-4 h-4" />
@@ -167,14 +251,17 @@ export const VoiceRecorder = ({
               <Play className="w-4 h-4" />
             )}
           </Button>
-          <span className="text-sm text-muted-foreground flex-1">
-            Voice Note • {formatDuration(duration)}
-          </span>
+          <div className="flex-1 flex items-center gap-2">
+            <Volume2 className="w-4 h-4 text-muted-foreground" />
+            <span className="text-sm font-medium">Voice Note</span>
+            <span className="text-sm text-muted-foreground">
+              • {formatDuration(duration)}
+            </span>
+          </div>
           <Button
             onClick={deleteRecording}
-            size="icon"
             variant="ghost"
-            className="text-destructive"
+            className="text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

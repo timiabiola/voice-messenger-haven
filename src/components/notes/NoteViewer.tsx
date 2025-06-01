@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { X, Pencil, Trash2, FolderOpen, MoreVertical, ArrowLeft } from 'lucide-react';
+import { X, Pencil, Trash2, FolderOpen, MoreVertical, ArrowLeft, Mic } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ export default function NoteViewer({
 }: NoteViewerProps) {
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [noteTags, setNoteTags] = useState<NoteTag[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
   
   const {
     tags,
@@ -43,6 +44,42 @@ export default function NoteViewer({
     removeTagFromNote,
     getNoteTags
   } = useNoteTags(userId);
+
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkScreenSize();
+    window.addEventListener('resize', checkScreenSize);
+    return () => window.removeEventListener('resize', checkScreenSize);
+  }, []);
+
+  // Keyboard shortcuts for desktop
+  useEffect(() => {
+    if (isMobile) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl/Cmd + E to edit
+      if ((e.ctrlKey || e.metaKey) && e.key === 'e') {
+        e.preventDefault();
+        onEdit();
+      }
+      // Escape to close
+      else if (e.key === 'Escape') {
+        e.preventDefault();
+        onClose();
+      }
+      // Delete key to delete (with confirmation)
+      else if (e.key === 'Delete' && e.shiftKey) {
+        e.preventDefault();
+        onDelete();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onEdit, onClose, onDelete, isMobile]);
 
   useEffect(() => {
     const loadNoteTags = async () => {
@@ -72,22 +109,21 @@ export default function NoteViewer({
 
   return (
     <>
-      <div className="h-full flex flex-col">
+      <div className="h-full flex flex-col bg-background">
         {/* Header */}
         <div className="p-4 border-b border-border">
-          <div className="flex justify-between items-start">
+          <div className="flex items-start gap-2">
+            {/* Mobile back button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="md:hidden flex-shrink-0"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            
             <div className="flex-1 min-w-0">
-              {/* Mobile back button */}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                className="md:hidden mb-2"
-              >
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-              
               <h2 className="text-xl md:text-2xl font-semibold text-foreground truncate">
                 {note.title || 'Untitled Note'}
               </h2>
@@ -101,89 +137,112 @@ export default function NoteViewer({
             
             {/* Desktop actions */}
             <div className="hidden md:flex items-center gap-2">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={onEdit}>
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
-                  {onMove && (
-                    <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
-                      <FolderOpen className="w-4 h-4 mr-2" />
-                      Move to Folder
-                    </DropdownMenuItem>
-                  )}
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem 
-                    onClick={onDelete}
-                    className="text-destructive"
-                  >
-                    <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onEdit}
+                className="gap-2 hover:bg-primary hover:text-primary-foreground transition-colors"
+                title="Edit note (Ctrl+E)"
+              >
+                <Pencil className="w-4 h-4" />
+                Edit
+              </Button>
+              {onMove && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => setShowMoveDialog(true)}
+                  className="gap-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                  title="Move to folder"
+                >
+                  <FolderOpen className="w-4 h-4" />
+                  Move
+                </Button>
+              )}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={onDelete}
+                className="gap-2 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                title="Delete note"
+              >
+                <Trash2 className="w-4 h-4" />
+                Delete
+              </Button>
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={onClose}
+                className="hover:bg-accent transition-colors"
+                title="Close (Esc)"
               >
                 <X className="w-4 h-4" />
               </Button>
             </div>
 
-            {/* Mobile action menu */}
-            <div className="md:hidden">
+            {/* Mobile action buttons - more visible */}
+            <div className="md:hidden flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={onEdit}
+                className="text-primary"
+              >
+                <Pencil className="w-5 h-5" />
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
-                    <MoreVertical className="w-4 h-4" />
+                    <MoreVertical className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={onEdit}>
-                    <Pencil className="w-4 h-4 mr-2" />
-                    Edit
-                  </DropdownMenuItem>
                   {onMove && (
-                    <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
-                      <FolderOpen className="w-4 h-4 mr-2" />
-                      Move to Folder
-                    </DropdownMenuItem>
+                    <>
+                      <DropdownMenuItem onClick={() => setShowMoveDialog(true)}>
+                        <FolderOpen className="w-4 h-4 mr-2" />
+                        Move to Folder
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
                   )}
-                  <DropdownMenuSeparator />
                   <DropdownMenuItem 
                     onClick={onDelete}
                     className="text-destructive"
                   >
                     <Trash2 className="w-4 h-4 mr-2" />
-                    Delete
+                    Delete Note
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
           </div>
 
-          {/* Tags */}
-          <div className="mt-3">
-            <TagSelector
-              noteId={note.id}
-              tags={tags}
-              selectedTags={noteTags}
-              onAddTag={handleAddTag}
-              onRemoveTag={handleRemoveTag}
-              onCreateTag={createTag}
-            />
-          </div>
+          {/* Tags - make more mobile friendly */}
+          {(!isMobile || (noteTags.length > 0 || tags.length > 0)) && (
+            <div className="mt-3">
+              <TagSelector
+                noteId={note.id}
+                tags={tags}
+                selectedTags={noteTags}
+                onAddTag={handleAddTag}
+                onRemoveTag={handleRemoveTag}
+                onCreateTag={createTag}
+              />
+            </div>
+          )}
         </div>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
+          {/* Voice note indicator for mobile */}
+          {isMobile && note.audio_url && !note.content && (
+            <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+              <Mic className="w-5 h-5" />
+              <span>Voice Note</span>
+            </div>
+          )}
+          
           {note.audio_url && (
             <div className="mb-4">
               <VoiceRecorder
@@ -196,10 +255,23 @@ export default function NoteViewer({
           
           <div className="prose prose-invert max-w-none">
             <div className="whitespace-pre-wrap text-foreground">
-              {note.content || (note.audio_url ? 'Voice note' : 'No content')}
+              {note.content || (note.audio_url && !isMobile ? 'Voice note' : 'No content')}
             </div>
           </div>
         </div>
+
+        {/* Mobile floating action button for edit */}
+        {isMobile && (
+          <div className="fixed bottom-20 right-4 z-10">
+            <Button
+              size="lg"
+              onClick={onEdit}
+              className="rounded-full w-14 h-14 shadow-lg"
+            >
+              <Pencil className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {onMove && (
@@ -217,3 +289,4 @@ export default function NoteViewer({
     </>
   );
 }
+
