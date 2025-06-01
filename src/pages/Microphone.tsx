@@ -24,6 +24,7 @@ const Microphone = () => {
     stopRecording,
     pauseRecording,
     resumeRecording,
+    clearRecording,
     getRecordingData,
     audioChunks,
     createAudioFromChunks
@@ -109,6 +110,7 @@ const Microphone = () => {
             onStopRecording={stopRecording}
             onPauseRecording={pauseRecording}
             onResumeRecording={resumeRecording}
+            clearRecording={clearRecording}
           />
         </div>
       </div>

@@ -163,7 +163,6 @@ export function useRecording() {
   };
 
   const resumeRecording = async () => {
-    console.log('Resuming recording...');
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.resume();
       setIsPaused(false);
@@ -171,8 +170,29 @@ export function useRecording() {
     }
   };
 
+  const clearRecording = () => {
+    if (isRecording && mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+        streamRef.current = null;
+      }
+    }
+    
+    audioChunksRef.current = [];
+    setAudioChunks([]);
+    
+    setIsRecording(false);
+    setIsPaused(false);
+    setRecordingTime(0);
+    setCurrentRecordingId(null);
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+  };
+
   const getRecordingData = () => {
-    console.log('Getting recording data, chunks:', audioChunksRef.current.length);
     return audioChunksRef.current;
   };
 
@@ -211,6 +231,7 @@ export function useRecording() {
     stopRecording,
     pauseRecording,
     resumeRecording,
+    clearRecording,
     getRecordingData: () => audioChunksRef.current,
     createAudioFromChunks,
     audioChunks

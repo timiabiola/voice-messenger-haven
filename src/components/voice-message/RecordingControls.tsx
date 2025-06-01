@@ -1,10 +1,12 @@
-import { Mic, Play, Square } from 'lucide-react';
+import { Mic, Play, Square, Trash2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useState, useRef, useEffect } from 'react';
 import { PlaybackProgress } from './PlaybackProgress';
 import { PlaybackTime } from './PlaybackTime';
 import { LoadingSpinner } from './LoadingSpinner';
 import { AudioWaveform } from './AudioWaveform';
+import { DeleteConfirmDialog } from './DeleteConfirmDialog';
+import { toast } from 'sonner';
 
 interface RecordingControlsProps {
   isRecording: boolean;
@@ -17,6 +19,7 @@ interface RecordingControlsProps {
   onStopRecording: () => void;
   onPauseRecording: () => void;
   onResumeRecording: () => void;
+  clearRecording: () => void;
 }
 
 export const RecordingControls = ({
@@ -29,7 +32,8 @@ export const RecordingControls = ({
   onStartRecording,
   onStopRecording,
   onPauseRecording,
-  onResumeRecording
+  onResumeRecording,
+  clearRecording
 }: RecordingControlsProps) => {
   const isMobile = useIsMobile();
   const [isPlaying, setIsPlaying] = useState(false);
@@ -37,6 +41,7 @@ export const RecordingControls = ({
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [error, setError] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const currentAudioUrl = useRef<string | null>(null);
 
@@ -183,12 +188,76 @@ export const RecordingControls = ({
     }
   };
 
+  const handleDelete = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    // Stop playback if playing
+    if (isPlaying && audioRef.current) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    }
+    
+    // Clear the recording
+    clearRecording();
+    
+    // Reset all playback states
+    setCurrentTime(0);
+    setDuration(0);
+    setError(null);
+    
+    // Clean up audio URL
+    if (currentAudioUrl.current) {
+      URL.revokeObjectURL(currentAudioUrl.current);
+      currentAudioUrl.current = null;
+    }
+    
+    // Clear audio element source
+    if (audioRef.current) {
+      audioRef.current.src = '';
+    }
+    
+    // Show success toast
+    toast.success('Recording deleted');
+  };
+
   // Check if we have recorded audio available for playback
   const hasRecordedAudio = audioChunks.length > 0;
 
   return (
-    <div className="w-full flex flex-col items-center justify-center text-center space-y-6">
+    <div className="w-full flex flex-col items-center justify-center text-center space-y-6 relative">
       <audio ref={audioRef} className="hidden" />
+      
+      {/* Delete confirmation dialog */}
+      <DeleteConfirmDialog 
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleConfirmDelete}
+      />
+      
+      {/* Delete button - positioned absolutely in top-right */}
+      {hasRecordedAudio && !isRecording && (
+        <button
+          onClick={handleDelete}
+          className={`
+            absolute ${isMobile ? 'top-0 right-0' : '-top-2 -right-2'}
+            ${isMobile ? 'w-10 h-10' : 'w-12 h-12'}
+            flex items-center justify-center
+            bg-gray-100 hover:bg-red-50 dark:bg-gray-800 dark:hover:bg-red-900/20
+            text-gray-500 hover:text-red-600 dark:text-gray-400 dark:hover:text-red-500
+            rounded-full transition-all duration-200
+            hover:scale-105 active:scale-95
+            animate-in fade-in duration-300
+            shadow-sm hover:shadow-md
+            group
+          `}
+          title="Delete recording"
+          disabled={isProcessing || isLoading}
+        >
+          <Trash2 className={`${isMobile ? 'w-4 h-4' : 'w-5 h-5'} transition-transform group-hover:rotate-6`} />
+        </button>
+      )}
       
       <div className="text-3xl font-medium text-gray-700">
         {formatTime(recordingTime)}
