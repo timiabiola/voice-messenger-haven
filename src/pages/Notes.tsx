@@ -155,17 +155,17 @@ export default function Notes() {
   const list = (
     <div className="flex flex-col h-full">
       <div className="p-4 border-b border-border">
-        <NotesHeader
-          selectedNoteId={selectedNote?.id || null}
-          activeFolder={activeFolder}
-          folders={folders}
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-          onCreateNote={startNewNote}
-        />
-        
-        {isAdmin && (
-          <div className="mt-2 flex justify-end">
+        <div className="flex justify-between items-center">
+          <NotesHeader
+            selectedNoteId={selectedNote?.id || null}
+            activeFolder={activeFolder}
+            folders={folders}
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            onCreateNote={startNewNote}
+          />
+          
+          {isAdmin && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon">
@@ -178,31 +178,34 @@ export default function Notes() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       
-      <div className="flex-1 relative">
-        {!isEditing && !selectedNote && (
-          <button
-            onClick={startNewNote}
-            className="absolute top-4 right-4 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg z-10"
-            title="Create new note"
-          >
-            <PencilLine className="w-5 h-5 text-primary-foreground" />
-          </button>
-        )}
-        
+      <div className="flex-1 relative overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center text-muted-foreground">Loading...</div>
           </div>
         ) : (
-          <NotesList
-            notes={filteredNotes}
-            folders={folders}
-            onNoteClick={setSelectedNote}
-          />
+          <>
+            <NotesList
+              notes={filteredNotes}
+              folders={folders}
+              onNoteClick={setSelectedNote}
+            />
+            
+            {/* Floating create button - visible when not editing or viewing */}
+            {!isEditing && !selectedNote && (
+              <button
+                onClick={startNewNote}
+                className="fixed md:absolute bottom-20 md:bottom-6 right-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg z-10"
+                title="Create new note"
+              >
+                <PencilLine className="w-5 h-5 text-primary-foreground" />
+              </button>
+            )}
+          </>
         )}
       </div>
     </div>
@@ -237,6 +240,10 @@ export default function Notes() {
         list={list}
         editor={editor}
         showEditor={!!selectedNote || isEditing}
+        onCloseEditor={() => {
+          setSelectedNote(null);
+          resetNoteState();
+        }}
       />
     </AppLayout>
   );

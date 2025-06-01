@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Mic } from 'lucide-react';
+import { X, Mic, Save } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -76,12 +76,15 @@ export default function NoteEditor({
   };
 
   return (
-    <div className="glass-panel rounded-lg p-4 mb-4">
-      <div className="flex justify-between items-center mb-2">
+    <div className="h-full flex flex-col">
+      {/* Header with actions */}
+      <div className="flex justify-between items-center p-4 border-b border-border">
         <h2 className="text-lg font-semibold">
           {selectedNote ? 'Edit Note' : 'New Note'}
         </h2>
-        <div className="flex items-center gap-2">
+        
+        {/* Desktop buttons */}
+        <div className="hidden md:flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -104,32 +107,62 @@ export default function NoteEditor({
             onClick={handleSave}
             disabled={isUploading}
           >
-            {isUploading ? 'Uploading...' : selectedNote ? 'Update Note' : 'Save Note'}
+            {isUploading ? 'Uploading...' : selectedNote ? 'Update' : 'Save'}
+          </Button>
+        </div>
+
+        {/* Mobile buttons - more compact */}
+        <div className="flex md:hidden items-center gap-1">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsVoiceMode(!isVoiceMode)}
+          >
+            <Mic className={`w-5 h-5 ${isVoiceMode ? 'text-primary' : ''}`} />
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onCancel}
+          >
+            <X className="w-5 h-5" />
+          </Button>
+          <Button 
+            variant="ghost"
+            size="icon"
+            onClick={handleSave}
+            disabled={isUploading}
+          >
+            <Save className="w-5 h-5" />
           </Button>
         </div>
       </div>
-      <div className="space-y-4">
-        <Input
-          placeholder="Note title"
-          value={currentNote.title}
-          onChange={(e) => onChange('title', e.target.value)}
-          className="focus:ring-1 focus:ring-primary"
-        />
-        
-        {isVoiceMode ? (
-          <VoiceRecorder
-            onRecordingComplete={handleRecordingComplete}
-            existingAudioUrl={selectedNote?.audio_url}
-            existingDuration={selectedNote?.duration}
+
+      {/* Content area */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="space-y-4">
+          <Input
+            placeholder="Note title"
+            value={currentNote.title}
+            onChange={(e) => onChange('title', e.target.value)}
+            className="focus:ring-1 focus:ring-primary"
           />
-        ) : (
-          <Textarea
-            placeholder="Start writing your note here..."
-            value={currentNote.content}
-            onChange={(e) => onChange('content', e.target.value)}
-            className="min-h-[200px] focus:ring-1 focus:ring-primary"
-          />
-        )}
+          
+          {isVoiceMode ? (
+            <VoiceRecorder
+              onRecordingComplete={handleRecordingComplete}
+              existingAudioUrl={selectedNote?.audio_url}
+              existingDuration={selectedNote?.duration}
+            />
+          ) : (
+            <Textarea
+              placeholder="Start writing your note here..."
+              value={currentNote.content}
+              onChange={(e) => onChange('content', e.target.value)}
+              className="min-h-[200px] md:min-h-[400px] resize-none focus:ring-1 focus:ring-primary"
+            />
+          )}
+        </div>
       </div>
     </div>
   );
