@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
@@ -78,18 +77,26 @@ export function useNotes(userId: string | null) {
     }
   };
 
-  const createNote = async (content: string, folderId: string | null) => {
-    if (!userId || !content) return null;
+  const createNote = async (title: string, content: string, folderId: string | null, audioUrl?: string, duration?: number) => {
+    if (!userId || (!title && !content && !audioUrl)) return null;
 
     try {
+      const noteData: any = {
+        title: title || 'Untitled Note',
+        content: content || '',
+        folder_id: folderId,
+        user_id: userId,
+        type: audioUrl ? 'voice' : 'text'
+      };
+
+      if (audioUrl) {
+        noteData.audio_url = audioUrl;
+        noteData.duration = duration;
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .insert({
-          title: content.split('\n')[0] || 'Untitled Note',
-          content,
-          folder_id: folderId,
-          user_id: userId
-        })
+        .insert(noteData)
         .select()
         .single();
 
@@ -111,16 +118,22 @@ export function useNotes(userId: string | null) {
     }
   };
 
-  const updateNote = async (noteId: string, content: string) => {
-    if (!userId || !content) return null;
+  const updateNote = async (noteId: string, updates: { title?: string; content?: string; folder_id?: string | null; audio_url?: string; duration?: number }) => {
+    if (!userId || !noteId) return null;
 
     try {
+      const updateData: any = {
+        ...updates,
+        updated_at: new Date().toISOString()
+      };
+
+      if (updates.audio_url !== undefined) {
+        updateData.type = updates.audio_url ? 'voice' : 'text';
+      }
+
       const { data, error } = await supabase
         .from('notes')
-        .update({
-          title: content.split('\n')[0] || 'Untitled Note',
-          content,
-        })
+        .update(updateData)
         .eq('id', noteId)
         .select()
         .single();
@@ -168,6 +181,31 @@ export function useNotes(userId: string | null) {
     }
   };
 
+  const deleteFolder = async (folderId: string) => {
+    try {
+      const { error } = await supabase
+        .from('folders')
+        .delete()
+        .eq('id', folderId);
+
+      if (error) throw error;
+      setFolders(prev => prev.filter(folder => folder.id !== folderId));
+      toast({
+        title: "Success",
+        description: "Folder deleted successfully"
+      });
+      return true;
+    } catch (error) {
+      console.error('Error deleting folder:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete folder"
+      });
+      return false;
+    }
+  };
+
   return {
     notes,
     folders,
@@ -175,6 +213,7 @@ export function useNotes(userId: string | null) {
     createFolder,
     createNote,
     updateNote,
-    deleteNote
+    deleteNote,
+    deleteFolder
   };
 }

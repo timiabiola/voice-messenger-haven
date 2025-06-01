@@ -8,8 +8,10 @@ import NoteEditor from '@/components/notes/NoteEditor';
 import NoteViewer from '@/components/notes/NoteViewer';
 import NotesHeader from '@/components/notes/NotesHeader';
 import NotesList from '@/components/notes/NotesList';
+import { NotesLayout } from '@/components/notes/NotesLayout';
 import { useNotes } from '@/hooks/useNotes';
 import { useNoteState } from '@/hooks/useNoteState';
+import { useNoteTags } from '@/hooks/useNoteTags';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +24,7 @@ import {
 export default function Notes() {
   const navigate = useNavigate();
   const [userId, setUserId] = useState<string | null>(null);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const { isAdmin } = useAdmin();
 
   const {
@@ -33,6 +36,8 @@ export default function Notes() {
     updateNote,
     deleteNote
   } = useNotes(userId);
+
+  const { tags } = useNoteTags(userId);
 
   const {
     isEditing,
@@ -68,8 +73,20 @@ export default function Notes() {
     const matchesFolder = activeFolder ? note.folder_id === activeFolder : true;
     const matchesSearch = note.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          note.content?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesFolder && matchesSearch;
+    
+    // TODO: Add tag filtering once note tags are loaded with notes
+    const matchesTags = selectedTags.length === 0; // For now, show all if no tags selected
+    
+    return matchesFolder && matchesSearch && matchesTags;
   });
+
+  const handleToggleTag = (tagId: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tagId) 
+        ? prev.filter(id => id !== tagId)
+        : [...prev, tagId]
+    );
+  };
 
   const handleCreateFolder = async () => {
     const folderName = prompt('Enter folder name:');
@@ -78,12 +95,17 @@ export default function Notes() {
     }
   };
 
-  const handleSaveNote = async () => {
-    if (!currentNote.content) return;
+  const handleSaveNote = async (audioUrl?: string, duration?: number) => {
+    if (!currentNote.title && !currentNote.content && !audioUrl) return;
     
     const result = selectedNote
-      ? await updateNote(selectedNote.id, currentNote.content)
-      : await createNote(currentNote.content, activeFolder);
+      ? await updateNote(selectedNote.id, { 
+          title: currentNote.title, 
+          content: currentNote.content,
+          audio_url: audioUrl,
+          duration: duration
+        })
+      : await createNote(currentNote.title, currentNote.content, activeFolder, audioUrl, duration);
 
     if (result) {
       resetNoteState();
@@ -110,89 +132,112 @@ export default function Notes() {
     }));
   };
 
+  const handleMoveNote = async (noteId: string, folderId: string | null) => {
+    await updateNote(noteId, { folder_id: folderId });
+  };
+
+  const sidebar = (
+    <FolderSidebar
+      folders={folders}
+      notes={notes}
+      activeFolder={activeFolder}
+      expandedFolders={expandedFolders}
+      onFolderClick={setActiveFolder}
+      onToggleFolder={toggleFolder}
+      onCreateFolder={handleCreateFolder}
+      setActiveFolder={setActiveFolder}
+      tags={tags}
+      selectedTags={selectedTags}
+      onToggleTag={handleToggleTag}
+    />
+  );
+
+  const list = (
+    <div className="flex flex-col h-full">
+      <div className="p-4 border-b border-border">
+        <NotesHeader
+          selectedNoteId={selectedNote?.id || null}
+          activeFolder={activeFolder}
+          folders={folders}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          onCreateNote={startNewNote}
+        />
+        
+        {isAdmin && (
+          <div className="mt-2 flex justify-end">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Settings className="h-5 w-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={handleNavigateToLoadTest}>
+                  Load Testing
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
+      </div>
+      
+      <div className="flex-1 relative">
+        {!isEditing && !selectedNote && (
+          <button
+            onClick={startNewNote}
+            className="absolute top-4 right-4 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg z-10"
+            title="Create new note"
+          >
+            <PencilLine className="w-5 h-5 text-primary-foreground" />
+          </button>
+        )}
+        
+        {isLoading ? (
+          <div className="flex items-center justify-center h-full">
+            <div className="text-center text-muted-foreground">Loading...</div>
+          </div>
+        ) : (
+          <NotesList
+            notes={filteredNotes}
+            folders={folders}
+            onNoteClick={setSelectedNote}
+          />
+        )}
+      </div>
+    </div>
+  );
+
+  const editor = selectedNote && !isEditing ? (
+    <NoteViewer
+      note={selectedNote}
+      folders={folders}
+      userId={userId}
+      onClose={() => setSelectedNote(null)}
+      onEdit={() => startEditNote(selectedNote)}
+      onDelete={() => handleDeleteNote()}
+      onMove={handleMoveNote}
+    />
+  ) : isEditing ? (
+    <NoteEditor
+      isEditing={isEditing}
+      selectedNote={selectedNote}
+      currentNote={currentNote}
+      userId={userId}
+      onCancel={resetNoteState}
+      onSave={handleSaveNote}
+      onChange={handleNoteChange}
+    />
+  ) : null;
+
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-8rem)]">
-        <FolderSidebar
-          folders={folders}
-          notes={notes}
-          activeFolder={activeFolder}
-          expandedFolders={expandedFolders}
-          onFolderClick={setActiveFolder}
-          onToggleFolder={toggleFolder}
-          onCreateFolder={handleCreateFolder}
-          setActiveFolder={setActiveFolder}
-        />
-
-        <main className="flex-1 flex flex-col glass-panel rounded-lg">
-          <div className="flex justify-between items-center px-4 py-2 border-b border-border">
-            <NotesHeader
-              selectedNoteId={selectedNote?.id || null}
-              activeFolder={activeFolder}
-              folders={folders}
-              searchQuery={searchQuery}
-              onSearchChange={setSearchQuery}
-              onCreateNote={startNewNote}
-            />
-            
-            {isAdmin && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Settings className="h-5 w-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleNavigateToLoadTest}>
-                    Load Testing
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-4 relative">
-            {selectedNote ? (
-              <NoteViewer
-                note={selectedNote}
-                folders={folders}
-                onClose={() => setSelectedNote(null)}
-                onEdit={() => startEditNote(selectedNote)}
-                onDelete={handleDeleteNote}
-              />
-            ) : isEditing ? (
-              <NoteEditor
-                isEditing={isEditing}
-                selectedNote={selectedNote}
-                currentNote={currentNote}
-                onCancel={resetNoteState}
-                onSave={handleSaveNote}
-                onChange={handleNoteChange}
-              />
-            ) : (
-              <>
-                <button
-                  onClick={startNewNote}
-                  className="absolute top-6 left-6 p-3 rounded-full bg-primary hover:bg-primary/90 transition-colors shadow-lg"
-                  title="Create new note"
-                >
-                  <PencilLine className="w-5 h-5 text-primary-foreground" />
-                </button>
-
-                {isLoading ? (
-                  <div className="text-center text-muted-foreground">Loading...</div>
-                ) : (
-                  <NotesList
-                    notes={filteredNotes}
-                    folders={folders}
-                    onNoteClick={setSelectedNote}
-                  />
-                )}
-              </>
-            )}
-          </div>
-        </main>
-      </div>
+      <NotesLayout
+        sidebar={sidebar}
+        list={list}
+        editor={editor}
+        showEditor={!!selectedNote || isEditing}
+      />
     </AppLayout>
   );
 }

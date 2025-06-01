@@ -1,6 +1,6 @@
-
 import { Folder, File, ChevronRight, Plus } from 'lucide-react';
-import { Folder as FolderType, Note } from '@/types/notes';
+import { Folder as FolderType, Note, NoteTag } from '@/types/notes';
+import { TagFilter } from './TagFilter';
 
 type FolderSidebarProps = {
   folders: FolderType[];
@@ -11,6 +11,9 @@ type FolderSidebarProps = {
   onToggleFolder: (folderId: string) => void;
   onCreateFolder: () => void;
   setActiveFolder: (folderId: string | null) => void;
+  tags?: NoteTag[];
+  selectedTags?: string[];
+  onToggleTag?: (tagId: string) => void;
 };
 
 export default function FolderSidebar({
@@ -22,14 +25,17 @@ export default function FolderSidebar({
   onToggleFolder,
   onCreateFolder,
   setActiveFolder,
+  tags = [],
+  selectedTags = [],
+  onToggleTag,
 }: FolderSidebarProps) {
   const getRootFolders = () => folders.filter(folder => !folder.parent_folder_id);
   const getChildFolders = (parentId: string) => folders.filter(folder => folder.parent_folder_id === parentId);
   const getFolderNoteCount = (folderId: string) => notes.filter(note => note.folder_id === folderId).length;
 
   return (
-    <aside className="hidden md:flex w-64 flex-col glass-panel rounded-lg mr-4 relative">
-      <div className="p-4 flex-1">
+    <div className="flex flex-col h-full">
+      <div className="p-4 flex-1 overflow-y-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="font-semibold text-foreground">Notes</h2>
         </div>
@@ -96,6 +102,14 @@ export default function FolderSidebar({
         </div>
       </div>
       
+      {onToggleTag && (
+        <TagFilter
+          tags={tags}
+          selectedTags={selectedTags}
+          onToggleTag={onToggleTag}
+        />
+      )}
+      
       <div className="p-4 border-t border-border">
         <button 
           onClick={onCreateFolder}
@@ -105,6 +119,6 @@ export default function FolderSidebar({
           <span>New Folder</span>
         </button>
       </div>
-    </aside>
+    </div>
   );
 }
