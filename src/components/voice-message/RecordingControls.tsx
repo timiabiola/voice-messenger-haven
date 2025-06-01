@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { PlaybackProgress } from './PlaybackProgress';
 import { PlaybackTime } from './PlaybackTime';
 import { LoadingSpinner } from './LoadingSpinner';
+import { AudioWaveform } from './AudioWaveform';
 
 interface RecordingControlsProps {
   isRecording: boolean;
@@ -111,44 +112,31 @@ export const RecordingControls = ({
   }, []);
 
   const updateAudioSource = () => {
-    console.log('=== updateAudioSource called ===');
     if (!audioRef.current) {
       console.error('No audio element reference');
       return;
     }
     
-    console.log('updateAudioSource called, chunks:', audioChunks.length);
-    
-    // Clean up previous URL
     if (currentAudioUrl.current) {
-      console.log('Cleaning up previous audio URL');
       URL.revokeObjectURL(currentAudioUrl.current);
       currentAudioUrl.current = null;
     }
     
-    // Reset playback state when audio source changes
     setCurrentTime(0);
     setDuration(0);
     setIsPlaying(false);
     
     const audioBlob = createAudioFromChunks();
     if (!audioBlob) {
-      console.log('No audio blob created');
       return;
     }
-    
-    console.log('Created audio blob:', audioBlob.size, 'bytes, type:', audioBlob.type);
     
     const url = URL.createObjectURL(audioBlob);
     currentAudioUrl.current = url;
     audioRef.current.src = url;
-    
-    console.log('Audio element src set to:', url);
   };
 
   const handlePlayback = () => {
-    console.log('=== handlePlayback called ===');
-    
     if (!audioRef.current) {
       console.error('No audio element reference');
       return;
@@ -159,21 +147,16 @@ export const RecordingControls = ({
       return;
     }
 
-    console.log('Playback clicked, chunks:', audioChunks.length, 'isPlaying:', isPlaying);
-
     if (isPlaying) {
-      console.log('Pausing audio...');
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      console.log('Attempting to play audio...');
       setError(null);
       const playPromise = audioRef.current.play();
       
       if (playPromise !== undefined) {
         playPromise
           .then(() => {
-            console.log('Audio playback started successfully');
             setIsPlaying(true);
           })
           .catch(error => {
@@ -277,9 +260,7 @@ export const RecordingControls = ({
               isLoading={isLoading}
             />
             {isPlaying && !isLoading && (
-              <span className="text-xs text-blue-600 animate-pulse">
-                Playing...
-              </span>
+              <AudioWaveform isPlaying={isPlaying} className="text-blue-600" />
             )}
           </div>
           {error && (

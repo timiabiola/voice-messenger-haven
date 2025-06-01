@@ -46,7 +46,6 @@ export function useRecording() {
     
     for (const type of types) {
       if (MediaRecorder.isTypeSupported(type)) {
-        console.log('Using MIME type:', type);
         return type;
       }
     }
