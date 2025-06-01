@@ -205,14 +205,16 @@ export const VoiceRecorder = ({
                   {formatDuration(duration)}
                 </span>
               </div>
-              <Button
-                onClick={deleteRecording}
-                size="icon"
-                variant="ghost"
-                className="text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+              {!readOnly && (
+                <Button
+                  onClick={deleteRecording}
+                  size="icon"
+                  variant="ghost"
+                  className="text-destructive"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              )}
             </div>
           </div>
         ) : null}
@@ -271,13 +273,15 @@ export const VoiceRecorder = ({
               • {formatDuration(duration)}
             </span>
           </div>
-          <Button
-            onClick={deleteRecording}
-            variant="ghost"
-            className="text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button>
+          {!readOnly && (
+            <Button
+              onClick={deleteRecording}
+              variant="ghost"
+              className="text-destructive hover:bg-destructive/10 hover:text-destructive transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
         </>
       ) : null}
     </div>

@@ -235,13 +235,29 @@ export default function NoteEditor({
               )}
             </div>
           ) : (
-            <Textarea
-              placeholder="Start writing your note here..."
-              value={currentNote.content}
-              onChange={(e) => onChange('content', e.target.value)}
-              className="min-h-[200px] md:min-h-[400px] resize-none"
-              autoFocus
-            />
+            <>
+              {/* Show existing voice recording in text mode */}
+              {existingAudioUrl && !shouldDeleteExistingAudio && (
+                <div className="mb-4 p-3 bg-accent/10 rounded-lg">
+                  <p className="text-sm text-muted-foreground mb-2">Existing voice recording:</p>
+                  <VoiceRecorder
+                    onRecordingComplete={() => {}}
+                    existingAudioUrl={existingAudioUrl}
+                    existingDuration={existingDuration}
+                    onDelete={handleExistingAudioDelete}
+                    readOnly={true}
+                  />
+                </div>
+              )}
+              
+              <Textarea
+                placeholder="Start writing your note here..."
+                value={currentNote.content}
+                onChange={(e) => onChange('content', e.target.value)}
+                className="min-h-[200px] md:min-h-[400px] resize-none"
+                autoFocus
+              />
+            </>
           )}
         </div>
       </div>
