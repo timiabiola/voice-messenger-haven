@@ -57,9 +57,14 @@ export const VoiceRecorder = ({
       }
       if (audioRef.current) {
         audioRef.current.pause();
+        audioRef.current = null;
+      }
+      // Clean up blob URLs to prevent memory leaks
+      if (audioUrl && audioUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(audioUrl);
       }
     };
-  }, []);
+  }, [audioUrl]);
 
   const startRecording = async () => {
     if (readOnly) return;
@@ -124,14 +129,33 @@ export const VoiceRecorder = ({
     if (!audioRef.current) {
       audioRef.current = new Audio(audioUrl);
       audioRef.current.onended = () => setIsPlaying(false);
+      
+      audioRef.current.onerror = (e) => {
+        console.error('Audio playback error:', e);
+        setIsPlaying(false);
+        toast({
+          variant: "destructive",
+          title: "Playback Error",
+          description: "Could not play audio. The file may be corrupted or unavailable."
+        });
+      };
     }
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
     } else {
-      audioRef.current.play();
-      setIsPlaying(true);
+      audioRef.current.play()
+        .then(() => setIsPlaying(true))
+        .catch((error) => {
+          console.error('Error playing audio:', error);
+          setIsPlaying(false);
+          toast({
+            variant: "destructive",
+            title: "Playback Error",
+            description: "Could not start playback. Please try again."
+          });
+        });
     }
   };
 
@@ -140,6 +164,12 @@ export const VoiceRecorder = ({
       audioRef.current.pause();
       audioRef.current = null;
     }
+    
+    // Clean up blob URL if it exists
+    if (audioUrl && audioUrl.startsWith('blob:')) {
+      URL.revokeObjectURL(audioUrl);
+    }
+    
     setAudioUrl(null);
     setDuration(0);
     setIsPlaying(false);

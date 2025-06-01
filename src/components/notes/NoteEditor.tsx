@@ -230,7 +230,7 @@ export default function NoteEditor({
                   className="w-full gap-2"
                 >
                   <Trash2 className="w-4 h-4" />
-                  Clear Recording
+                  Clear New Recording
                 </Button>
               )}
             </div>
