@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar } from '@/components/home/TopBar';
 import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { RecordButton } from '@/components/home/RecordButton';
-import { RecentSavedMessages } from '@/components/saved/RecentSavedMessages';
 
 interface Message {
   id: string;
@@ -126,7 +125,6 @@ export default function Index() {
         <div className="w-full px-4 sm:px-6 md:px-8 mx-auto">
           <div className="flex flex-col items-center justify-center space-y-8">
             <FeatureGrid unreadCount={unreadCount} />
-            <RecentSavedMessages />
           </div>
         </div>
       </main>
