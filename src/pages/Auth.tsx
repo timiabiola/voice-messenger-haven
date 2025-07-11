@@ -61,19 +61,57 @@ const Auth = () => {
 
       if (error) throw error;
 
-      if (data.user) {
+      if (data.user && !data.session) {
+        // User created but email not confirmed
         toast({
-          title: "Success!",
-          description: "Please check your email to confirm your account.",
+          title: "Verify Your Email 📧",
+          description: "We've sent a verification link to your email. Please click it to activate your account. The email may take a few minutes to arrive.",
+          duration: 10000, // Show for 10 seconds since it's important
         });
+        
+        // Clear form fields on success
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+      } else if (data.user && data.session) {
+        // User created and auto-signed in (if email confirmation is disabled)
+        toast({
+          title: "Welcome! 🎉",
+          description: "Your account has been created successfully.",
+          duration: 5000,
+        });
+        navigate('/', { replace: true });
       }
     } catch (error: any) {
       console.error('Signup error:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      
+      // Enhanced error handling with specific messages
+      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
+        toast({
+          title: "Account Already Exists",
+          description: "This email is already registered. Please sign in instead.",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('password') || error.message?.includes('weak')) {
+        toast({
+          title: "Password Requirements",
+          description: "Password must be at least 6 characters long.",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('email') && error.message?.includes('invalid')) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Signup Error",
+          description: error.message || "An unexpected error occurred. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
@@ -93,15 +131,43 @@ const Auth = () => {
 
       if (data.session) {
         console.log('Successfully signed in:', data.session);
+        toast({
+          title: "Welcome back! 👋",
+          description: "You've successfully signed in.",
+          duration: 3000,
+        });
         navigate('/', { replace: true });
       }
     } catch (error: any) {
       console.error('Login error:', error);
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      
+      // Enhanced error handling for sign in
+      if (error.message?.includes('Invalid login credentials') || error.message?.includes('invalid')) {
+        toast({
+          title: "Invalid Credentials",
+          description: "The email or password you entered is incorrect. Please try again.",
+          variant: "destructive",
+        });
+      } else if (error.message?.includes('Email not confirmed')) {
+        toast({
+          title: "Email Not Verified",
+          description: "Please check your email and click the verification link before signing in.",
+          variant: "destructive",
+          duration: 8000,
+        });
+      } else if (error.message?.includes('rate limit')) {
+        toast({
+          title: "Too Many Attempts",
+          description: "Please wait a few minutes before trying again.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Sign In Error",
+          description: error.message || "Unable to sign in. Please try again.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setLoading(false);
     }
