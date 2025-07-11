@@ -398,17 +398,17 @@ const Auth = () => {
                       className="flex justify-center gap-6 mb-4"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="email" id="email-signin" />
-                        <Label htmlFor="email-signin" className="flex items-center gap-2 cursor-pointer">
-                          <Mail className="w-4 h-4" />
-                          Email
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="phone" id="phone-signin" />
                         <Label htmlFor="phone-signin" className="flex items-center gap-2 cursor-pointer">
                           <Phone className="w-4 h-4" />
                           Phone
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="email" id="email-signin" />
+                        <Label htmlFor="email-signin" className="flex items-center gap-2 cursor-pointer">
+                          <Mail className="w-4 h-4" />
+                          Email
                         </Label>
                       </div>
                     </RadioGroup>
@@ -460,17 +460,17 @@ const Auth = () => {
                       className="flex justify-center gap-6 mb-4"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="email" id="email-signup" />
-                        <Label htmlFor="email-signup" className="flex items-center gap-2 cursor-pointer">
-                          <Mail className="w-4 h-4" />
-                          Email
-                        </Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
                         <RadioGroupItem value="phone" id="phone-signup" />
                         <Label htmlFor="phone-signup" className="flex items-center gap-2 cursor-pointer">
                           <Phone className="w-4 h-4" />
                           Phone
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="email" id="email-signup" />
+                        <Label htmlFor="email-signup" className="flex items-center gap-2 cursor-pointer">
+                          <Mail className="w-4 h-4" />
+                          Email
                         </Label>
                       </div>
                     </RadioGroup>
