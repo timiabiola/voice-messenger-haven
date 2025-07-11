@@ -1,9 +1,10 @@
 
-import { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
+import { formatNameWithInitial } from '@/lib/utils';
 import {
   Table,
   TableBody,
@@ -52,7 +53,7 @@ const Contacts = () => {
       state: { 
         selectedProfile: {
           ...profile,
-          name: `${profile.first_name || ''} ${profile.last_name || ''}`.trim() || profile.email,
+          name: formatNameWithInitial(profile.first_name, profile.last_name),
         }
       }
     });
@@ -89,9 +90,8 @@ const Contacts = () => {
                   </div>
                   <div className="flex-1 min-w-0 text-left">
                     <h3 className="font-medium text-amber-400 truncate">
-                      {`${profile.first_name || ''} ${profile.last_name || ''}`.trim() || 'No name'}
+                      {formatNameWithInitial(profile.first_name, profile.last_name)}
                     </h3>
-                    <p className="text-sm text-amber-400/60 truncate">{profile.email}</p>
                   </div>
                 </button>
               ))}

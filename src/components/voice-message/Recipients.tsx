@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
+import { formatNameWithInitial } from '@/lib/utils';
 
 export interface Profile {
   id: string;
@@ -143,7 +144,7 @@ export const Recipients = ({
             className="flex items-center gap-1 bg-accent/20 px-2 py-1 rounded-full"
           >
             <span className="text-sm truncate max-w-[150px]">
-              {recipient.first_name || recipient.email}
+              {formatNameWithInitial(recipient.first_name, recipient.last_name)}
             </span>
             <button
               onClick={() => onRemoveRecipient(recipient.id)}
@@ -178,10 +179,7 @@ export const Recipients = ({
               <UserPlus className="w-4 h-4 text-muted-foreground" />
               <div className="flex-1 min-w-0">
                 <div className="font-medium truncate">
-                  {profile.first_name} {profile.last_name}
-                </div>
-                <div className="text-sm text-muted-foreground truncate">
-                  {profile.email}
+                  {formatNameWithInitial(profile.first_name, profile.last_name)}
                 </div>
               </div>
             </button>

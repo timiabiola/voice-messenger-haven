@@ -2,8 +2,9 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { formatDate } from '@/lib/utils';
+import { formatNameWithInitial } from '@/lib/utils';
 
 interface Message {
   id: string;
@@ -55,11 +56,11 @@ export const RecentMessages = ({ messages, unreadCount }: RecentMessagesProps) =
                       {message.sender.first_name?.[0] || '?'}
                     </span>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-medium truncate">
-                      {message.sender.first_name} {message.sender.last_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-foreground truncate">
+                      {formatNameWithInitial(message.sender.first_name, message.sender.last_name)}
+                    </h3>
+                    <p className="text-sm text-muted-foreground truncate">
                       {message.content}
                     </p>
                   </div>

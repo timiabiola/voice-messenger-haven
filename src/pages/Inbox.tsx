@@ -4,6 +4,7 @@ import EmptyState from '@/components/layout/EmptyState';
 import AppLayout from '@/components/AppLayout';
 import { MessageCard } from '@/components/messages/MessageCard';
 import { useMessages } from '@/hooks/useMessages';
+import { formatNameWithInitial } from '@/lib/utils';
 
 const Inbox = () => {
   const { messages, loading } = useMessages();
@@ -33,7 +34,7 @@ const Inbox = () => {
 
   const filteredMessages = messages.filter(message => 
     message.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    `${message.sender.first_name} ${message.sender.last_name}`.toLowerCase().includes(searchQuery.toLowerCase())
+    formatNameWithInitial(message.sender.first_name, message.sender.last_name).toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (

@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { AddTagsDialog } from './AddTagsDialog';
 import { MessageTags } from './MessageTags';
 import { useMessageTags } from '@/hooks/useMessageTags';
+import { formatNameWithInitial } from '@/lib/utils';
 
 interface SavedMessageCardProps {
   savedItem: {
@@ -43,8 +44,8 @@ export const SavedMessageCard = ({ savedItem }: SavedMessageCardProps) => {
   const { messageTags } = useMessageTags(savedItem.id);
 
   const senderName = savedItem.voice_message.sender
-    ? `${savedItem.voice_message.sender.first_name || ''} ${savedItem.voice_message.sender.last_name || ''}`.trim() || savedItem.voice_message.sender.email
-    : 'Unknown Sender';
+    ? formatNameWithInitial(savedItem.voice_message.sender.first_name, savedItem.voice_message.sender.last_name)
+    : savedItem.voice_message.sender?.email || 'Unknown Sender';
 
   const handlePlayPause = async () => {
     if (!audioRef.current) return;
