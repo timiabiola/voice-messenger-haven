@@ -76,6 +76,15 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
+    // Client-side password validation
+    if (password.length < 6) {
+      toast.error("Password Too Short", {
+        description: "Password must be at least 6 characters long.",
+      });
+      setLoading(false);
+      return;
+    }
+    
     try {
       if (authMethod === 'email') {
         // Email signup flow
@@ -166,6 +175,7 @@ const Auth = () => {
       console.error('Signup error:', error);
       console.log('Error message:', error.message);
       console.log('Error code:', error.code);
+      console.log('Full error object:', JSON.stringify(error, null, 2));
       
       // Enhanced error handling with specific messages
       if (
@@ -192,7 +202,12 @@ const Auth = () => {
             : "An account with this phone exists but hasn't been verified. Please check your SMS for the verification code.",
           duration: 8000,
         });
-      } else if (error.message?.toLowerCase().includes('password') || error.message?.toLowerCase().includes('weak')) {
+      } else if (
+        error.message?.toLowerCase().includes('password should be at least') ||
+        error.message?.toLowerCase().includes('password is too short') ||
+        error.message?.toLowerCase().includes('weak password') ||
+        (error.message?.toLowerCase().includes('password') && error.message?.toLowerCase().includes('characters'))
+      ) {
         toast.error("Password Requirements", {
           description: "Password must be at least 6 characters long.",
         });
@@ -439,6 +454,7 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      minLength={6}
                       className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                     />
                     <Button 
@@ -518,6 +534,7 @@ const Auth = () => {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       required
+                      minLength={6}
                       className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
                     />
                     <Button 
