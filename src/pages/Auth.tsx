@@ -18,7 +18,7 @@ const Auth = () => {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('email');
+  const [authMethod, setAuthMethod] = useState<'email' | 'phone'>('phone');
   const [otpToken, setOtpToken] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [showOtpVerification, setShowOtpVerification] = useState(false);
