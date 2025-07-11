@@ -99,17 +99,35 @@ const Auth = () => {
       }
     } catch (error: any) {
       console.error('Signup error:', error);
+      console.log('Error message:', error.message);
+      console.log('Error code:', error.code);
       
       // Enhanced error handling with specific messages
-      if (error.message?.includes('already registered') || error.message?.includes('already exists')) {
-        toast.error("Account Already Exists", {
-          description: "This email is already registered. Please sign in instead.",
+      if (
+        error.message?.toLowerCase().includes('already registered') || 
+        error.message?.toLowerCase().includes('already exists') ||
+        error.message?.toLowerCase().includes('duplicate') ||
+        error.message?.toLowerCase().includes('user already registered') ||
+        error.code === '23505' || // PostgreSQL duplicate key error
+        error.code === 'user_already_exists'
+      ) {
+        toast.error("Email Already Taken", {
+          description: "This email address is already registered. Please sign in or use a different email.",
         });
-      } else if (error.message?.includes('password') || error.message?.includes('weak')) {
+      } else if (
+        error.message?.toLowerCase().includes('email not confirmed') ||
+        error.message?.toLowerCase().includes('unverified') ||
+        error.message?.toLowerCase().includes('confirmation required')
+      ) {
+        toast.error("Email Not Verified", {
+          description: "An account with this email exists but hasn't been verified. Please check your email for the verification link.",
+          duration: 8000,
+        });
+      } else if (error.message?.toLowerCase().includes('password') || error.message?.toLowerCase().includes('weak')) {
         toast.error("Password Requirements", {
           description: "Password must be at least 6 characters long.",
         });
-      } else if (error.message?.includes('email') && error.message?.includes('invalid')) {
+      } else if (error.message?.toLowerCase().includes('email') && error.message?.toLowerCase().includes('invalid')) {
         toast.error("Invalid Email", {
           description: "Please enter a valid email address.",
         });
