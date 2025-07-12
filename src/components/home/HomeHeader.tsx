@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { ShieldCheck, LogOut } from 'lucide-react';
+import { ShieldCheck, LogOut, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -35,18 +35,28 @@ export const HomeHeader = ({ unreadCount, isAdmin }: HomeHeaderProps) => {
             <LogOut className="w-5 h-5" />
             <span className="sr-only sm:not-sr-only ml-2">Logout</span>
           </Button>
-          {unreadCount > 0 && (
+          <div className="flex items-center gap-2">
             <Button
               variant="ghost"
-              onClick={() => navigate('/inbox-0')}
-              className="text-primary hover:text-primary/90 flex items-center gap-2"
+              onClick={() => navigate('/settings')}
+              className="text-primary hover:text-primary/90"
             >
-              <Badge variant="destructive" className="animate-pulse">
-                {unreadCount} new
-              </Badge>
-              <span className="sr-only sm:not-sr-only">Messages</span>
+              <Settings className="w-5 h-5" />
+              <span className="sr-only sm:not-sr-only ml-2">Settings</span>
             </Button>
-          )}
+            {unreadCount > 0 && (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/inbox-0')}
+                className="text-primary hover:text-primary/90 flex items-center gap-2"
+              >
+                <Badge variant="destructive" className="animate-pulse">
+                  {unreadCount} new
+                </Badge>
+                <span className="sr-only sm:not-sr-only">Messages</span>
+              </Button>
+            )}
+          </div>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4 py-4">
           <h1 className="text-2xl font-bold text-primary">Welcome to the App</h1>

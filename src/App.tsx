@@ -17,6 +17,7 @@ import AIAssistant from '@/pages/AIAssistant';
 import { Toaster } from 'sonner';
 import ForwardMessage from '@/pages/ForwardMessage';
 import VoiceDebug from '@/pages/VoiceDebug';
+import Settings from '@/pages/Settings';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -47,6 +48,7 @@ function App() {
           <Route path="/view-mode" element={<ViewMode />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
           <Route path="/voice-debug" element={<VoiceDebug />} />
+          <Route path="/settings" element={<Settings />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
