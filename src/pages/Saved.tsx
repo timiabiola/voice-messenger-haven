@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button'
 import { SavedMessageCard } from '@/components/saved/SavedMessageCard'
 import { FilterBar } from '@/components/saved/FilterBar'
 import { supabase } from '@/integrations/supabase/client'
-import { SettingsWidget } from '@/components/SettingsWidget'
 
 const Saved = () => {
   const navigate = useNavigate()
@@ -212,7 +211,6 @@ const Saved = () => {
           )}
         </div>
       </main>
-      <SettingsWidget />
     </div>
   )
 }

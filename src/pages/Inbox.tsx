@@ -5,7 +5,6 @@ import AppLayout from '@/components/AppLayout';
 import { MessageCard } from '@/components/messages/MessageCard';
 import { useMessages } from '@/hooks/useMessages';
 import { formatNameWithInitial } from '@/lib/utils';
-import { SettingsWidget } from '@/components/SettingsWidget';
 
 const Inbox = () => {
   const { messages, loading } = useMessages();
@@ -49,7 +48,6 @@ const Inbox = () => {
           </div>
         </div>
       </div>
-      <SettingsWidget />
     </AppLayout>
   );
 };

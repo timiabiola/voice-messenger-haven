@@ -21,7 +21,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { ensureStorageBucket } from '@/lib/supabase-storage';
-import { SettingsWidget } from '@/components/SettingsWidget';
 
 const MOBILE_BREAKPOINT = 768;
 
@@ -256,7 +255,6 @@ export default function Notes() {
           resetNoteState();
         }}
       />
-      <SettingsWidget />
     </AppLayout>
   );
 }
