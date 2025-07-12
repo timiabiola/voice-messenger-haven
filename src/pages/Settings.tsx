@@ -8,7 +8,6 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
-import AppLayout from '@/components/AppLayout';
 import type { NotificationPreference } from '@/types/notifications';
 
 export default function Settings() {
@@ -112,6 +111,7 @@ export default function Settings() {
         return;
       }
 
+      // Save ALL settings - profile information and notification preferences
       const { error } = await supabase
         .from('profiles')
         .update({
@@ -147,33 +147,29 @@ export default function Settings() {
     }
   };
 
-  const isMobile = window.innerWidth < 768;
-
   const content = (
-    <div className={`flex flex-col bg-black ${isMobile ? 'min-h-screen' : 'min-h-full'}`}>
-      {/* Header - only show on mobile */}
-      {isMobile && (
-        <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
-          <div className="flex items-center space-x-4">
-            <button 
-              onClick={() => navigate('/')}
-              className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
-            >
-              <ChevronLeft className="w-6 h-6" />
-              <span className="text-sm sm:text-base">Back</span>
-            </button>
-            <h1 className="text-lg font-semibold text-amber-400">Settings</h1>
-          </div>
-          <button
-            onClick={handleSaveSettings}
-            disabled={saving}
-            className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50"
+    <div className="flex flex-col bg-black min-h-screen">
+      {/* Header - show on both mobile and desktop */}
+      <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
+        <div className="flex items-center space-x-4">
+          <button 
+            onClick={() => navigate('/')}
+            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
           >
-            <Save className="w-4 h-4" />
-            {saving ? 'Saving...' : 'Save'}
+            <ChevronLeft className="w-6 h-6" />
+            <span className="text-sm sm:text-base">Back</span>
           </button>
-        </header>
-      )}
+          <h1 className="text-lg font-semibold text-amber-400">Settings</h1>
+        </div>
+        <button
+          onClick={handleSaveSettings}
+          disabled={saving}
+          className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50"
+        >
+          <Save className="w-4 h-4" />
+          {saving ? 'Saving...' : 'Save'}
+        </button>
+      </header>
 
       {/* Content */}
       <main className="flex-1 p-4 pb-20 md:pb-4">
@@ -341,18 +337,6 @@ export default function Settings() {
                   )}
                 </div>
               )}
-
-              {/* Save Button */}
-              <div className="pt-4">
-                <Button
-                  onClick={handleSaveSettings}
-                  disabled={saving}
-                  className="w-full bg-amber-400 text-black hover:bg-amber-300 font-medium py-3"
-                >
-                  <Save className="w-5 h-5 mr-2" />
-                  {saving ? 'Saving Settings...' : 'Save Notification Settings'}
-                </Button>
-              </div>
             </CardContent>
           </Card>
 
@@ -373,21 +357,8 @@ export default function Settings() {
         </div>
       </main>
 
-      {/* Floating Save Button - only show on desktop */}
-      {!isMobile && (
-        <div className="fixed bottom-8 right-8 z-50">
-          <button
-            onClick={handleSaveSettings}
-            disabled={saving}
-            className="px-6 py-3 bg-amber-400 text-black rounded-full font-medium flex items-center gap-2 hover:bg-amber-300 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
-          >
-            <Save className="w-5 h-5" />
-            {saving ? 'Saving...' : 'Save Settings'}
-          </button>
-        </div>
-      )}
     </div>
   );
 
-  return isMobile ? content : <AppLayout>{content}</AppLayout>;
+  return content;
 } 
