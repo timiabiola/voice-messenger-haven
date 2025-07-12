@@ -1,5 +1,5 @@
 
-import { Bell, Search, ChevronLeft } from 'lucide-react';
+import { Search, ChevronLeft } from 'lucide-react';
 import { Button } from '../ui/button';
 import { SidebarTrigger } from '../ui/sidebar';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -43,9 +43,6 @@ const Header = ({ onSearch, showSearch }: HeaderProps) => {
             </div>
           )}
         </div>
-        <Button variant="ghost" size="icon" className="ml-2">
-          <Bell className="h-5 w-5" />
-        </Button>
       </div>
     </header>
   );

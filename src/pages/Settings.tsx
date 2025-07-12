@@ -301,6 +301,18 @@ export default function Settings() {
                   )}
                 </div>
               )}
+
+              {/* Save Button */}
+              <div className="pt-4">
+                <Button
+                  onClick={handleSaveSettings}
+                  disabled={saving}
+                  className="w-full bg-amber-400 text-black hover:bg-amber-300 font-medium py-3"
+                >
+                  <Save className="w-5 h-5 mr-2" />
+                  {saving ? 'Saving Settings...' : 'Save Notification Settings'}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
