@@ -46,9 +46,37 @@ export default function Settings() {
         .eq('id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error && error.code === 'PGRST116') {
+        // Profile doesn't exist, create it
+        console.log('Profile not found, creating new profile');
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            email: user.email || '',
+            notification_preference: 'sms',
+            sms_notifications_enabled: true,
+            email_notifications_enabled: true,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          })
+          .select()
+          .single();
 
-      if (profile) {
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          throw createError;
+        }
+
+        if (newProfile) {
+          setEmail(newProfile.email || '');
+          setNotificationPreference(newProfile.notification_preference || 'sms');
+          setSmsEnabled(newProfile.sms_notifications_enabled ?? true);
+          setEmailEnabled(newProfile.email_notifications_enabled ?? true);
+        }
+      } else if (error) {
+        throw error;
+      } else if (profile) {
         setPhone(profile.phone || '');
         setEmail(profile.email || '');
         setFirstName(profile.first_name || '');
@@ -98,12 +126,22 @@ export default function Settings() {
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase update error:', error);
+        throw error;
+      }
 
       toast.success('Settings saved successfully');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving settings:', error);
-      toast.error('Failed to save settings');
+      // Show more specific error message
+      if (error?.message?.includes('new row violates row-level security policy')) {
+        toast.error('Permission denied. Please refresh the page and try again.');
+      } else if (error?.message) {
+        toast.error(`Failed to save settings: ${error.message}`);
+      } else {
+        toast.error('Failed to save settings');
+      }
     } finally {
       setSaving(false);
     }
@@ -113,27 +151,29 @@ export default function Settings() {
 
   const content = (
     <div className="flex flex-col min-h-screen bg-black">
-      {/* Header */}
-      <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
-        <div className="flex items-center space-x-4">
-          <button 
-            onClick={() => navigate('/')}
-            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
+      {/* Header - only show on mobile */}
+      {isMobile && (
+        <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
+          <div className="flex items-center space-x-4">
+            <button 
+              onClick={() => navigate('/')}
+              className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
+            >
+              <ChevronLeft className="w-6 h-6" />
+              <span className="text-sm sm:text-base">Back</span>
+            </button>
+            <h1 className="text-lg font-semibold text-amber-400">Settings</h1>
+          </div>
+          <button
+            onClick={handleSaveSettings}
+            disabled={saving}
+            className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50"
           >
-            <ChevronLeft className="w-6 h-6" />
-            <span className="text-sm sm:text-base">Back</span>
+            <Save className="w-4 h-4" />
+            {saving ? 'Saving...' : 'Save'}
           </button>
-          <h1 className="text-lg font-semibold text-amber-400">Settings</h1>
-        </div>
-        <button
-          onClick={handleSaveSettings}
-          disabled={saving}
-          className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50"
-        >
-          <Save className="w-4 h-4" />
-          {saving ? 'Saving...' : 'Save'}
-        </button>
-      </header>
+        </header>
+      )}
 
       {/* Content */}
       <main className="flex-1 p-4 pb-20 md:pb-4">
@@ -332,6 +372,20 @@ export default function Settings() {
           </Card>
         </div>
       </main>
+
+      {/* Floating Save Button - only show on desktop */}
+      {!isMobile && (
+        <div className="fixed bottom-8 right-8 z-50">
+          <button
+            onClick={handleSaveSettings}
+            disabled={saving}
+            className="px-6 py-3 bg-amber-400 text-black rounded-full font-medium flex items-center gap-2 hover:bg-amber-300 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
+          >
+            <Save className="w-5 h-5" />
+            {saving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+      )}
     </div>
   );
 
