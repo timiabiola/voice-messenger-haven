@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { TopBar } from '@/components/home/TopBar';
 import { FeatureGrid } from '@/components/home/FeatureGrid';
 import { RecordButton } from '@/components/home/RecordButton';
-import { SettingsWidget } from '@/components/SettingsWidget';
 
 interface Message {
   id: string;
@@ -131,7 +130,6 @@ export default function Index() {
       </main>
 
       <RecordButton />
-      <SettingsWidget />
     </div>
   );
 }
