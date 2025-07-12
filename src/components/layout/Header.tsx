@@ -1,5 +1,5 @@
 
-import { Search, ChevronLeft } from 'lucide-react';
+import { Search, ChevronLeft, Settings } from 'lucide-react';
 import { Button } from '../ui/button';
 import { SidebarTrigger } from '../ui/sidebar';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -43,6 +43,14 @@ const Header = ({ onSearch, showSearch }: HeaderProps) => {
             </div>
           )}
         </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate('/settings')}
+          className="text-amber-400 hover:text-amber-300"
+        >
+          <Settings className="h-5 w-5" />
+        </Button>
       </div>
     </header>
   );

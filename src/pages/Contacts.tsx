@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import AppLayout from '@/components/AppLayout';
 import { formatNameWithInitial } from '@/lib/utils';
+import { Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Table,
   TableBody,
@@ -69,12 +71,20 @@ const Contacts = () => {
 
   return (
     <AppLayout>
-      <div className="min-h-[100dvh] w-full bg-black pb-20">
-        <div className="sticky top-0 z-40 bg-black/80 backdrop-blur-sm border-b border-amber-400/20 px-4 py-4">
+      <div className="min-h-[calc(100vh-4rem)] w-full bg-black">
+        <div className="sticky top-16 z-40 bg-black/80 backdrop-blur-sm border-b border-amber-400/20 px-4 py-4 flex justify-between items-center">
           <h1 className="text-xl font-semibold text-amber-400">Contacts</h1>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/settings')}
+            className="text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
+          >
+            <Settings className="w-5 h-5" />
+          </Button>
         </div>
 
-        <div className="px-4">
+        <div className="px-4 pb-20">
           <div className="mt-4 rounded-lg overflow-hidden border border-amber-400/20">
             <div className="divide-y divide-amber-400/10">
               {profiles.map((profile) => (
