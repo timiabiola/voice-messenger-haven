@@ -82,7 +82,9 @@ const Contacts = () => {
     navigate('/microphone', { 
       state: { 
         selectedProfile: {
-          ...profile,
+          id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
           name: formatNameWithInitial(profile.first_name, profile.last_name),
         }
       }
@@ -131,16 +133,13 @@ const Contacts = () => {
                   >
                     <div className="w-10 h-10 rounded-full bg-amber-400/10 flex items-center justify-center flex-shrink-0">
                       <span className="text-amber-400 text-sm">
-                        {(profile.first_name?.[0] || profile.email?.[0] || '?').toUpperCase()}
+                        {(profile.first_name?.[0] || 'U').toUpperCase()}
                       </span>
                     </div>
                     <div className="flex-1 min-w-0 text-left">
                       <h3 className="font-medium text-amber-400 truncate">
-                        {formatNameWithInitial(profile.first_name, profile.last_name) || profile.email}
+                        {formatNameWithInitial(profile.first_name, profile.last_name)}
                       </h3>
-                      {profile.email && (
-                        <p className="text-sm text-amber-400/60 truncate">{profile.email}</p>
-                      )}
                     </div>
                   </button>
                 ))}
