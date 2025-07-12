@@ -1,5 +1,5 @@
 
-import { MessageSquare, PenSquare, Users, Bookmark, Bot } from 'lucide-react';
+import { MessageSquare, PenSquare, Users, Bookmark, Bot, Settings } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { FeatureButton } from './FeatureButton';
 
@@ -42,16 +42,20 @@ export const FeatureGrid = ({ unreadCount }: FeatureGridProps) => {
         />
       </div>
       
-      {/* Third row - AI Assistant centered */}
-      <div className="flex justify-center">
-        <div className="w-full sm:w-1/2">
-          <FeatureButton
-            icon={Bot}
-            title="AI Assistant"
-            description="Chat with AI voice agents"
-            onClick={() => navigate('/ai-assistant')}
-          />
-        </div>
+      {/* Third row - AI Assistant and Settings */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <FeatureButton
+          icon={Bot}
+          title="AI Assistant"
+          description="Chat with AI voice agents"
+          onClick={() => navigate('/ai-assistant')}
+        />
+        <FeatureButton
+          icon={Settings}
+          title="Settings"
+          description="Manage your preferences"
+          onClick={() => navigate('/settings')}
+        />
       </div>
     </div>
   );

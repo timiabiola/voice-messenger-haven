@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { SettingsWidget } from '@/components/SettingsWidget';
 import AppLayout from '@/components/AppLayout';
 import { formatNameWithInitial } from '@/lib/utils';
 import {
@@ -104,6 +105,7 @@ const Contacts = () => {
           </div>
         </div>
       </div>
+      <SettingsWidget />
     </AppLayout>
   );
 };

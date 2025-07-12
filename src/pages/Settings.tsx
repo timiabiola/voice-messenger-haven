@@ -112,85 +112,84 @@ export default function Settings() {
   const isMobile = window.innerWidth < 768;
 
   const content = (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-black">
       {/* Header */}
-      <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 border-b bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-40 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
         <div className="flex items-center space-x-4">
-          <Button 
-            variant="ghost"
-            size="icon"
+          <button 
             onClick={() => navigate('/')}
-            className="hover:bg-accent rounded-full"
+            className="text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-2 touch-manipulation active:scale-95"
           >
             <ChevronLeft className="w-6 h-6" />
-          </Button>
-          <h1 className="text-lg font-semibold">Settings</h1>
+            <span className="text-sm sm:text-base">Back</span>
+          </button>
+          <h1 className="text-lg font-semibold text-amber-400">Settings</h1>
         </div>
-        <Button
+        <button
           onClick={handleSaveSettings}
           disabled={saving}
-          className="flex items-center gap-2"
+          className="px-4 py-2 bg-amber-400 text-black rounded-full text-sm font-medium flex items-center gap-2 hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50"
         >
           <Save className="w-4 h-4" />
           {saving ? 'Saving...' : 'Save'}
-        </Button>
+        </button>
       </header>
 
       {/* Content */}
       <main className="flex-1 p-4 pb-20 md:pb-4">
         <div className="max-w-2xl mx-auto space-y-6">
           {/* Profile Information */}
-          <Card>
+          <Card className="bg-zinc-900/50 border-zinc-800">
             <CardHeader>
-              <CardTitle>Profile Information</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-amber-400">Profile Information</CardTitle>
+              <CardDescription className="text-gray-400">
                 Update your personal information
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name</Label>
+                  <Label htmlFor="firstName" className="text-amber-400">First Name</Label>
                   <input
                     id="firstName"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 bg-black/50 border border-zinc-800 rounded-md text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
                     placeholder="John"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName" className="text-amber-400">Last Name</Label>
                   <input
                     id="lastName"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-md"
+                    className="w-full px-3 py-2 bg-black/50 border border-zinc-800 rounded-md text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
                     placeholder="Doe"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
+                <Label htmlFor="phone" className="text-amber-400">Phone Number</Label>
                 <input
                   id="phone"
                   type="tel"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 bg-black/50 border border-zinc-800 rounded-md text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
                   placeholder="+1 (555) 123-4567"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="email">Email Address</Label>
+                <Label htmlFor="email" className="text-amber-400">Email Address</Label>
                 <input
                   id="email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-md"
+                  className="w-full px-3 py-2 bg-black/50 border border-zinc-800 rounded-md text-white placeholder:text-gray-500 focus:border-amber-400 focus:outline-none focus:ring-1 focus:ring-amber-400/50"
                   placeholder="john.doe@example.com"
                 />
               </div>
@@ -198,66 +197,66 @@ export default function Settings() {
           </Card>
 
           {/* Notification Preferences */}
-          <Card>
+          <Card className="bg-zinc-900/50 border-zinc-800">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-amber-400">
                 <Bell className="w-5 h-5" />
                 Notification Preferences
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-gray-400">
                 Choose how you want to be notified about new voice messages
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
-                <Label>Notification Method</Label>
+                <Label className="text-amber-400">Notification Method</Label>
                 <RadioGroup value={notificationPreference} onValueChange={(value) => setNotificationPreference(value as NotificationPreference)}>
-                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent">
-                    <RadioGroupItem value="sms" id="sms" />
+                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-amber-400/10 border border-transparent hover:border-amber-400/50 transition-all">
+                    <RadioGroupItem value="sms" id="sms" className="text-amber-400 border-zinc-800" />
                     <Label htmlFor="sms" className="flex-1 cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-white">
+                        <Phone className="w-4 h-4 text-amber-400" />
                         <span>SMS Text Message</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">Get instant notifications via text message</p>
+                      <p className="text-sm text-gray-400">Get instant notifications via text message</p>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent">
-                    <RadioGroupItem value="email" id="email-opt" />
+                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-amber-400/10 border border-transparent hover:border-amber-400/50 transition-all">
+                    <RadioGroupItem value="email" id="email-opt" className="text-amber-400 border-zinc-800" />
                     <Label htmlFor="email-opt" className="flex-1 cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-white">
+                        <Mail className="w-4 h-4 text-amber-400" />
                         <span>Email</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">Receive notifications in your email inbox</p>
+                      <p className="text-sm text-gray-400">Receive notifications in your email inbox</p>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent">
-                    <RadioGroupItem value="both" id="both" />
+                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-amber-400/10 border border-transparent hover:border-amber-400/50 transition-all">
+                    <RadioGroupItem value="both" id="both" className="text-amber-400 border-zinc-800" />
                     <Label htmlFor="both" className="flex-1 cursor-pointer">
-                      <div className="flex items-center gap-2">
-                        <Phone className="w-4 h-4" />
-                        <Mail className="w-4 h-4" />
+                      <div className="flex items-center gap-2 text-white">
+                        <Phone className="w-4 h-4 text-amber-400" />
+                        <Mail className="w-4 h-4 text-amber-400" />
                         <span>Both SMS & Email</span>
                       </div>
-                      <p className="text-sm text-muted-foreground">Get notified via both channels</p>
+                      <p className="text-sm text-gray-400">Get notified via both channels</p>
                     </Label>
                   </div>
-                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-accent">
-                    <RadioGroupItem value="none" id="none" />
+                  <div className="flex items-center space-x-2 p-3 rounded-lg hover:bg-amber-400/10 border border-transparent hover:border-amber-400/50 transition-all">
+                    <RadioGroupItem value="none" id="none" className="text-amber-400 border-zinc-800" />
                     <Label htmlFor="none" className="flex-1 cursor-pointer">
-                      <span>No Notifications</span>
-                      <p className="text-sm text-muted-foreground">Don't send any notifications</p>
+                      <span className="text-white">No Notifications</span>
+                      <p className="text-sm text-gray-400">Don't send any notifications</p>
                     </Label>
                   </div>
                 </RadioGroup>
               </div>
 
-              <div className="space-y-4 pt-4 border-t">
+              <div className="space-y-4 pt-4 border-t border-zinc-800">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="sms-toggle">SMS Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="sms-toggle" className="text-white">SMS Notifications</Label>
+                    <p className="text-sm text-gray-400">
                       Enable or disable SMS notifications
                     </p>
                   </div>
@@ -266,13 +265,14 @@ export default function Settings() {
                     checked={smsEnabled}
                     onCheckedChange={setSmsEnabled}
                     disabled={notificationPreference === 'none'}
+                    className="data-[state=checked]:bg-amber-400"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label htmlFor="email-toggle">Email Notifications</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="email-toggle" className="text-white">Email Notifications</Label>
+                    <p className="text-sm text-gray-400">
                       Enable or disable email notifications
                     </p>
                   </div>
@@ -281,6 +281,7 @@ export default function Settings() {
                     checked={emailEnabled}
                     onCheckedChange={setEmailEnabled}
                     disabled={notificationPreference === 'none'}
+                    className="data-[state=checked]:bg-amber-400"
                   />
                 </div>
               </div>
@@ -289,12 +290,12 @@ export default function Settings() {
               {notificationPreference !== 'none' && (
                 <div className="space-y-2">
                   {(notificationPreference === 'sms' || notificationPreference === 'both') && !phone && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-sm text-red-400">
                       ⚠️ Please add a phone number to receive SMS notifications
                     </p>
                   )}
                   {(notificationPreference === 'email' || notificationPreference === 'both') && !email && (
-                    <p className="text-sm text-destructive">
+                    <p className="text-sm text-red-400">
                       ⚠️ Please add an email address to receive email notifications
                     </p>
                   )}
@@ -304,15 +305,15 @@ export default function Settings() {
           </Card>
 
           {/* Notification History */}
-          <Card>
+          <Card className="bg-zinc-900/50 border-zinc-800">
             <CardHeader>
-              <CardTitle>Notification History</CardTitle>
-              <CardDescription>
+              <CardTitle className="text-amber-400">Notification History</CardTitle>
+              <CardDescription className="text-gray-400">
                 View your recent notification activity
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-400">
                 Notification history will be available after the first message is sent.
               </p>
             </CardContent>
