@@ -19,7 +19,7 @@ const AppLayout = ({ children, onSearch, unreadCount = 0 }: AppLayoutProps) => {
   return (
     <div className="relative bg-background min-h-screen w-full">
       <Header onSearch={onSearch} showSearch={showSearch} />
-      <main className="flex-1 min-h-screen w-full">
+      <main className="flex-1 min-h-screen w-full pt-16">
         {children}
       </main>
       <BottomNav unreadCount={unreadCount} />

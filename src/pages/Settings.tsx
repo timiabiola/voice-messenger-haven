@@ -150,7 +150,7 @@ export default function Settings() {
   const isMobile = window.innerWidth < 768;
 
   const content = (
-    <div className="flex flex-col min-h-screen bg-black">
+    <div className={`flex flex-col bg-black ${isMobile ? 'min-h-screen' : 'min-h-full'}`}>
       {/* Header - only show on mobile */}
       {isMobile && (
         <header className="sticky top-0 z-50 h-16 flex items-center justify-between px-4 border-b border-zinc-800 bg-black/80 backdrop-blur-sm">
