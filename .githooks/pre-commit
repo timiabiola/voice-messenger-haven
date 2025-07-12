@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# Check for common patterns in files being committed
+files=$(git diff --cached --name-only)
+
+for file in $files; do
+    # Skip if file doesn't exist (deleted)
+    if [ ! -f "$file" ]; then
+        continue
+    fi
+    
+    # Check for Supabase keys
+    if grep -E "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\." "$file" > /dev/null; then
+        echo "ERROR: Potential Supabase key found in $file"
+        echo "Please remove sensitive data before committing."
+        exit 1
+    fi
+    
+    # Check for common secret patterns
+    if grep -E "(api[_-]?key|secret|password|token)\s*=\s*['\"][^'\"]+['\"]" "$file" > /dev/null; then
+        # Only block if it's not a placeholder
+        if ! grep -E "(api[_-]?key|secret|password|token)\s*=\s*['\"]?(your-|placeholder|example|xxx)" "$file" > /dev/null; then
+            echo "WARNING: Potential secret found in $file"
+            echo "Make sure you're not committing real credentials."
+            read -p "Continue anyway? (y/n) " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                exit 1
+            fi
+        fi
+    fi
+done
+
+exit 0
