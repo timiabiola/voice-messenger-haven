@@ -30,6 +30,26 @@ export default function Settings() {
     loadUserProfile();
   }, []);
 
+  // Function to sync phone from profile to auth if needed
+  const syncPhoneToAuth = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await supabase.functions.invoke('sync-phone-to-auth', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (response.data?.success) {
+        console.log('Phone synced to auth:', response.data);
+      }
+    } catch (error) {
+      console.error('Error syncing phone to auth:', error);
+    }
+  };
+
   const loadUserProfile = async () => {
     setLoading(true);
     try {
@@ -83,6 +103,11 @@ export default function Settings() {
         setNotificationPreference(profile.notification_preference || 'sms');
         setSmsEnabled(profile.sms_notifications_enabled ?? true);
         setEmailEnabled(profile.email_notifications_enabled ?? true);
+        
+        // Sync phone to auth if it exists in profile
+        if (profile.phone) {
+          syncPhoneToAuth();
+        }
       }
     } catch (error) {
       console.error('Error loading profile:', error);
@@ -109,6 +134,28 @@ export default function Settings() {
         toast.error('Please add an email address to receive email notifications');
         setSaving(false);
         return;
+      }
+
+      // Update auth.users phone if it has changed
+      if (phone) {
+        // Format phone to E.164 format if not already
+        let formattedPhone = phone;
+        if (!phone.startsWith('+')) {
+          // Remove all non-digits
+          const digits = phone.replace(/\D/g, '');
+          // Add + prefix (assuming US number if no country code)
+          formattedPhone = digits.startsWith('1') ? `+${digits}` : `+1${digits}`;
+        }
+
+        // Update phone in auth.users
+        const { error: authError } = await supabase.auth.updateUser({
+          phone: formattedPhone
+        });
+
+        if (authError) {
+          console.error('Error updating auth phone:', authError);
+          // Don't throw here, continue with profile update
+        }
       }
 
       // Save ALL settings - profile information and notification preferences
