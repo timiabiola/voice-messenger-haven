@@ -10,6 +10,8 @@ export const useAudioPlayback = (audio_url: string) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryTimeoutRef = useRef<number>();
   const navigate = useNavigate();
@@ -27,6 +29,25 @@ export const useAudioPlayback = (audio_url: string) => {
         setPlaybackRate(rate);
       }
     }
+  }, []);
+
+  // Update current time and duration
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const updateTime = () => setCurrentTime(audio.currentTime);
+    const updateDuration = () => setDuration(audio.duration || 0);
+
+    audio.addEventListener('timeupdate', updateTime);
+    audio.addEventListener('loadedmetadata', updateDuration);
+    audio.addEventListener('durationchange', updateDuration);
+
+    return () => {
+      audio.removeEventListener('timeupdate', updateTime);
+      audio.removeEventListener('loadedmetadata', updateDuration);
+      audio.removeEventListener('durationchange', updateDuration);
+    };
   }, []);
 
   // Apply playback rate when audio element is ready
@@ -213,16 +234,19 @@ export const useAudioPlayback = (audio_url: string) => {
 
   const handleSkipBackward = (seconds: number = 10) => {
     if (audioRef.current) {
-      const newTime = Math.max(0, audioRef.current.currentTime - seconds);
-      audioRef.current.currentTime = newTime;
+      audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - seconds);
     }
   };
 
   const handleSkipForward = (seconds: number = 10) => {
+    if (audioRef.current && duration > 0) {
+      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + seconds, duration);
+    }
+  };
+
+  const handleSeek = (time: number) => {
     if (audioRef.current) {
-      const duration = audioRef.current.duration || 0;
-      const newTime = Math.min(duration, audioRef.current.currentTime + seconds);
-      audioRef.current.currentTime = newTime;
+      audioRef.current.currentTime = time;
     }
   };
 
@@ -234,8 +258,11 @@ export const useAudioPlayback = (audio_url: string) => {
     handleAudioEnded,
     handleAudioError,
     playbackRate,
+    currentTime,
+    duration,
     handleSpeedChange,
     handleSkipBackward,
-    handleSkipForward
+    handleSkipForward,
+    handleSeek
   };
 };
