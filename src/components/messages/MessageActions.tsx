@@ -2,6 +2,8 @@
 import { useNavigate } from 'react-router-dom';
 import type { Message } from './types';
 import { useSaveMessage } from '@/hooks/useSaveMessage';
+import { Reply, Forward, Save, Lock } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface MessageActionsProps {
   message: Message;
@@ -36,70 +38,68 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
   };
 
   return (
-    <div className="flex flex-col gap-3 sm:gap-4">
-      {/* Primary actions row - Play and Reply */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onPlayPause}
-          disabled={isLoading}
-          className="flex items-center justify-center px-3 py-2 sm:px-4 bg-amber-400 text-black rounded-full text-xs sm:text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none min-w-0"
-        >
-          <span className="text-xs sm:text-sm font-semibold">
-            {isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}
-          </span>
-        </button>
-
-        <button
-          onClick={handleReply}
-          className="flex items-center justify-center px-3 py-2 sm:px-4 bg-zinc-800 text-amber-400 rounded-full text-xs sm:text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95 flex-1 sm:flex-none min-w-0"
-        >
-          <span className="text-xs sm:text-sm font-semibold">Reply</span>
-        </button>
-      </div>
-
-      {/* Secondary actions row - Save and Forward/Private */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={toggleSave}
-          disabled={isSaveLoading}
-          className={`flex items-center justify-center px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-medium transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none min-w-0 ${
-            isSaved 
-              ? 'bg-amber-400 text-black hover:bg-amber-300' 
-              : 'bg-zinc-800 text-amber-400 hover:bg-zinc-700'
-          }`}
-          title={isSaved ? 'Unsave message' : 'Save message'}
-        >
-          <span className="text-xs sm:text-sm font-semibold">
-            {isSaved ? 'Saved' : 'Save'}
-          </span>
-        </button>
-
-        {message.is_private ? (
-          <div 
-            className="flex items-center justify-center px-3 py-2 sm:px-4 bg-zinc-900/50 text-zinc-400 rounded-full text-xs sm:text-sm font-medium cursor-not-allowed border border-zinc-800 relative group flex-1 sm:flex-none min-w-0"
-            title="This message cannot be forwarded"
-          >
-            <span className="text-xs sm:text-sm font-semibold text-zinc-500">Private</span>
-            
-            {/* Tooltip on hover - only show on desktop */}
-            <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none hidden sm:block">
-              <div className="bg-zinc-800 text-zinc-300 text-xs px-2 py-1 rounded whitespace-nowrap">
-                Cannot be forwarded
-                <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px">
-                  <div className="w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-zinc-800" />
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <button
-            onClick={handleForward}
-            className="flex items-center justify-center px-3 py-2 sm:px-4 bg-zinc-800 text-amber-400 rounded-full text-xs sm:text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95 flex-1 sm:flex-none min-w-0"
-          >
-            <span className="text-xs sm:text-sm font-semibold">Forward</span>
-          </button>
+    <div className="flex items-center gap-2 pt-2 flex-wrap">
+      {/* Reply button */}
+      <button
+        onClick={handleReply}
+        className={cn(
+          "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg",
+          "bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-amber-400",
+          "transition-all duration-200 text-xs sm:text-sm font-medium",
+          "hover:shadow-lg active:scale-95"
         )}
-      </div>
+      >
+        <Reply className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+        <span>Reply</span>
+      </button>
+
+      {/* Save button */}
+      <button
+        onClick={toggleSave}
+        disabled={isSaveLoading}
+        className={cn(
+          "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg",
+          "transition-all duration-200 text-xs sm:text-sm font-medium",
+          "hover:shadow-lg active:scale-95",
+          "disabled:opacity-50 disabled:cursor-not-allowed",
+          isSaved 
+            ? "bg-amber-400/20 text-amber-400 hover:bg-amber-400/30" 
+            : "bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-amber-400"
+        )}
+        title={isSaved ? 'Unsave message' : 'Save message'}
+      >
+        <Save className={cn("w-3.5 sm:w-4 h-3.5 sm:h-4", isSaved && "fill-current")} />
+        <span>{isSaved ? 'Saved' : 'Save'}</span>
+      </button>
+
+      {/* Forward button or Private indicator */}
+      {message.is_private ? (
+        <div 
+          className={cn(
+            "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg",
+            "bg-zinc-900/50 text-zinc-500 cursor-not-allowed",
+            "border border-zinc-800/50",
+            "text-xs sm:text-sm"
+          )}
+          title="This message cannot be forwarded"
+        >
+          <Lock className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          <span className="font-medium">Private</span>
+        </div>
+      ) : (
+        <button
+          onClick={handleForward}
+          className={cn(
+            "flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg",
+            "bg-zinc-800/80 hover:bg-zinc-700/80 text-zinc-300 hover:text-amber-400",
+            "transition-all duration-200 text-xs sm:text-sm font-medium",
+            "hover:shadow-lg active:scale-95"
+          )}
+        >
+          <Forward className="w-3.5 sm:w-4 h-3.5 sm:h-4" />
+          <span>Forward</span>
+        </button>
+      )}
     </div>
   );
 };
