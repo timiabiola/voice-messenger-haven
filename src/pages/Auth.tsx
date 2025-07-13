@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Phone, Mail } from 'lucide-react';
+import { Phone, Mail, RefreshCw } from 'lucide-react';
+import { formatPhoneForDisplay, formatPhoneToE164, isValidPhoneNumber, getPhoneErrorMessage } from '@/utils/phone';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -22,6 +23,8 @@ const Auth = () => {
   const [otpToken, setOtpToken] = useState('');
   const [otpCode, setOtpCode] = useState('');
   const [showOtpVerification, setShowOtpVerification] = useState(false);
+  const [resendingOtp, setResendingOtp] = useState(false);
+  const [needsPhoneVerification, setNeedsPhoneVerification] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,27 +52,9 @@ const Auth = () => {
     };
   }, [navigate]);
 
-  // Format phone number as user types
-  const formatPhoneNumber = (value: string) => {
-    // Remove all non-digit characters
-    const phoneNumber = value.replace(/\D/g, '');
-    
-    // Format as US phone number (1-XXX-XXX-XXXX)
-    if (phoneNumber.length <= 1) return phoneNumber;
-    if (phoneNumber.length <= 4) return `1-${phoneNumber.slice(1)}`;
-    if (phoneNumber.length <= 7) return `1-${phoneNumber.slice(1, 4)}-${phoneNumber.slice(4)}`;
-    return `1-${phoneNumber.slice(1, 4)}-${phoneNumber.slice(4, 7)}-${phoneNumber.slice(7, 11)}`;
-  };
-
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatPhoneNumber(e.target.value);
+    const formatted = formatPhoneForDisplay(e.target.value);
     setPhone(formatted);
-  };
-
-  // Convert formatted phone to E.164 format for Supabase
-  const getE164Phone = (formattedPhone: string) => {
-    const digits = formattedPhone.replace(/\D/g, '');
-    return digits.length > 0 ? `+${digits}` : '';
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -141,9 +126,10 @@ const Auth = () => {
         }
       } else {
         // Phone signup flow
-        const e164Phone = getE164Phone(phone);
-        if (!e164Phone || e164Phone.length < 10) {
-          throw new Error('Please enter a valid phone number');
+        const e164Phone = formatPhoneToE164(phone);
+        const phoneError = getPhoneErrorMessage(phone);
+        if (phoneError) {
+          throw new Error(phoneError);
         }
 
         const { data, error } = await supabase.auth.signUp({
@@ -229,12 +215,37 @@ const Auth = () => {
     }
   };
 
+  const handleResendOtp = async () => {
+    setResendingOtp(true);
+    try {
+      const e164Phone = formatPhoneToE164(phone);
+      const { error } = await supabase.auth.resend({
+        type: 'sms',
+        phone: e164Phone,
+      });
+
+      if (error) throw error;
+
+      toast.success("Code Resent! 📱", {
+        description: "A new verification code has been sent to your phone.",
+        duration: 5000,
+      });
+    } catch (error: any) {
+      console.error('Resend OTP error:', error);
+      toast.error("Resend Failed", {
+        description: error.message || "Could not resend verification code. Please try again.",
+      });
+    } finally {
+      setResendingOtp(false);
+    }
+  };
+
   const handleOtpVerification = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const e164Phone = getE164Phone(phone);
+      const e164Phone = formatPhoneToE164(phone);
       const { data, error } = await supabase.auth.verifyOtp({
         phone: e164Phone,
         token: otpCode,
@@ -255,6 +266,18 @@ const Auth = () => {
             .from('profiles')
             .update({ phone: e164Phone })
             .eq('id', data.user.id);
+        }
+        
+        // If this was a verification for existing user, try to sign in
+        if (needsPhoneVerification && password) {
+          const signInResult = await supabase.auth.signInWithPassword({
+            phone: e164Phone,
+            password,
+          });
+          
+          if (signInResult.error) {
+            throw signInResult.error;
+          }
         }
         
         navigate('/', { replace: true });
@@ -282,9 +305,10 @@ const Auth = () => {
           password,
         });
       } else {
-        const e164Phone = getE164Phone(phone);
-        if (!e164Phone || e164Phone.length < 10) {
-          throw new Error('Please enter a valid phone number');
+        const e164Phone = formatPhoneToE164(phone);
+        const phoneError = getPhoneErrorMessage(phone);
+        if (phoneError) {
+          throw new Error(phoneError);
         }
         
         signInData = await supabase.auth.signInWithPassword({
@@ -316,12 +340,23 @@ const Auth = () => {
             : "The phone number or password you entered is incorrect. Please try again.",
         });
       } else if (error.message?.includes('Email not confirmed') || error.message?.includes('Phone not confirmed')) {
-        toast.error("Verification Required", {
-          description: authMethod === 'email'
-            ? "Please check your email and click the verification link before signing in."
-            : "Please verify your phone number before signing in.",
-          duration: 8000,
-        });
+        if (authMethod === 'phone') {
+          // For phone, show OTP verification screen
+          setNeedsPhoneVerification(true);
+          setShowOtpVerification(true);
+          toast.info("Phone Verification Required", {
+            description: "Your phone number needs to be verified. We'll send you a verification code.",
+            duration: 6000,
+          });
+          
+          // Automatically resend OTP
+          handleResendOtp();
+        } else {
+          toast.error("Email Verification Required", {
+            description: "Please check your email and click the verification link before signing in.",
+            duration: 8000,
+          });
+        }
       } else if (error.message?.includes('rate limit')) {
         toast.error("Too Many Attempts", {
           description: "Please wait a few minutes before trying again.",
@@ -368,14 +403,34 @@ const Auth = () => {
                 </Button>
                 <Button 
                   type="button"
+                  variant="outline"
+                  className="w-full text-zinc-400 hover:text-zinc-300 border-zinc-700"
+                  onClick={handleResendOtp}
+                  disabled={resendingOtp}
+                >
+                  {resendingOtp ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                      Resending...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-4 h-4 mr-2" />
+                      Resend Code
+                    </>
+                  )}
+                </Button>
+                <Button 
+                  type="button"
                   variant="ghost"
                   className="w-full text-zinc-400 hover:text-zinc-300"
                   onClick={() => {
                     setShowOtpVerification(false);
                     setOtpCode('');
+                    setNeedsPhoneVerification(false);
                   }}
                 >
-                  Back to Sign Up
+                  Back to {needsPhoneVerification ? 'Sign In' : 'Sign Up'}
                 </Button>
               </form>
             </CardContent>
