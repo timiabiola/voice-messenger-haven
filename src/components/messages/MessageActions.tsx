@@ -2,15 +2,30 @@
 import { useNavigate } from 'react-router-dom';
 import type { Message } from './types';
 import { useSaveMessage } from '@/hooks/useSaveMessage';
+import { PlaybackSpeedControl } from './PlaybackSpeedControl';
+import { SkipControls } from './SkipControls';
 
 interface MessageActionsProps {
   message: Message;
   isPlaying: boolean;
   isLoading: boolean;
   onPlayPause: () => void;
+  playbackRate: number;
+  onSpeedChange: (speed: number) => void;
+  onSkipBackward: () => void;
+  onSkipForward: () => void;
 }
 
-export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: MessageActionsProps) => {
+export const MessageActions = ({ 
+  message, 
+  isPlaying, 
+  isLoading, 
+  onPlayPause,
+  playbackRate,
+  onSpeedChange,
+  onSkipBackward,
+  onSkipForward
+}: MessageActionsProps) => {
   const navigate = useNavigate();
   const { isSaved, isLoading: isSaveLoading, toggleSave } = useSaveMessage(message.id);
 
@@ -37,24 +52,49 @@ export const MessageActions = ({ message, isPlaying, isLoading, onPlayPause }: M
 
   return (
     <div className="flex flex-col gap-3 sm:gap-4">
-      {/* Primary actions row - Play and Reply */}
-      <div className="flex items-center gap-2">
-        <button
-          onClick={onPlayPause}
-          disabled={isLoading}
-          className="flex items-center justify-center px-3 py-2 sm:px-4 bg-amber-400 text-black rounded-full text-xs sm:text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex-1 sm:flex-none min-w-0"
-        >
-          <span className="text-xs sm:text-sm font-semibold">
-            {isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}
-          </span>
-        </button>
+      {/* Primary actions row - Play, Skip, Speed, and Reply */}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
+          <button
+            onClick={onPlayPause}
+            disabled={isLoading}
+            className="flex items-center justify-center px-3 py-2 sm:px-4 bg-amber-400 text-black rounded-full text-xs sm:text-sm font-medium hover:bg-amber-300 transition-colors touch-manipulation active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed min-w-[70px]"
+          >
+            <span className="text-xs sm:text-sm font-semibold">
+              {isLoading ? 'Loading...' : isPlaying ? 'Stop' : 'Play'}
+            </span>
+          </button>
+
+          <SkipControls
+            onSkipBackward={onSkipBackward}
+            onSkipForward={onSkipForward}
+            disabled={isLoading || !isPlaying}
+          />
+
+          <PlaybackSpeedControl
+            currentSpeed={playbackRate}
+            onSpeedChange={onSpeedChange}
+            disabled={isLoading}
+            className="hidden sm:flex"
+          />
+        </div>
 
         <button
           onClick={handleReply}
-          className="flex items-center justify-center px-3 py-2 sm:px-4 bg-zinc-800 text-amber-400 rounded-full text-xs sm:text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95 flex-1 sm:flex-none min-w-0"
+          className="flex items-center justify-center px-3 py-2 sm:px-4 bg-zinc-800 text-amber-400 rounded-full text-xs sm:text-sm font-medium hover:bg-zinc-700 transition-colors touch-manipulation active:scale-95 flex-1 sm:flex-none"
         >
           <span className="text-xs sm:text-sm font-semibold">Reply</span>
         </button>
+      </div>
+
+      {/* Speed control for mobile - shown as separate row */}
+      <div className="sm:hidden">
+        <PlaybackSpeedControl
+          currentSpeed={playbackRate}
+          onSpeedChange={onSpeedChange}
+          disabled={isLoading}
+          className="w-full justify-center"
+        />
       </div>
 
       {/* Secondary actions row - Save and Forward/Private */}

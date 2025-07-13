@@ -9,6 +9,7 @@ import { useAudioBlob } from './useAudioBlob';
 export const useAudioPlayback = (audio_url: string) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryTimeoutRef = useRef<number>();
   const navigate = useNavigate();
@@ -16,6 +17,24 @@ export const useAudioPlayback = (audio_url: string) => {
   const { validateAndRefreshSession } = useAuthSession();
   const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
   const { audioBlob, createBlob, clearBlob } = useAudioBlob();
+
+  // Load saved playback rate from localStorage
+  useEffect(() => {
+    const savedRate = localStorage.getItem('preferredPlaybackRate');
+    if (savedRate) {
+      const rate = parseFloat(savedRate);
+      if (!isNaN(rate) && rate >= 0.5 && rate <= 2) {
+        setPlaybackRate(rate);
+      }
+    }
+  }, []);
+
+  // Apply playback rate when audio element is ready
+  useEffect(() => {
+    if (audioRef.current && audioRef.current.readyState >= 1) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -183,12 +202,40 @@ export const useAudioPlayback = (audio_url: string) => {
     }
   };
 
+  const handleSpeedChange = (speed: number) => {
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+      setPlaybackRate(speed);
+      // Save preference to localStorage
+      localStorage.setItem('preferredPlaybackRate', speed.toString());
+    }
+  };
+
+  const handleSkipBackward = (seconds: number = 10) => {
+    if (audioRef.current) {
+      const newTime = Math.max(0, audioRef.current.currentTime - seconds);
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
+  const handleSkipForward = (seconds: number = 10) => {
+    if (audioRef.current) {
+      const duration = audioRef.current.duration || 0;
+      const newTime = Math.min(duration, audioRef.current.currentTime + seconds);
+      audioRef.current.currentTime = newTime;
+    }
+  };
+
   return {
     isPlaying,
     isLoading,
     audioRef,
     handlePlayback,
     handleAudioEnded,
-    handleAudioError
+    handleAudioError,
+    playbackRate,
+    handleSpeedChange,
+    handleSkipBackward,
+    handleSkipForward
   };
 };

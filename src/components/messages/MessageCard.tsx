@@ -14,7 +14,11 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     audioRef,
     handlePlayback,
     handleAudioEnded,
-    handleAudioError
+    handleAudioError,
+    playbackRate,
+    handleSpeedChange,
+    handleSkipBackward,
+    handleSkipForward
   } = useAudioPlayback(audioUrlWithCache);
 
   return (
@@ -57,6 +61,10 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         isPlaying={isPlaying}
         isLoading={isLoading}
         onPlayPause={handlePlayback}
+        playbackRate={playbackRate}
+        onSpeedChange={handleSpeedChange}
+        onSkipBackward={() => handleSkipBackward(10)}
+        onSkipForward={() => handleSkipForward(10)}
       />
     </div>
   );
