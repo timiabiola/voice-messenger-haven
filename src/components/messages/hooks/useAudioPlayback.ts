@@ -20,6 +20,17 @@ export const useAudioPlayback = (audio_url: string) => {
   const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
   const { audioBlob, createBlob, clearBlob } = useAudioBlob();
 
+  // Load saved playback rate from localStorage
+  useEffect(() => {
+    const savedRate = localStorage.getItem('preferredPlaybackRate');
+    if (savedRate) {
+      const rate = parseFloat(savedRate);
+      if (!isNaN(rate) && rate >= 0.5 && rate <= 2) {
+        setPlaybackRate(rate);
+      }
+    }
+  }, []);
+
   // Update current time and duration
   useEffect(() => {
     const audio = audioRef.current;
@@ -38,6 +49,13 @@ export const useAudioPlayback = (audio_url: string) => {
       audio.removeEventListener('durationchange', updateDuration);
     };
   }, []);
+
+  // Apply playback rate when audio element is ready
+  useEffect(() => {
+    if (audioRef.current && audioRef.current.readyState >= 1) {
+      audioRef.current.playbackRate = playbackRate;
+    }
+  }, [playbackRate]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -209,6 +227,8 @@ export const useAudioPlayback = (audio_url: string) => {
     if (audioRef.current) {
       audioRef.current.playbackRate = speed;
       setPlaybackRate(speed);
+      // Save preference to localStorage
+      localStorage.setItem('preferredPlaybackRate', speed.toString());
     }
   };
 
