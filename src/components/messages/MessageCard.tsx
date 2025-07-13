@@ -14,6 +14,7 @@ export const MessageCard = ({ message }: MessageCardProps) => {
   const {
     isPlaying,
     isLoading,
+    hasStarted,
     audioRef,
     handlePlayback,
     handleAudioEnded,
@@ -89,8 +90,8 @@ export const MessageCard = ({ message }: MessageCardProps) => {
           </button>
         </div>
 
-        {/* Playback controls - only show when playing */}
-        {isPlaying && (
+        {/* Playback controls - show when audio has been started */}
+        {hasStarted && (
           <PlaybackControls
             currentTime={currentTime}
             duration={duration}

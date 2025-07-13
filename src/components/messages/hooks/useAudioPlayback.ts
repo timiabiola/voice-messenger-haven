@@ -12,6 +12,7 @@ export const useAudioPlayback = (audio_url: string) => {
   const [playbackRate, setPlaybackRate] = useState(1);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryTimeoutRef = useRef<number>();
   const navigate = useNavigate();
@@ -161,12 +162,15 @@ export const useAudioPlayback = (audio_url: string) => {
         throw new Error('Audio player not initialized');
       }
 
-      if (audioRef.current.currentTime > 0) {
+      // Don't reset to 0 if already started - maintain current position
+      // Only reset if this is the first play
+      if (!hasStarted && audioRef.current.currentTime > 0) {
         audioRef.current.currentTime = 0;
       }
 
       await audioRef.current.play();
       setIsPlaying(true);
+      setHasStarted(true);
 
     } catch (error) {
       console.error('Playback error:', error);
@@ -253,6 +257,7 @@ export const useAudioPlayback = (audio_url: string) => {
   return {
     isPlaying,
     isLoading,
+    hasStarted,
     audioRef,
     handlePlayback,
     handleAudioEnded,
