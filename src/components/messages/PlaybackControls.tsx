@@ -1,6 +1,6 @@
 import * as React from 'react';
-import { SkipBack, SkipForward } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { SkipControls } from './SkipControls';
 
 interface PlaybackControlsProps {
   currentTime: number;
@@ -113,27 +113,11 @@ export const PlaybackControls = ({
       {/* Controls */}
       <div className="flex items-center justify-between gap-2">
         {/* Skip controls */}
-        <div className="flex items-center gap-0.5 sm:gap-1">
-          <button
-            onClick={onSkipBackward}
-            disabled={isLoading}
-            className="p-1.5 sm:p-2 rounded-full hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group relative"
-            title="Skip backward 10s"
-          >
-            <SkipBack className="w-4 h-4 text-zinc-400 group-hover:text-amber-400 transition-colors" />
-            <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">-10s</span>
-          </button>
-          
-          <button
-            onClick={onSkipForward}
-            disabled={isLoading || currentTime >= duration}
-            className="p-1.5 sm:p-2 rounded-full hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed group relative"
-            title="Skip forward 10s"
-          >
-            <SkipForward className="w-4 h-4 text-zinc-400 group-hover:text-amber-400 transition-colors" />
-            <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-[10px] text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity">+10s</span>
-          </button>
-        </div>
+        <SkipControls
+          onSkipBackward={onSkipBackward}
+          onSkipForward={onSkipForward}
+          disabled={isLoading}
+        />
 
         {/* Speed controls */}
         <div className="flex items-center gap-0.5 sm:gap-1 bg-zinc-800/50 rounded-full p-0.5 sm:p-1">
