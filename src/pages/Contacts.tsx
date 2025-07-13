@@ -187,10 +187,12 @@ export default function Contacts() {
       return updated.slice(0, 10); // Keep only last 10
     });
 
-    navigate("/new", {
+    navigate("/microphone", {
       state: {
-        selectedContact: {
+        selectedProfile: {
           id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
           name: getFormattedName(profile),
         },
       },
