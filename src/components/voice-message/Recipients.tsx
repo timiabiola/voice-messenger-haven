@@ -85,12 +85,21 @@ export const Recipients = ({
     }
 
     try {
-      const { data, error } = await supabase
+      // Extract IDs of already selected recipients
+      const recipientIds = recipients.map(r => r.id);
+      
+      let queryBuilder = supabase
         .from('profiles')
         .select('*')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
-        .neq('id', currentUser)
-        .limit(5);
+        .neq('id', currentUser);
+      
+      // Exclude already selected recipients if any
+      if (recipientIds.length > 0) {
+        queryBuilder = queryBuilder.not('id', 'in', `(${recipientIds.join(',')})`);
+      }
+      
+      const { data, error } = await queryBuilder.limit(5);
 
       if (error) throw error;
       setSearchResults(data || []);
@@ -108,7 +117,7 @@ export const Recipients = ({
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, currentUser]);
+  }, [searchQuery, currentUser, recipients]);
 
   const handleAddRecipient = (profile: Profile) => {
     if (!currentUser) {
