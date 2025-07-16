@@ -30,5 +30,5 @@ for file in $files; do
         fi
     fi
 done
-
+supabase projects list
 exit 0
