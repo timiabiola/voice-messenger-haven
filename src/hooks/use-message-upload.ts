@@ -169,6 +169,28 @@ export function useMessageUpload() {
     }
 
     console.log('All recipients added successfully');
+    
+    // Trigger notification edge function
+    try {
+      console.log('Triggering notification for message:', messageData.id);
+      const { data: notificationData, error: notificationError } = await supabase.functions.invoke('voice-message-notification', {
+        body: {
+          type: 'INSERT',
+          record: messageData
+        }
+      });
+      
+      if (notificationError) {
+        console.error('Notification error:', notificationError);
+        // Don't throw - notifications should not block message sending
+      } else {
+        console.log('Notification triggered successfully:', notificationData);
+      }
+    } catch (notificationError) {
+      console.error('Failed to trigger notification:', notificationError);
+      // Don't throw - notifications should not block message sending
+    }
+    
     return messageData;
     
     } catch (error) {
