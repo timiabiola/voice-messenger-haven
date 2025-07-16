@@ -111,7 +111,7 @@ export const PlaybackControls = ({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center justify-between gap-2">
+      <div className="flex items-center justify-between gap-3">
         {/* Skip controls */}
         <SkipControls
           onSkipBackward={onSkipBackward}
@@ -127,7 +127,7 @@ export const PlaybackControls = ({
               onClick={() => onSpeedChange(speed)}
               disabled={isLoading}
               className={cn(
-                "px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-medium transition-all duration-200",
+                "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200",
                 playbackRate === speed
                   ? "bg-amber-400 text-black"
                   : "text-zinc-400 hover:text-amber-400 hover:bg-zinc-800"
