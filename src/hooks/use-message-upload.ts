@@ -91,7 +91,8 @@ export function useMessageUpload() {
 
     console.log('Final audio duration:', duration, 'seconds');
     
-    const fileName = `voice_message_${Date.now()}.m4a`;
+    // Create file path with user ID to match RLS policy: recordings/USER_ID/filename
+    const fileName = `recordings/${session.user.id}/voice_message_${Date.now()}.m4a`;
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
 
     const { data: uploadData, error: uploadError } = await supabase.storage
