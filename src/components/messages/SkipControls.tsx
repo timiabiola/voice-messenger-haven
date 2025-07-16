@@ -8,78 +8,68 @@ interface SkipControlsProps {
   className?: string;
 }
 
-// Custom icon components with improved design for better readability
+// Custom icon components with maximum legibility - text-first design
 const Skip10BackIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 40 40"
+    viewBox="0 0 32 32"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Background circle for better contrast */}
-    <circle cx="20" cy="20" r="18" fill="currentColor" fillOpacity="0.05" />
-    
-    {/* Circular arrow path */}
+    {/* Simple left arrow */}
     <path
-      d="M20 8 L20 4 L14 10 L20 16 L20 12 C26 12 30 16 30 22 C30 28 26 32 20 32 C14 32 10 28 10 22"
+      d="M12 16 L6 16 M6 16 L10 12 M6 16 L10 20"
       stroke="currentColor"
-      strokeWidth="3"
+      strokeWidth="2.5"
       strokeLinecap="round"
       strokeLinejoin="round"
-      fill="none"
     />
     
-    {/* "10" text with background for better readability */}
-    <rect x="13" y="17" width="14" height="10" rx="2" fill="currentColor" fillOpacity="0.1" />
+    {/* Large "10s" text */}
     <text
-      x="20"
-      y="24"
+      x="19"
+      y="20"
       textAnchor="middle"
-      fontSize="14"
-      fontWeight="900"
+      fontSize="13"
+      fontWeight="800"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
       className="select-none"
     >
-      10
+      10s
     </text>
   </svg>
 );
 
 const Skip10ForwardIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 40 40"
+    viewBox="0 0 32 32"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Background circle for better contrast */}
-    <circle cx="20" cy="20" r="18" fill="currentColor" fillOpacity="0.05" />
-    
-    {/* Circular arrow path (mirrored) */}
-    <path
-      d="M20 8 L20 4 L26 10 L20 16 L20 12 C14 12 10 16 10 22 C10 28 14 32 20 32 C26 32 30 28 30 22"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
-    
-    {/* "10" text with background for better readability */}
-    <rect x="13" y="17" width="14" height="10" rx="2" fill="currentColor" fillOpacity="0.1" />
+    {/* Large "10s" text */}
     <text
-      x="20"
-      y="24"
+      x="13"
+      y="20"
       textAnchor="middle"
-      fontSize="14"
-      fontWeight="900"
+      fontSize="13"
+      fontWeight="800"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
       className="select-none"
     >
-      10
+      10s
     </text>
+    
+    {/* Simple right arrow */}
+    <path
+      d="M20 16 L26 16 M26 16 L22 12 M26 16 L22 20"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
   </svg>
 );
 
@@ -90,17 +80,17 @@ export function SkipControls({
   className
 }: SkipControlsProps) {
   return (
-    <div className={cn("flex items-center gap-2", className)}>
+    <div className={cn("flex items-center gap-1", className)}>
       <Button
         variant="ghost"
         size="sm"
         onClick={onSkipBackward}
         disabled={disabled}
-        className="h-12 sm:h-14 w-12 sm:w-14 p-0 group hover:bg-amber-400/10 hover:border-amber-400/30 border-2 border-zinc-800/50 transition-all duration-200 rounded-2xl hover:scale-105 active:scale-95 disabled:hover:scale-100"
+        className="h-9 w-12 p-0.5 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <Skip10BackIcon className="h-10 sm:h-12 w-10 sm:w-12 text-zinc-400 group-hover:text-amber-400 transition-colors" />
+        <Skip10BackIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
       </Button>
       
       <Button
@@ -108,11 +98,11 @@ export function SkipControls({
         size="sm"
         onClick={onSkipForward}
         disabled={disabled}
-        className="h-12 sm:h-14 w-12 sm:w-14 p-0 group hover:bg-amber-400/10 hover:border-amber-400/30 border-2 border-zinc-800/50 transition-all duration-200 rounded-2xl hover:scale-105 active:scale-95 disabled:hover:scale-100"
+        className="h-9 w-12 p-0.5 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <Skip10ForwardIcon className="h-10 sm:h-12 w-10 sm:w-12 text-zinc-400 group-hover:text-amber-400 transition-colors" />
+        <Skip10ForwardIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
       </Button>
     </div>
   );
