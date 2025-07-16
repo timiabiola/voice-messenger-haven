@@ -11,18 +11,25 @@ export function useMessageUpload() {
   const [subject, setSubject] = useState('');
 
   const uploadMessage = async (audioChunks: Blob[]) => {
-    if (audioChunks.length === 0) {
-      throw new Error('No recording to send');
-    }
+    try {
+      if (audioChunks.length === 0) {
+        throw new Error('No recording to send');
+      }
 
-    if (recipients.length === 0) {
-      throw new Error('Please select at least one recipient');
-    }
+      if (recipients.length === 0) {
+        throw new Error('Please select at least one recipient');
+      }
 
-    const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+    if (sessionError) {
+      console.error('Session error:', sessionError);
+      throw new Error('Authentication error. Please sign in again.');
+    }
     if (!session) {
       throw new Error('Please sign in to send messages');
     }
+    
+    console.log('User authenticated:', session.user.id);
 
     console.log('Starting voice message upload process...');
 
@@ -88,7 +95,7 @@ export function useMessageUpload() {
     console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('voice_messages')
+      .from('voice-recordings')
       .upload(fileName, audioBlob, {
         contentType: mimeType,
         cacheControl: '3600',
@@ -97,13 +104,18 @@ export function useMessageUpload() {
 
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
-      throw new Error('Failed to upload voice message');
+      console.error('Upload error details:', {
+        message: uploadError.message,
+        statusCode: uploadError.statusCode,
+        error: uploadError.error
+      });
+      throw new Error(`Failed to upload voice message: ${uploadError.message}`);
     }
 
     console.log('File uploaded successfully:', uploadData);
 
     const { data: { publicUrl } } = supabase.storage
-      .from('voice_messages')
+      .from('voice-recordings')
       .getPublicUrl(fileName);
 
     console.log('Got public URL:', publicUrl);
@@ -124,7 +136,13 @@ export function useMessageUpload() {
 
     if (dbError) {
       console.error('Voice message creation error:', dbError);
-      throw new Error('Failed to save voice message');
+      console.error('Database error details:', {
+        message: dbError.message,
+        code: dbError.code,
+        details: dbError.details,
+        hint: dbError.hint
+      });
+      throw new Error(`Failed to save voice message: ${dbError.message}`);
     }
 
     console.log('Voice message created:', messageData);
@@ -139,12 +157,27 @@ export function useMessageUpload() {
 
       if (recipientError) {
         console.error('Failed to add recipient:', recipient.id, recipientError);
-        throw new Error(`Failed to add recipient: ${recipient.email}`);
+        console.error('Recipient error details:', {
+          message: recipientError.message,
+          code: recipientError.code,
+          details: recipientError.details,
+          hint: recipientError.hint
+        });
+        throw new Error(`Failed to add recipient ${recipient.email}: ${recipientError.message}`);
       }
     }
 
     console.log('All recipients added successfully');
     return messageData;
+    
+    } catch (error) {
+      console.error('Upload message error:', error);
+      // Re-throw the error with more context if it's not already detailed
+      if (error instanceof Error) {
+        throw error;
+      }
+      throw new Error('An unexpected error occurred while sending the message');
+    }
   };
 
   return {
