@@ -31,13 +31,13 @@ export default function Index() {
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Error checking session:', error);
+          // Error checking session
           navigate('/auth');
           return;
         }
 
         if (!session) {
-          console.log('No active session found');
+          // No active session found
           navigate('/auth');
           return;
         }
@@ -75,7 +75,7 @@ export default function Index() {
 
         await fetchUnreadMessages();
       } catch (error) {
-        console.error('Session check error:', error);
+        // Session check error
         toast.error('Authentication error');
         navigate('/auth');
       } finally {

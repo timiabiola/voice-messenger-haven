@@ -3,6 +3,8 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { Profile } from '@/components/voice-message/Recipients';
+import { logger } from '@/utils/logger';
+import { sanitizeError } from '@/utils/error-handler';
 
 export function useMessageUpload() {
   const [isUrgent, setIsUrgent] = useState(false);
@@ -22,16 +24,16 @@ export function useMessageUpload() {
 
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
-      console.error('Session error:', sessionError);
+      logger.error('Session error:', sessionError.message);
       throw new Error('Authentication error. Please sign in again.');
     }
     if (!session) {
       throw new Error('Please sign in to send messages');
     }
     
-    console.log('User authenticated:', session.user.id);
+    logger.log('User authenticated');
 
-    console.log('Starting voice message upload process...');
+    logger.log('Starting voice message upload process...');
 
     // Create a single Blob with the correct MIME type
     const mimeType = 'audio/mp4;codecs=mp4a.40.2';
@@ -83,17 +85,17 @@ export function useMessageUpload() {
 
       duration = await durationPromise;
     } catch (error) {
-      console.error('Error calculating duration:', error);
+      logger.error('Error calculating duration:', error);
       duration = Math.ceil(audioBlob.size / 1024);
     }
 
     duration = Math.max(1, Math.min(duration, 300));
 
-    console.log('Final audio duration:', duration, 'seconds');
+    logger.log('Final audio duration:', duration, 'seconds');
     
     // Create file path with user ID to match RLS policy: recordings/USER_ID/filename
     const fileName = `recordings/${session.user.id}/voice_message_${Date.now()}.m4a`;
-    console.log('Uploading file:', fileName, 'size:', audioBlob.size, 'bytes');
+    logger.log('Uploading file with size:', audioBlob.size, 'bytes');
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice-recordings')
@@ -104,22 +106,17 @@ export function useMessageUpload() {
       });
 
     if (uploadError) {
-      console.error('Storage upload error:', uploadError);
-      console.error('Upload error details:', {
-        message: uploadError.message,
-        statusCode: uploadError.statusCode,
-        error: uploadError.error
-      });
+      logger.error('Storage upload error:', uploadError.message);
       throw new Error(`Failed to upload voice message: ${uploadError.message}`);
     }
 
-    console.log('File uploaded successfully:', uploadData);
+    logger.log('File uploaded successfully');
 
     const { data: { publicUrl } } = supabase.storage
       .from('voice-recordings')
       .getPublicUrl(fileName);
 
-    console.log('Got public URL:', publicUrl);
+    logger.log('Got public URL for uploaded file');
 
     const { data: messageData, error: dbError } = await supabase
       .from('voice_messages')
@@ -136,20 +133,14 @@ export function useMessageUpload() {
       .single();
 
     if (dbError) {
-      console.error('Voice message creation error:', dbError);
-      console.error('Database error details:', {
-        message: dbError.message,
-        code: dbError.code,
-        details: dbError.details,
-        hint: dbError.hint
-      });
+      logger.error('Voice message creation error:', dbError.message);
       throw new Error(`Failed to save voice message: ${dbError.message}`);
     }
 
-    console.log('Voice message created:', messageData);
+    logger.log('Voice message created successfully');
 
     for (const recipient of recipients) {
-      console.log('Adding recipient:', recipient.id);
+      logger.log('Adding recipient');
       const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
         message_id: messageData.id,
         recipient_id: recipient.id,
@@ -157,22 +148,16 @@ export function useMessageUpload() {
       });
 
       if (recipientError) {
-        console.error('Failed to add recipient:', recipient.id, recipientError);
-        console.error('Recipient error details:', {
-          message: recipientError.message,
-          code: recipientError.code,
-          details: recipientError.details,
-          hint: recipientError.hint
-        });
+        logger.error('Failed to add recipient:', recipientError.message);
         throw new Error(`Failed to add recipient ${recipient.email}: ${recipientError.message}`);
       }
     }
 
-    console.log('All recipients added successfully');
+    logger.log('All recipients added successfully');
     
     // Trigger notification edge function
     try {
-      console.log('Triggering notification for message:', messageData.id);
+      logger.log('Triggering notification for message');
       const { data: notificationData, error: notificationError } = await supabase.functions.invoke('voice-message-notification', {
         body: {
           type: 'INSERT',
@@ -181,25 +166,24 @@ export function useMessageUpload() {
       });
       
       if (notificationError) {
-        console.error('Notification error:', notificationError);
+        logger.error('Notification error:', notificationError);
         // Don't throw - notifications should not block message sending
       } else {
-        console.log('Notification triggered successfully:', notificationData);
+        logger.log('Notification triggered successfully');
       }
     } catch (notificationError) {
-      console.error('Failed to trigger notification:', notificationError);
+      logger.error('Failed to trigger notification:', notificationError);
       // Don't throw - notifications should not block message sending
     }
     
     return messageData;
     
     } catch (error) {
-      console.error('Upload message error:', error);
-      // Re-throw the error with more context if it's not already detailed
-      if (error instanceof Error) {
-        throw error;
-      }
-      throw new Error('An unexpected error occurred while sending the message');
+      logger.error('Upload message error:', error);
+      
+      // Sanitize error before throwing
+      const sanitized = sanitizeError(error);
+      throw new Error(sanitized.message);
     }
   };
 

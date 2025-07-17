@@ -56,17 +56,17 @@ export function useRecording() {
 
   const startRecording = async () => {
     try {
-      console.log('Requesting microphone access...');
+      // Requesting microphone access
       const stream = await requestMicrophonePermissions();
       
-      console.log('Microphone access granted, initializing MediaRecorder...');
+      // Microphone access granted
       streamRef.current = stream;
 
       const mimeType = getSupportedMimeType();
       const options = mimeType ? { mimeType } : undefined;
       
       const mediaRecorder = new MediaRecorder(stream, options);
-      console.log('MediaRecorder initialized with options:', options);
+      // MediaRecorder initialized
       
       mediaRecorderRef.current = mediaRecorder;
       
@@ -77,16 +77,12 @@ export function useRecording() {
       }
 
       mediaRecorder.ondataavailable = async (event) => {
-        console.log('ondataavailable fired - event.data:', {
-          size: event.data.size,
-          type: event.data.type,
-          timestamp: new Date().toISOString()
-        });
+        // ondataavailable fired
         
         if (event.data.size > 0) {
           audioChunksRef.current.push(event.data);
           setAudioChunks([...audioChunksRef.current]);
-          console.log('Audio chunks updated. Total chunks:', audioChunksRef.current.length, 'Total size:', audioChunksRef.current.reduce((acc, chunk) => acc + chunk.size, 0), 'bytes');
+          // Audio chunks updated
           
           const newId = await saveRecordingState(
             audioChunksRef.current,
@@ -105,11 +101,11 @@ export function useRecording() {
       };
 
       mediaRecorder.onstart = () => {
-        console.log('MediaRecorder started successfully');
+        // MediaRecorder started successfully
       };
 
       mediaRecorder.start(1000);
-      console.log('MediaRecorder.start() called with 1000ms timeslice');
+      // MediaRecorder started with timeslice
       setIsRecording(true);
       setIsPaused(false);
     } catch (error) {
@@ -120,12 +116,12 @@ export function useRecording() {
   };
 
   const stopRecording = async () => {
-    console.log('Stopping recording...');
+    // Stopping recording
     if (mediaRecorderRef.current && isRecording) {
       return new Promise<void>((resolve) => {
         if (mediaRecorderRef.current) {
           mediaRecorderRef.current.onstop = async () => {
-            console.log('MediaRecorder stopped, total chunks:', audioChunksRef.current.length);
+            // MediaRecorder stopped
             setAudioChunks([...audioChunksRef.current]);
             
             await saveRecordingState(audioChunksRef.current, 'completed', recordingTime, currentRecordingId);
@@ -139,7 +135,7 @@ export function useRecording() {
         
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => {
-            console.log('Stopping track:', track.kind);
+            // Stopping track
             track.stop();
           });
           streamRef.current = null;
@@ -148,13 +144,13 @@ export function useRecording() {
         setIsPaused(false);
         clearInterval(timerRef.current);
         setRecordingTime(0);
-        console.log('Recording stopped, tracks cleaned up');
+        // Recording stopped
       });
     }
   };
 
   const pauseRecording = async () => {
-    console.log('Pausing recording...');
+    // Pausing recording
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.pause();
       setIsPaused(true);
@@ -197,26 +193,20 @@ export function useRecording() {
   };
 
   const createAudioFromChunks = () => {
-    console.log('=== createAudioFromChunks called ===');
-    console.log('audioChunksRef.current.length:', audioChunksRef.current.length);
+    // Creating audio from chunks
     
     if (audioChunksRef.current.length === 0) {
       console.error('No audio chunks available for blob creation');
       return null;
     }
     
-    audioChunksRef.current.forEach((chunk, index) => {
-      console.log(`Chunk ${index}: size=${chunk.size}, type="${chunk.type}"`);
-    });
+    // Processing audio chunks
     
     const mimeType = audioChunksRef.current[0].type || getSupportedMimeType();
-    console.log('Creating audio blob with MIME type:', mimeType, 'chunks:', audioChunksRef.current.length);
+    // Creating audio blob
     
     const blob = new Blob(audioChunksRef.current, { type: mimeType });
-    console.log('Created blob:', {
-      size: blob.size,
-      type: blob.type
-    });
+    // Blob created successfully
     
     return blob;
   };

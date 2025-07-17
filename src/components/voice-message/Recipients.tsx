@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate } from 'react-router-dom';
 import { formatNameWithInitial } from '@/lib/utils';
+import { logger } from '@/utils/logger';
 
 export interface Profile {
   id: string;
@@ -42,14 +43,14 @@ export const Recipients = ({
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (error) {
-          console.error('Auth error:', error);
+          logger.error('Auth error:', error.message);
           toast.error('Authentication error. Please sign in again.');
           navigate('/auth');
           return;
         }
 
         if (!session) {
-          console.log('No active session found');
+          logger.log('No active session found');
           navigate('/auth');
           return;
         }
@@ -69,7 +70,7 @@ export const Recipients = ({
           subscription.unsubscribe();
         };
       } catch (error) {
-        console.error('Error checking auth status:', error);
+        logger.error('Error checking auth status:', error);
         toast.error('Error checking authentication status');
         navigate('/auth');
       }
@@ -104,7 +105,7 @@ export const Recipients = ({
       if (error) throw error;
       setSearchResults(data || []);
     } catch (error) {
-      console.error('Error searching users:', error);
+      logger.error('Error searching users:', error);
       toast.error('Failed to search users');
     }
   };

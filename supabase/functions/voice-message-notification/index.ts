@@ -2,15 +2,38 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 import { format, toZonedTime } from "https://esm.sh/date-fns-tz@2"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+// Configure CORS based on environment
+const allowedOrigins = Deno.env.get('ALLOWED_ORIGINS')?.split(',') || [
+  'http://localhost:8080',
+  'http://localhost:5173',
+  'https://voice-messenger-haven.vercel.app'
+];
+
+const corsHeaders = (origin: string | null) => {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+  };
+  
+  // Check if origin is allowed
+  if (origin && allowedOrigins.includes(origin)) {
+    headers['Access-Control-Allow-Origin'] = origin;
+  } else if (!origin) {
+    // Allow requests with no origin (e.g., from Postman or server-side)
+    headers['Access-Control-Allow-Origin'] = allowedOrigins[0];
+  }
+  
+  return headers;
+};
 
 serve(async (req) => {
-  // Handle CORS
+  const origin = req.headers.get('origin');
+  const headers = corsHeaders(origin);
+  
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers })
   }
 
   try {
@@ -19,7 +42,7 @@ serve(async (req) => {
     // Only process INSERT events
     if (type !== 'INSERT') {
       return new Response(JSON.stringify({ message: 'Not an insert event' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { ...headers, 'Content-Type': 'application/json' },
         status: 200,
       })
     }
@@ -43,7 +66,7 @@ serve(async (req) => {
       throw recipientsError
     }
 
-    console.log(`Found ${recipients?.length || 0} recipients`)
+    // Found recipients
 
     for (const recipient of recipients || []) {
       try {
@@ -60,13 +83,13 @@ serve(async (req) => {
         }
 
         if (!profile || profile.notification_preference === 'none') {
-          console.log(`Skipping notification for user ${recipient.recipient_id} - preference is none`)
+          // Skipping notification - preference is none
           continue
         }
 
         // Validate contact info based on preference
         if ((profile.notification_preference === 'sms' || profile.notification_preference === 'both') && !profile.phone) {
-          console.warn(`User ${recipient.recipient_id} prefers SMS but has no phone number`)
+          // User prefers SMS but has no phone number
           if (profile.notification_preference === 'sms' && profile.email) {
             // Fallback to email if SMS is preferred but no phone
             profile.notification_preference = 'email'
@@ -76,7 +99,7 @@ serve(async (req) => {
         }
 
         if ((profile.notification_preference === 'email' || profile.notification_preference === 'both') && !profile.email) {
-          console.warn(`User ${recipient.recipient_id} prefers email but has no email address`)
+          // User prefers email but has no email address
           if (profile.notification_preference === 'email') {
             continue // Skip if no email available
           }
@@ -164,7 +187,7 @@ serve(async (req) => {
         }
 
       } catch (recipientError) {
-        console.error(`Error processing recipient ${recipient.recipient_id}:`, recipientError)
+        // Error processing recipient
         
         // Log failed attempt
         await supabaseClient
@@ -181,13 +204,13 @@ serve(async (req) => {
     }
 
     return new Response(JSON.stringify({ success: true, processed: recipients?.length || 0 }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...headers, 'Content-Type': 'application/json' },
       status: 200,
     })
   } catch (error) {
     console.error('Edge function error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...headers, 'Content-Type': 'application/json' },
       status: 400,
     })
   }

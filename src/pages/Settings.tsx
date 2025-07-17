@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import type { NotificationPreference } from '@/types/notifications';
+import { logger } from '@/utils/logger';
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -43,10 +44,10 @@ export default function Settings() {
       });
 
       if (response.data?.success) {
-        console.log('Phone synced to auth:', response.data);
+        logger.log('Phone synced to auth');
       }
     } catch (error) {
-      console.error('Error syncing phone to auth:', error);
+      logger.error('Error syncing phone to auth:', error);
     }
   };
 
@@ -67,7 +68,7 @@ export default function Settings() {
 
       if (error && error.code === 'PGRST116') {
         // Profile doesn't exist, create it
-        console.log('Profile not found, creating new profile');
+        logger.log('Profile not found, creating new profile');
         const { data: newProfile, error: createError } = await supabase
           .from('profiles')
           .insert({
@@ -83,7 +84,7 @@ export default function Settings() {
           .single();
 
         if (createError) {
-          console.error('Error creating profile:', createError);
+          logger.error('Error creating profile:', createError.message);
           throw createError;
         }
 
@@ -110,7 +111,7 @@ export default function Settings() {
         }
       }
     } catch (error) {
-      console.error('Error loading profile:', error);
+      logger.error('Error loading profile:', error);
       toast.error('Failed to load profile settings');
     } finally {
       setLoading(false);
@@ -153,7 +154,7 @@ export default function Settings() {
         });
 
         if (authError) {
-          console.error('Error updating auth phone:', authError);
+          logger.error('Error updating auth phone:', authError.message);
           // Don't throw here, continue with profile update
         }
       }
@@ -174,13 +175,13 @@ export default function Settings() {
         .eq('id', user.id);
 
       if (error) {
-        console.error('Supabase update error:', error);
+        logger.error('Supabase update error:', error.message);
         throw error;
       }
 
       toast.success('Settings saved successfully');
     } catch (error: any) {
-      console.error('Error saving settings:', error);
+      logger.error('Error saving settings:', error);
       // Show more specific error message
       if (error?.message?.includes('new row violates row-level security policy')) {
         toast.error('Permission denied. Please refresh the page and try again.');

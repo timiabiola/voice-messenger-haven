@@ -11,6 +11,9 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Phone, Mail, RefreshCw } from 'lucide-react';
 import { formatPhoneForDisplay, formatPhoneToE164, isValidPhoneNumber, getPhoneErrorMessage } from '@/utils/phone';
+import { logger } from '@/utils/logger';
+import { validatePassword, getPasswordRequirementsText, getPasswordStrength } from '@/utils/password-validation';
+import { rateLimiter } from '@/utils/rate-limiter';
 
 const Auth = () => {
   const [email, setEmail] = useState('');
@@ -40,7 +43,7 @@ const Auth = () => {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
+      logger.log('Auth state changed:', event);
       if (session) {
         navigate('/', { replace: true });
       }
@@ -61,10 +64,26 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
+    // Rate limiting check
+    const identifier = authMethod === 'email' ? email : phone;
+    const limitCheck = rateLimiter.checkLimit(identifier, 'signup');
+    
+    if (!limitCheck.allowed) {
+      const blockedUntil = limitCheck.blockedUntil;
+      toast.error("Too Many Attempts", {
+        description: blockedUntil 
+          ? `Please try again after ${blockedUntil.toLocaleTimeString()}`
+          : "Please wait before trying again.",
+      });
+      setLoading(false);
+      return;
+    }
+    
     // Client-side password validation
-    if (password.length < 6) {
-      toast.error("Password Too Short", {
-        description: "Password must be at least 6 characters long.",
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.isValid) {
+      toast.error("Password Requirements Not Met", {
+        description: passwordValidation.errors[0], // Show first error
       });
       setLoading(false);
       return;
@@ -85,13 +104,13 @@ const Auth = () => {
           },
         });
 
-        console.log('Signup response:', { data, error });
+        logger.log('Email signup response');
 
         if (error) throw error;
 
         if (data.user && !data.session) {
           // User created but email not confirmed
-          console.log('User created, email confirmation required');
+          logger.log('User created, email confirmation required');
           toast.success("Verify Your Email 📧", {
             description: "We've sent a verification link to your email. Please click it to activate your account. The email may take a few minutes to arrive.",
             duration: 10000, // Show for 10 seconds since it's important
@@ -104,15 +123,17 @@ const Auth = () => {
           setLastName('');
         } else if (data.user && data.session) {
           // User created and auto-signed in (if email confirmation is disabled)
-          console.log('User created and auto-signed in');
+          logger.log('User created and auto-signed in');
           toast.success("Welcome! 🎉", {
             description: "Your account has been created successfully.",
             duration: 5000,
           });
+          // Reset rate limit on successful signup
+          rateLimiter.reset(identifier, 'signup');
           navigate('/', { replace: true });
         } else if (data.user) {
           // Fallback case - user created but unclear session state
-          console.log('User created with unclear session state');
+          logger.log('User created with unclear session state');
           toast.success("Account Created! 📧", {
             description: "Please check your email to verify your account.",
             duration: 8000,
@@ -144,7 +165,7 @@ const Auth = () => {
           },
         });
 
-        console.log('Phone signup response:', { data, error });
+        logger.log('Phone signup initiated');
 
         if (error) throw error;
 
@@ -158,10 +179,7 @@ const Auth = () => {
         }
       }
     } catch (error: any) {
-      console.error('Signup error:', error);
-      console.log('Error message:', error.message);
-      console.log('Error code:', error.code);
-      console.log('Full error object:', JSON.stringify(error, null, 2));
+      logger.error('Signup error:', error.message);
       
       // Enhanced error handling with specific messages
       if (
@@ -195,7 +213,7 @@ const Auth = () => {
         (error.message?.toLowerCase().includes('password') && error.message?.toLowerCase().includes('characters'))
       ) {
         toast.error("Password Requirements", {
-          description: "Password must be at least 6 characters long.",
+          description: getPasswordRequirementsText(),
         });
       } else if (error.message?.toLowerCase().includes('email') && error.message?.toLowerCase().includes('invalid')) {
         toast.error("Invalid Email", {
@@ -231,7 +249,7 @@ const Auth = () => {
         duration: 5000,
       });
     } catch (error: any) {
-      console.error('Resend OTP error:', error);
+      logger.error('Resend OTP error:', error.message);
       toast.error("Resend Failed", {
         description: error.message || "Could not resend verification code. Please try again.",
       });
@@ -283,7 +301,7 @@ const Auth = () => {
         navigate('/', { replace: true });
       }
     } catch (error: any) {
-      console.error('OTP verification error:', error);
+      logger.error('OTP verification error:', error.message);
       toast.error("Verification Failed", {
         description: error.message || "Invalid verification code. Please try again.",
       });
@@ -295,6 +313,21 @@ const Auth = () => {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    
+    // Rate limiting check
+    const identifier = authMethod === 'email' ? email : phone;
+    const limitCheck = rateLimiter.checkLimit(identifier, 'signin');
+    
+    if (!limitCheck.allowed) {
+      const blockedUntil = limitCheck.blockedUntil;
+      toast.error("Too Many Login Attempts", {
+        description: blockedUntil 
+          ? `Account temporarily locked. Try again after ${blockedUntil.toLocaleTimeString()}`
+          : "Please wait before trying again.",
+      });
+      setLoading(false);
+      return;
+    }
     
     try {
       let signInData;
@@ -322,15 +355,17 @@ const Auth = () => {
       if (error) throw error;
 
       if (data.session) {
-        console.log('Successfully signed in:', data.session);
+        logger.log('Successfully signed in');
         toast.success("Welcome back! 👋", {
           description: "You've successfully signed in.",
           duration: 3000,
         });
+        // Reset rate limit on successful signin
+        rateLimiter.reset(identifier, 'signin');
         navigate('/', { replace: true });
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      logger.error('Login error:', error.message);
       
       // Enhanced error handling for sign in
       if (error.message?.includes('Invalid login credentials') || error.message?.includes('invalid')) {
@@ -503,15 +538,42 @@ const Auth = () => {
                       />
                     )}
                     
-                    <Input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-                    />
+                    <div className="space-y-2">
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                      />
+                      {password && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full transition-all ${
+                                  getPasswordStrength(password) === 'weak' ? 'w-1/3 bg-red-500' :
+                                  getPasswordStrength(password) === 'medium' ? 'w-2/3 bg-yellow-500' :
+                                  'w-full bg-green-500'
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-xs ${
+                              getPasswordStrength(password) === 'weak' ? 'text-red-500' :
+                              getPasswordStrength(password) === 'medium' ? 'text-yellow-500' :
+                              'text-green-500'
+                            }`}>
+                              {getPasswordStrength(password)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-500">
+                            {getPasswordRequirementsText()}
+                          </p>
+                        </>
+                      )}
+                    </div>
                     <Button 
                       type="submit" 
                       className="w-full bg-amber-400 text-black hover:bg-amber-300" 
@@ -583,15 +645,42 @@ const Auth = () => {
                       />
                     )}
                     
-                    <Input
-                      type="password"
-                      placeholder="Password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
-                    />
+                    <div className="space-y-2">
+                      <Input
+                        type="password"
+                        placeholder="Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        minLength={8}
+                        className="bg-zinc-800 border-zinc-700 text-white placeholder:text-zinc-500"
+                      />
+                      {password && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                              <div 
+                                className={`h-full transition-all ${
+                                  getPasswordStrength(password) === 'weak' ? 'w-1/3 bg-red-500' :
+                                  getPasswordStrength(password) === 'medium' ? 'w-2/3 bg-yellow-500' :
+                                  'w-full bg-green-500'
+                                }`}
+                              />
+                            </div>
+                            <span className={`text-xs ${
+                              getPasswordStrength(password) === 'weak' ? 'text-red-500' :
+                              getPasswordStrength(password) === 'medium' ? 'text-yellow-500' :
+                              'text-green-500'
+                            }`}>
+                              {getPasswordStrength(password)}
+                            </span>
+                          </div>
+                          <p className="text-xs text-zinc-500">
+                            {getPasswordRequirementsText()}
+                          </p>
+                        </>
+                      )}
+                    </div>
                     <Button 
                       type="submit" 
                       className="w-full bg-amber-400 text-black hover:bg-amber-300" 

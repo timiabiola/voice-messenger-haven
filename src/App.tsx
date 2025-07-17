@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import ErrorBoundary from '@/components/ErrorBoundary';
 import Index from '@/pages/Index';
 import Auth from '@/pages/Auth';
 import Inbox from '@/pages/Inbox';
@@ -32,9 +33,10 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <Routes>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/inbox" element={<Inbox />} />
@@ -48,14 +50,20 @@ function App() {
           <Route path="/new" element={<New />} />
           <Route path="/view-mode" element={<ViewMode />} />
           <Route path="/ai-assistant" element={<AIAssistant />} />
-          <Route path="/voice-debug" element={<VoiceDebug />} />
           <Route path="/settings" element={<Settings />} />
-          <Route path="/auth-debug" element={<AuthDebug />} />
+          {/* Debug routes only available in development */}
+          {import.meta.env.DEV && (
+            <>
+              <Route path="/voice-debug" element={<VoiceDebug />} />
+              <Route path="/auth-debug" element={<AuthDebug />} />
+            </>
+          )}
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
       </BrowserRouter>
     </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

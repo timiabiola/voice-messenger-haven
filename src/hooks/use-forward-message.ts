@@ -85,7 +85,7 @@ export const useForwardMessage = () => {
       const preambleAudioBuffer = await audioContext.current.decodeAudioData(preambleArrayBuffer);
 
       // Fetch and decode original message silently
-      console.log('Fetching original message:', originalMessage.audio_url);
+      // Fetching original message
       const originalAudioResponse = await fetch(originalMessage.audio_url);
       if (!originalAudioResponse.ok) {
         throw new Error('Failed to fetch original message audio');
@@ -95,7 +95,7 @@ export const useForwardMessage = () => {
       const originalAudioBuffer = await audioContext.current.decodeAudioData(originalArrayBuffer);
 
       // Combine audio buffers without playing them
-      console.log('Combining audio buffers');
+      // Combining audio buffers
       const combinedBuffer = await combineAudioBuffers(
         audioContext.current,
         preambleAudioBuffer,
@@ -111,7 +111,7 @@ export const useForwardMessage = () => {
 
       // Record final audio
       const finalBlob = await recordAudioBuffer(renderedBuffer);
-      console.log('Final combined blob size:', finalBlob.size);
+      // Final combined blob created
 
       // Upload the final recording
       await messageUpload.uploadMessage([finalBlob]);

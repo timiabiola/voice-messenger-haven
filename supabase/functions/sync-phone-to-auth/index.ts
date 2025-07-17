@@ -71,7 +71,7 @@ serve(async (req) => {
     )
 
     if (error) {
-      console.error('Error updating auth user:', error)
+      // Error updating auth user
       return new Response(
         JSON.stringify({ error: 'Failed to update phone in auth' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

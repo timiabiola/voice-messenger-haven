@@ -89,7 +89,7 @@ export const useAudioPlayback = (audio_url: string) => {
       });
 
       if (response.status === 401 || response.status === 403) {
-        console.error('Auth error when fetching audio:', response.status);
+        // Auth error when fetching audio
         toast.error('Authentication error. Please sign in again.');
         navigate('/auth');
         return;
