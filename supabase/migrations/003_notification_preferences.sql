@@ -1,8 +1,7 @@
 -- Add notification preferences to profiles table
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS 
-  notification_preference TEXT DEFAULT 'sms' CHECK (notification_preference IN ('sms', 'email', 'both', 'none')),
-  sms_notifications_enabled BOOLEAN DEFAULT true,
-  email_notifications_enabled BOOLEAN DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS notification_preference TEXT DEFAULT 'sms' CHECK (notification_preference IN ('sms', 'email', 'both', 'none'));
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS sms_notifications_enabled BOOLEAN DEFAULT true;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS email_notifications_enabled BOOLEAN DEFAULT true;
 
 -- Create notification log table
 CREATE TABLE IF NOT EXISTS notification_logs (
