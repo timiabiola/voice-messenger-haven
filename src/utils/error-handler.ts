@@ -97,9 +97,9 @@ export function sanitizeError(error: any): SanitizedError {
     }
   }
   
-  // For unknown errors, provide a generic message
+  // TEMPORARY: Show actual error for debugging
   return {
-    message: 'Something went wrong. Please try again.',
+    message: `DEBUG: ${errorMessage}`, // Show actual error temporarily
     code: error?.code || 'UNKNOWN_ERROR',
     isRetryable: isRetryableError(error),
     originalError: error,
