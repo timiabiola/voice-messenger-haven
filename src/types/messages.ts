@@ -13,4 +13,8 @@ export interface VoiceMessage {
   };
   is_urgent: boolean;
   is_private: boolean;
+  parent_message_id?: string;
+  thread_id?: string;
+  replies?: VoiceMessage[];
+  depth?: number;
 }

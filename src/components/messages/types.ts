@@ -13,6 +13,8 @@ export interface Message {
     last_name: string | null;
     email: string;
   };
+  thread_id?: string;
+  parent_message_id?: string;
 }
 
 export interface MessageCardProps {

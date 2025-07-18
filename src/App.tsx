@@ -20,6 +20,7 @@ import ForwardMessage from '@/pages/ForwardMessage';
 import VoiceDebug from '@/pages/VoiceDebug';
 import Settings from '@/pages/Settings';
 import AuthDebug from '@/pages/AuthDebug';
+import MessageThread from '@/pages/MessageThread';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -40,6 +41,7 @@ function App() {
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/inbox" element={<Inbox />} />
+          <Route path="/thread/:threadId" element={<MessageThread />} />
           <Route path="/contacts" element={<Contacts />} />
           <Route path="/microphone" element={<Microphone />} />
           <Route path="/forward" element={<ForwardMessage />} />

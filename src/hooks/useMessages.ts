@@ -36,6 +36,8 @@ export const useMessages = () => {
           created_at,
           is_urgent,
           is_private,
+          parent_message_id,
+          thread_id,
           sender:profiles (
             id,
             first_name,
@@ -44,6 +46,7 @@ export const useMessages = () => {
           )
         `)
         .in('id', recipientData.map(r => r.voice_message_id))
+        .is('parent_message_id', null) // Only get root messages
         .order('created_at', { ascending: false });
 
       if (messageError) throw messageError;

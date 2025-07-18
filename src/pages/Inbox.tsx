@@ -5,6 +5,8 @@ import AppLayout from '@/components/AppLayout';
 import { MessageCard } from '@/components/messages/MessageCard';
 import { useMessages } from '@/hooks/useMessages';
 import { formatNameWithInitial } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { MessageCircle } from 'lucide-react';
 
 const Inbox = () => {
   const { messages, loading } = useMessages();
