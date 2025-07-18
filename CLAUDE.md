@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 IMPORTANT: Shadcn Components
+**Always use the MCP server when working with shadcn components. For detailed usage rules, see `shad-cn.mdc`.**
+
 ## Development Commands
 
 - `npm run dev` - Start development server on port 8080

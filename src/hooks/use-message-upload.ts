@@ -13,6 +13,9 @@ export function useMessageUpload() {
   const [subject, setSubject] = useState('');
 
   const uploadMessage = async (audioChunks: Blob[]) => {
+    // DEBUG: Start of upload process
+    logger.log('DEBUG: Starting uploadMessage with', audioChunks.length, 'chunks');
+    
     try {
       if (audioChunks.length === 0) {
         throw new Error('No recording to send');
@@ -22,6 +25,8 @@ export function useMessageUpload() {
         throw new Error('Please select at least one recipient');
       }
 
+      // DEBUG: Check authentication
+      logger.log('DEBUG: Checking authentication...');
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     if (sessionError) {
       logger.error('Session error:', sessionError.message);
@@ -96,7 +101,11 @@ export function useMessageUpload() {
     // Create file path with user ID to match RLS policy: recordings/USER_ID/filename
     const fileName = `recordings/${session.user.id}/voice_message_${Date.now()}.m4a`;
     logger.log('Uploading file with size:', audioBlob.size, 'bytes');
-
+    
+    // DEBUG: Storage upload
+    logger.log('DEBUG: Starting storage upload to bucket "voice-recordings"');
+    logger.log('DEBUG: File path:', fileName);
+    
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('voice-recordings')
       .upload(fileName, audioBlob, {
@@ -107,6 +116,7 @@ export function useMessageUpload() {
 
     if (uploadError) {
       logger.error('Storage upload error:', uploadError.message);
+      logger.error('DEBUG: Full upload error:', uploadError);
       throw new Error(`Failed to upload voice message: ${uploadError.message}`);
     }
 
@@ -117,6 +127,18 @@ export function useMessageUpload() {
       .getPublicUrl(fileName);
 
     logger.log('Got public URL for uploaded file');
+    
+    // DEBUG: Database insert
+    logger.log('DEBUG: Inserting voice message into database');
+    logger.log('DEBUG: Message data:', {
+      title: subject || 'Voice Message',
+      subject,
+      audio_url: publicUrl,
+      duration: duration,
+      is_urgent: isUrgent,
+      is_private: isPrivate,
+      sender_id: session.user.id
+    });
 
     const { data: messageData, error: dbError } = await supabase
       .from('voice_messages')
@@ -134,6 +156,9 @@ export function useMessageUpload() {
 
     if (dbError) {
       logger.error('Voice message creation error:', dbError.message);
+      logger.error('DEBUG: Full database error:', dbError);
+      logger.error('DEBUG: Error code:', dbError.code);
+      logger.error('DEBUG: Error details:', dbError.details);
       throw new Error(`Failed to save voice message: ${dbError.message}`);
     }
 
@@ -141,6 +166,14 @@ export function useMessageUpload() {
 
     for (const recipient of recipients) {
       logger.log('Adding recipient');
+      // DEBUG: RPC call
+      logger.log('DEBUG: Calling safe_recipient_insert RPC');
+      logger.log('DEBUG: RPC params:', {
+        message_id: messageData.id,
+        recipient_id: recipient.id,
+        sender_id: session.user.id
+      });
+      
       const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
         message_id: messageData.id,
         recipient_id: recipient.id,
@@ -149,6 +182,9 @@ export function useMessageUpload() {
 
       if (recipientError) {
         logger.error('Failed to add recipient:', recipientError.message);
+        logger.error('DEBUG: Full RPC error:', recipientError);
+        logger.error('DEBUG: RPC error code:', recipientError.code);
+        logger.error('DEBUG: RPC error details:', recipientError.details);
         throw new Error(`Failed to add recipient ${recipient.email}: ${recipientError.message}`);
       }
     }
@@ -180,6 +216,12 @@ export function useMessageUpload() {
     
     } catch (error) {
       logger.error('Upload message error:', error);
+      
+      // DEBUG: Log the actual error before sanitization
+      logger.error('DEBUG: ACTUAL ERROR BEFORE SANITIZATION:');
+      logger.error('DEBUG: Error type:', typeof error);
+      logger.error('DEBUG: Error message:', error instanceof Error ? error.message : 'Not an Error instance');
+      logger.error('DEBUG: Full error object:', error);
       
       // Sanitize error before throwing
       const sanitized = sanitizeError(error);

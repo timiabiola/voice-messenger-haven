@@ -1,5 +1,8 @@
 # Welcome to your Lovable project
 
+## 🚨 IMPORTANT: Shadcn Components
+**When working with shadcn/ui components, always use the MCP server. See `shad-cn.mdc` for detailed usage rules.**
+
 ## Project info
 
 **URL**: https://lovable.dev/projects/d857122a-b4c6-4642-89a5-9d375bcc835e

@@ -1,5 +1,8 @@
 # Voice Messenger Haven - Planning Document
 
+## 🚨 IMPORTANT: Shadcn Components
+**Always use the MCP server when working with shadcn components during planning and implementation. See `shad-cn.mdc` for detailed usage rules.**
+
 ## Vision
 
 Voice Messenger Haven is a modern web application that reimagines voice communication by providing a seamless, intuitive platform for recording, sending, and managing voice messages. The app bridges the gap between traditional phone calls and text messaging, offering the personal touch of voice with the convenience of asynchronous communication.
