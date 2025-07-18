@@ -1,5 +1,6 @@
 -- Drop the existing function with incorrect parameter names
-DROP FUNCTION IF EXISTS safe_recipient_insert(UUID, UUID, UUID);
+-- Note: We need to specify the exact parameter names that were used
+DROP FUNCTION IF EXISTS safe_recipient_insert(p_message_id UUID, p_recipient_id UUID, p_sender_id UUID);
 
 -- Recreate the safe_recipient_insert function with correct parameter names
 -- The parameter names must match what the JavaScript RPC call sends
