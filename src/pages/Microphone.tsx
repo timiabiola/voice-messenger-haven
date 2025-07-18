@@ -7,7 +7,6 @@ import { MessageOptions } from '@/components/voice-message/MessageOptions';
 import { RecordingControls } from '@/components/voice-message/RecordingControls';
 import { useRecording } from '@/hooks/use-recording';
 import { useMessageUpload } from '@/hooks/use-message-upload';
-import { runMessageUploadDiagnostics } from '@/utils/debug-message-upload'; // TEMPORARY
 
 const HEADER_HEIGHT = 64;
 
@@ -86,14 +85,6 @@ const Microphone = () => {
       </div>
 
       <div className="flex-1 flex flex-col items-center justify-center w-full px-4 pb-24 sm:pb-4">
-        {/* TEMPORARY DEBUG BUTTON */}
-        <button
-          onClick={() => runMessageUploadDiagnostics()}
-          className="mb-4 px-4 py-2 bg-yellow-500 text-black rounded hover:bg-yellow-600"
-        >
-          Run Diagnostics (DEBUG)
-        </button>
-        
         <div className="w-full max-w-md mx-auto space-y-8">
           <Recipients 
             recipients={recipients}

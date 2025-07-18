@@ -18,7 +18,8 @@ The application was getting a generic error when trying to send messages because
 ### 2. Run the Migrations in Order
    - First run: `supabase/migrations/20250119_add_safe_recipient_insert_function.sql`
    - Then run: `supabase/migrations/20250119_fix_safe_recipient_insert_parameters.sql`
-   - Execute each SQL query
+   - Finally run: `supabase/migrations/20250119_fix_voice_messages_recursion.sql`
+   - Execute each SQL query in order
 
 ### 3. What These Migrations Do:
    - **First migration creates the `safe_recipient_insert` function**: A secure RPC function that allows message senders to add recipients
@@ -26,6 +27,7 @@ The application was getting a generic error when trying to send messages because
    - **Adds UPDATE policy**: Allows users to update their own voice messages  
    - **Adds DELETE policy**: Allows users to delete their own voice messages
    - **Second migration fixes parameter names**: Updates the function to use parameter names that match the JavaScript RPC call
+   - **Third migration fixes infinite recursion**: Drops all existing policies and recreates them without circular references
    - **Ensures RLS is enabled**: Makes sure Row Level Security is active on the voice_messages table
 
 ### 4. Verify the Fix

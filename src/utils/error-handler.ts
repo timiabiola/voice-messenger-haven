@@ -52,6 +52,7 @@ const ERROR_MAPPINGS: Record<string, string> = {
   // Generic errors
   'Internal server error': 'Something went wrong. Please try again later.',
   'Service unavailable': 'Service is temporarily unavailable. Please try again later.',
+  'infinite recursion detected': 'Database configuration error. Please contact support.',
 };
 
 export interface SanitizedError {
@@ -97,9 +98,9 @@ export function sanitizeError(error: any): SanitizedError {
     }
   }
   
-  // TEMPORARY: Show actual error for debugging
+  // For unknown errors, provide a generic message
   return {
-    message: `DEBUG: ${errorMessage}`, // Show actual error temporarily
+    message: 'Something went wrong. Please try again.',
     code: error?.code || 'UNKNOWN_ERROR',
     isRetryable: isRetryableError(error),
     originalError: error,
