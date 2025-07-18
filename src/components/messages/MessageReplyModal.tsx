@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Send, Mic, Square } from 'lucide-react';
-import { useRecording } from '@/hooks/useRecording';
+import { useRecording } from '@/hooks/use-recording';
 import { useMessageUpload } from '@/hooks/use-message-upload';
 import { useToast } from '@/components/ui/use-toast';
 import { VoiceMessage } from '@/types/messages';
@@ -28,9 +28,10 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
   const [subject, setSubject] = useState('');
   const [isUrgent, setIsUrgent] = useState(false);
   const [isPrivate, setIsPrivate] = useState(parentMessage.is_private);
+  const [isUploading, setIsUploading] = useState(false);
   
-  const { isRecording, startRecording, stopRecording, audioBlob } = useRecording();
-  const { uploadMessage, isUploading } = useMessageUpload();
+  const { isRecording, startRecording, stopRecording, audioChunks, createAudioFromChunks } = useRecording();
+  const { uploadMessage } = useMessageUpload();
   const { toast } = useToast();
 
   const handleRecord = async () => {
@@ -42,7 +43,8 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
   };
 
   const handleSendReply = async () => {
-    if (!audioBlob) {
+    const audioBlob = createAudioFromChunks();
+    if (!audioBlob || audioChunks.length === 0) {
       toast({
         title: "No recording",
         description: "Please record a message first",
@@ -52,7 +54,8 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
     }
 
     try {
-      const audioUrl = await uploadMessage(audioBlob);
+      setIsUploading(true);
+      const audioUrl = await uploadMessage(audioChunks);
       
       // The parent component will handle the actual reply creation
       await onReplySuccess({
@@ -72,6 +75,8 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
         description: "Failed to send reply",
         variant: "destructive"
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -146,7 +151,7 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
               </Button>
             </div>
 
-            {audioBlob && !isRecording && (
+            {audioChunks.length > 0 && !isRecording && (
               <div className="text-sm text-muted-foreground">
                 Recording ready to send
               </div>
@@ -165,7 +170,7 @@ export const MessageReplyModal: React.FC<MessageReplyModalProps> = ({
             </Button>
             <Button
               onClick={handleSendReply}
-              disabled={!audioBlob || isUploading}
+              disabled={audioChunks.length === 0 || isUploading}
             >
               <Send className="h-4 w-4 mr-2" />
               {isUploading ? 'Sending...' : 'Send Reply'}
