@@ -1,14 +1,22 @@
-import { useState } from 'react';
-import { useSession } from '@/hooks/use-session';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { logger } from '@/utils/logger';
+import type { Session } from '@supabase/supabase-js';
 
 export default function TestMessageUpload() {
-  const session = useSession();
+  const [session, setSession] = useState<Session | null>(null);
   const [results, setResults] = useState<string[]>([]);
   const [messageId, setMessageId] = useState<string>('');
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+    };
+    checkSession();
+  }, []);
 
   const addResult = (result: string) => {
     setResults(prev => [...prev, result]);
