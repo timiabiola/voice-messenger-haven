@@ -3,7 +3,8 @@
  * In production, all logs are disabled to prevent sensitive data exposure
  */
 
-const isDevelopment = import.meta.env.DEV;
+// Temporarily enable debugging to troubleshoot message sending issue
+const isDevelopment = true; // import.meta.env.DEV;
 
 export const logger = {
   log: (...args: any[]) => {

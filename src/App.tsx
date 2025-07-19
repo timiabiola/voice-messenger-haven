@@ -21,6 +21,7 @@ import VoiceDebug from '@/pages/VoiceDebug';
 import Settings from '@/pages/Settings';
 import AuthDebug from '@/pages/AuthDebug';
 import MessageThread from '@/pages/MessageThread';
+import TestMessageUpload from '@/pages/TestMessageUpload';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -58,6 +59,7 @@ function App() {
             <>
               <Route path="/voice-debug" element={<VoiceDebug />} />
               <Route path="/auth-debug" element={<AuthDebug />} />
+              <Route path="/test-message-upload" element={<TestMessageUpload />} />
             </>
           )}
           <Route path="*" element={<NotFound />} />

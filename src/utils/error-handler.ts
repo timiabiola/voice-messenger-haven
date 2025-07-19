@@ -78,8 +78,9 @@ export function sanitizeError(error: any): SanitizedError {
   );
   
   if (containsSensitiveInfo) {
+    // DEBUG: Temporarily show actual error for debugging
     return {
-      message: 'An error occurred. Please try again or contact support if the issue persists.',
+      message: `DEBUG (sensitive): ${errorMessage}`,
       code: 'GENERIC_ERROR',
       isRetryable: true,
       originalError: error,
@@ -99,8 +100,9 @@ export function sanitizeError(error: any): SanitizedError {
   }
   
   // For unknown errors, provide a generic message
+  // DEBUG: Temporarily show actual error for debugging
   return {
-    message: 'Something went wrong. Please try again.',
+    message: `DEBUG: ${errorMessage}`,
     code: error?.code || 'UNKNOWN_ERROR',
     isRetryable: isRetryableError(error),
     originalError: error,
