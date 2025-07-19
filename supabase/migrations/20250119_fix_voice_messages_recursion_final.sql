@@ -95,6 +95,8 @@ CREATE INDEX IF NOT EXISTS idx_voice_messages_id ON voice_messages(id);
 
 -- 6. Verify the fix by listing final policies
 DO $$
+DECLARE
+    pol RECORD;
 BEGIN
     RAISE NOTICE 'Final policies on voice_messages table:';
     FOR pol IN 
