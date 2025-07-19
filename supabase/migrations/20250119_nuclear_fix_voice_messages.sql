@@ -73,12 +73,12 @@ BEGIN
     END LOOP;
     
     RAISE NOTICE 'Total policies dropped: %', dropped_count;
+    
+    -- Drop the threading trigger and function if they exist
+    DROP TRIGGER IF EXISTS set_thread_id_trigger ON voice_messages;
+    DROP FUNCTION IF EXISTS set_thread_id() CASCADE;
+    RAISE NOTICE 'Dropped threading trigger and function (if they existed)';
 END $$;
-
--- Drop the threading trigger and function if they exist
-DROP TRIGGER IF EXISTS set_thread_id_trigger ON voice_messages;
-DROP FUNCTION IF EXISTS set_thread_id() CASCADE;
-RAISE NOTICE 'Dropped threading trigger and function (if they existed)';
 
 -- STEP 4: RE-ENABLE RLS
 ALTER TABLE voice_messages ENABLE ROW LEVEL SECURITY;
