@@ -59,9 +59,10 @@ function App() {
             <>
               <Route path="/voice-debug" element={<VoiceDebug />} />
               <Route path="/auth-debug" element={<AuthDebug />} />
-              <Route path="/test-message-upload" element={<TestMessageUpload />} />
             </>
           )}
+          {/* Temporarily expose test route in production for debugging */}
+          <Route path="/test-message-upload" element={<TestMessageUpload />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

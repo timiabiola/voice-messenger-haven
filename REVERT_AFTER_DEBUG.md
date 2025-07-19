@@ -22,10 +22,11 @@ These changes were temporarily deployed to production to debug the message sendi
 
 ### 4. Test Route Added
 **File:** `src/App.tsx`
-**Lines:** 24, 62
+**Lines:** 24, 65
 **Revert:**
 - Remove the import: `import TestMessageUpload from '@/pages/TestMessageUpload';`
 - Remove the route: `<Route path="/test-message-upload" element={<TestMessageUpload />} />`
+- Remove the comment: `{/* Temporarily expose test route in production for debugging */}`
 
 ### 5. Debug SQL Queries
 **File:** `debug_queries.sql`
