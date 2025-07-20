@@ -289,6 +289,7 @@ export const useAudioPlayback = (audio_url: string) => {
     isLoading,
     hasStarted,
     audioRef,
+    audioBlob,
     handlePlayback,
     handleAudioEnded,
     handleAudioError,

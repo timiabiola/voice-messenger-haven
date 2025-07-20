@@ -13,6 +13,7 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     isLoading,
     hasStarted,
     audioRef,
+    audioBlob,
     handlePlayback,
     handleAudioEnded,
     handleAudioError,
@@ -37,24 +38,25 @@ export const MessageCard = ({ message }: MessageCardProps) => {
         controls={false}
         className="hidden"
       >
+        {/* Use blob URL if available, otherwise use original URL */}
         {/* Primary format - MP4 with AAC codec */}
         <source 
-          src={message.audio_url} 
+          src={audioBlob || message.audio_url} 
           type="audio/mp4;codecs=mp4a.40.2"
         />
         {/* Secondary format - AAC */}
         <source 
-          src={message.audio_url} 
+          src={audioBlob || message.audio_url} 
           type="audio/aac"
         />
         {/* Fallback format - WebM with Opus codec */}
         <source 
-          src={message.audio_url} 
+          src={audioBlob || message.audio_url} 
           type="audio/webm;codecs=opus"
         />
         {/* Generic fallback */}
         <source 
-          src={message.audio_url} 
+          src={audioBlob || message.audio_url} 
           type="audio/*"
         />
       </audio>
