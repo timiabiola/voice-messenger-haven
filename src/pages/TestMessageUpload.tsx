@@ -197,9 +197,9 @@ export default function TestMessageUpload() {
       // Step 5: Add recipient using RPC
       const testRecipientId = session?.user?.id; // Use self as recipient for testing
       const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
-        message_id: messageData.id,
-        recipient_id: testRecipientId,
-        sender_id: session?.user?.id
+        p_message_id: messageData.id,
+        p_recipient_id: testRecipientId,
+        p_sender_id: session?.user?.id
       });
       
       if (recipientError) {

@@ -142,9 +142,9 @@ export function useMessageUpload() {
     for (const recipient of recipients) {
       logger.log('Adding recipient');
       const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
-        message_id: messageData.id,
-        recipient_id: recipient.id,
-        sender_id: session.user.id
+        p_message_id: messageData.id,
+        p_recipient_id: recipient.id,
+        p_sender_id: session.user.id
       });
 
       if (recipientError) {
