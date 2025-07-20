@@ -8,6 +8,35 @@ interface SkipControlsProps {
   className?: string;
 }
 
+// Simple SVG icons with double triangles
+const SkipBackIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* First triangle */}
+    <path d="M11 7 L11 17 L5 12 Z" />
+    {/* Second triangle */}
+    <path d="M19 7 L19 17 L13 12 Z" />
+  </svg>
+);
+
+const SkipForwardIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="currentColor"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* First triangle */}
+    <path d="M5 7 L5 17 L11 12 Z" />
+    {/* Second triangle */}
+    <path d="M13 7 L13 17 L19 12 Z" />
+  </svg>
+);
+
 export function SkipControls({
   onSkipBackward,
   onSkipForward,
@@ -27,14 +56,12 @@ export function SkipControls({
           "border border-zinc-700/30 hover:border-zinc-600",
           "group transition-all duration-200",
           "rounded-lg shadow-sm hover:shadow-md",
-          "flex flex-col items-center justify-center gap-0.5"
+          "flex flex-col items-center justify-center gap-1"
         )}
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <span className="text-xl font-bold text-zinc-400 group-hover:text-zinc-200 transition-colors leading-none">
-          ◀◀
-        </span>
+        <SkipBackIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
         <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors">
           10s
         </span>
@@ -51,14 +78,12 @@ export function SkipControls({
           "border border-zinc-700/30 hover:border-zinc-600",
           "group transition-all duration-200",
           "rounded-lg shadow-sm hover:shadow-md",
-          "flex flex-col items-center justify-center gap-0.5"
+          "flex flex-col items-center justify-center gap-1"
         )}
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <span className="text-xl font-bold text-zinc-400 group-hover:text-zinc-200 transition-colors leading-none">
-          ▶▶
-        </span>
+        <SkipForwardIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
         <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors">
           10s
         </span>
