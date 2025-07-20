@@ -8,79 +8,79 @@ interface SkipControlsProps {
   className?: string;
 }
 
-// Custom icons matching the original design - circular arrows with "10" in center
+// Custom curved arrow icons matching the reference design
 const SkipBackwardIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 24 24"
+    viewBox="0 0 40 40"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Circular arrow path going counter-clockwise, 3/4 of circle */}
+    {/* Curved arrow going counter-clockwise */}
     <path
-      d="M4.5 12 A7.5 7.5 0 1 1 12 4.5"
+      d="M12 20 C12 11, 19 4, 28 4"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       fill="none"
     />
-    {/* Arrow head pointing left */}
+    {/* Arrow head */}
     <path
-      d="M4.5 12 L7 9.5 M4.5 12 L7 14.5"
+      d="M12 20 L16 17 M12 20 L15 24"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    {/* "10" text in center */}
+    {/* 10s text in center */}
     <text
-      x="12"
-      y="16"
+      x="20"
+      y="26"
       textAnchor="middle"
-      fontSize="11"
-      fontWeight="800"
+      fontSize="14"
+      fontWeight="700"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
     >
-      10
+      10s
     </text>
   </svg>
 );
 
 const SkipForwardIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 24 24"
+    viewBox="0 0 40 40"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Circular arrow path going clockwise, 3/4 of circle */}
+    {/* Curved arrow going clockwise */}
     <path
-      d="M19.5 12 A7.5 7.5 0 1 0 12 4.5"
+      d="M28 20 C28 11, 21 4, 12 4"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       fill="none"
     />
-    {/* Arrow head pointing right */}
+    {/* Arrow head */}
     <path
-      d="M19.5 12 L17 9.5 M19.5 12 L17 14.5"
+      d="M28 20 L24 17 M28 20 L25 24"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
-    {/* "10" text in center */}
+    {/* 10s text in center */}
     <text
-      x="12"
-      y="16"
+      x="20"
+      y="26"
       textAnchor="middle"
-      fontSize="11"
-      fontWeight="800"
+      fontSize="14"
+      fontWeight="700"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
     >
-      10
+      10s
     </text>
   </svg>
 );
@@ -99,7 +99,7 @@ export function SkipControls({
         onClick={onSkipBackward}
         disabled={disabled}
         className={cn(
-          "relative h-12 w-12 sm:h-14 sm:w-14 p-2",
+          "relative h-12 w-12 sm:h-14 sm:w-14 p-0",
           "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
           "border border-zinc-700/50 hover:border-amber-400/50",
           "group transition-all duration-200",
@@ -109,7 +109,7 @@ export function SkipControls({
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <SkipBackwardIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <SkipBackwardIcon className="h-10 w-10 sm:h-12 sm:w-12 text-zinc-300 group-hover:text-amber-400 transition-colors" />
       </Button>
       
       <Button
@@ -118,7 +118,7 @@ export function SkipControls({
         onClick={onSkipForward}
         disabled={disabled}
         className={cn(
-          "relative h-12 w-12 sm:h-14 sm:w-14 p-2",
+          "relative h-12 w-12 sm:h-14 sm:w-14 p-0",
           "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
           "border border-zinc-700/50 hover:border-amber-400/50",
           "group transition-all duration-200",
@@ -128,7 +128,7 @@ export function SkipControls({
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <SkipForwardIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <SkipForwardIcon className="h-10 w-10 sm:h-12 sm:w-12 text-zinc-300 group-hover:text-amber-400 transition-colors" />
       </Button>
     </div>
   );
