@@ -20,7 +20,7 @@ const Skip10BackIcon = ({ className }: { className?: string }) => (
     <path
       d="M12 16 L6 16 M6 16 L10 12 M6 16 L10 20"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -30,7 +30,7 @@ const Skip10BackIcon = ({ className }: { className?: string }) => (
       x="19"
       y="20"
       textAnchor="middle"
-      fontSize="13"
+      fontSize="16"
       fontWeight="800"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
@@ -53,7 +53,7 @@ const Skip10ForwardIcon = ({ className }: { className?: string }) => (
       x="13"
       y="20"
       textAnchor="middle"
-      fontSize="13"
+      fontSize="16"
       fontWeight="800"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
@@ -66,7 +66,7 @@ const Skip10ForwardIcon = ({ className }: { className?: string }) => (
     <path
       d="M20 16 L26 16 M26 16 L22 12 M26 16 L22 20"
       stroke="currentColor"
-      strokeWidth="2.5"
+      strokeWidth="3"
       strokeLinecap="round"
       strokeLinejoin="round"
     />
@@ -86,7 +86,7 @@ export function SkipControls({
         size="sm"
         onClick={onSkipBackward}
         disabled={disabled}
-        className="h-9 w-12 p-0.5 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
+        className="h-10 w-14 p-1 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
@@ -98,7 +98,7 @@ export function SkipControls({
         size="sm"
         onClick={onSkipForward}
         disabled={disabled}
-        className="h-9 w-12 p-0.5 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
+        className="h-10 w-14 p-1 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >

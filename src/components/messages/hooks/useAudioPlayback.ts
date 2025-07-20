@@ -21,16 +21,17 @@ export const useAudioPlayback = (audio_url: string) => {
   const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
   const { audioBlob, createBlob, clearBlob } = useAudioBlob();
 
-  // Load saved playback rate from localStorage
+  // Reset playback rate to 1x when audio URL changes (new message)
   useEffect(() => {
-    const savedRate = localStorage.getItem('preferredPlaybackRate');
-    if (savedRate) {
-      const rate = parseFloat(savedRate);
-      if (!isNaN(rate) && rate >= 0.5 && rate <= 2) {
-        setPlaybackRate(rate);
-      }
+    setPlaybackRate(1);
+    setCurrentTime(0);
+    setDuration(0);
+    setHasStarted(false);
+    setIsPlaying(false);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = 1;
     }
-  }, []);
+  }, [audio_url]);
 
   // Update current time and duration
   useEffect(() => {

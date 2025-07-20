@@ -119,24 +119,23 @@ export const PlaybackControls = ({
           disabled={isLoading}
         />
 
-        {/* Speed controls */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-zinc-800/50 rounded-full p-0.5 sm:p-1">
-          {speedOptions.map((speed) => (
-            <button
-              key={speed}
-              onClick={() => onSpeedChange(speed)}
-              disabled={isLoading}
-              className={cn(
-                "px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium transition-all duration-200",
-                playbackRate === speed
-                  ? "bg-amber-400 text-black"
-                  : "text-zinc-400 hover:text-amber-400 hover:bg-zinc-800"
-              )}
-            >
-              {speed}x
-            </button>
-          ))}
-        </div>
+        {/* Speed control - single cycling button */}
+        <button
+          onClick={() => {
+            const currentIndex = speedOptions.indexOf(playbackRate);
+            const nextIndex = (currentIndex + 1) % speedOptions.length;
+            onSpeedChange(speedOptions[nextIndex]);
+          }}
+          disabled={isLoading}
+          className={cn(
+            "px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-sm sm:text-base font-medium transition-all duration-200",
+            "bg-zinc-800/50 text-amber-400 hover:bg-zinc-800 active:scale-95",
+            "min-w-[60px] text-center"
+          )}
+          title="Playback speed (click to change)"
+        >
+          {playbackRate}x
+        </button>
       </div>
     </div>
   );
