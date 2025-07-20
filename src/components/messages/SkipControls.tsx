@@ -8,33 +8,30 @@ interface SkipControlsProps {
   className?: string;
 }
 
-// Custom double triangle icons
+// Clean, professional skip icons with filled triangles
 const Skip10BackIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 40 24"
+    viewBox="0 0 48 48"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* Double triangles pointing left */}
+    {/* Double filled triangles pointing left */}
     <path
-      d="M14 6 L6 12 L14 18 M22 6 L14 12 L22 18"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
+      d="M20 18 L20 30 L12 24 Z M32 18 L32 30 L24 24 Z"
+      fill="currentColor"
     />
     
-    {/* "10s" text */}
+    {/* "10s" text positioned below */}
     <text
-      x="30"
-      y="16"
+      x="24"
+      y="38"
       textAnchor="middle"
-      fontSize="13"
-      fontWeight="700"
+      fontSize="11"
+      fontWeight="600"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
+      opacity="0.9"
     >
       10s
     </text>
@@ -43,33 +40,99 @@ const Skip10BackIcon = ({ className }: { className?: string }) => (
 
 const Skip10ForwardIcon = ({ className }: { className?: string }) => (
   <svg
-    viewBox="0 0 40 24"
+    viewBox="0 0 48 48"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
     className={className}
   >
-    {/* "10s" text */}
+    {/* Double filled triangles pointing right */}
+    <path
+      d="M16 18 L16 30 L24 24 Z M28 18 L28 30 L36 24 Z"
+      fill="currentColor"
+    />
+    
+    {/* "10s" text positioned below */}
     <text
-      x="10"
-      y="16"
+      x="24"
+      y="38"
       textAnchor="middle"
-      fontSize="13"
-      fontWeight="700"
+      fontSize="11"
+      fontWeight="600"
       fill="currentColor"
       fontFamily="system-ui, -apple-system, sans-serif"
+      opacity="0.9"
     >
       10s
     </text>
-    
-    {/* Double triangles pointing right */}
-    <path
-      d="M18 6 L26 12 L18 18 M26 6 L34 12 L26 18"
-      stroke="currentColor"
-      strokeWidth="2.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      fill="none"
-    />
+  </svg>
+);
+
+// Alternative design with better visual balance
+const Skip10BackAltIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* Centered double triangles */}
+    <g transform="translate(24, 24)">
+      {/* First triangle */}
+      <path
+        d="M-4 -6 L-4 6 L-10 0 Z"
+        fill="currentColor"
+      />
+      {/* Second triangle */}
+      <path
+        d="M4 -6 L4 6 L-2 0 Z"
+        fill="currentColor"
+      />
+      {/* Small "10" label as superscript */}
+      <text
+        x="8"
+        y="-2"
+        fontSize="10"
+        fontWeight="700"
+        fill="currentColor"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        10
+      </text>
+    </g>
+  </svg>
+);
+
+const Skip10ForwardAltIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 48 48"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    {/* Centered double triangles */}
+    <g transform="translate(24, 24)">
+      {/* First triangle */}
+      <path
+        d="M-4 -6 L-4 6 L2 0 Z"
+        fill="currentColor"
+      />
+      {/* Second triangle */}
+      <path
+        d="M4 -6 L4 6 L10 0 Z"
+        fill="currentColor"
+      />
+      {/* Small "10" label as superscript */}
+      <text
+        x="-16"
+        y="-2"
+        fontSize="10"
+        fontWeight="700"
+        fill="currentColor"
+        fontFamily="system-ui, -apple-system, sans-serif"
+      >
+        10
+      </text>
+    </g>
   </svg>
 );
 
@@ -87,17 +150,17 @@ export function SkipControls({
         onClick={onSkipBackward}
         disabled={disabled}
         className={cn(
-          "relative h-12 w-16 sm:h-14 sm:w-20 p-0",
-          "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
-          "border border-zinc-700/50 hover:border-amber-400/50",
+          "relative h-12 w-12 sm:h-14 sm:w-14 p-0",
+          "bg-zinc-800/50 hover:bg-zinc-800 active:bg-zinc-700",
+          "border border-zinc-700/30 hover:border-zinc-600",
           "group transition-all duration-200",
-          "rounded-lg shadow-md hover:shadow-lg",
+          "rounded-lg shadow-sm hover:shadow-md",
           "flex items-center justify-center"
         )}
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <Skip10BackIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <Skip10BackIcon className="h-8 w-8 sm:h-9 sm:w-9 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
       </Button>
       
       <Button
@@ -106,17 +169,17 @@ export function SkipControls({
         onClick={onSkipForward}
         disabled={disabled}
         className={cn(
-          "relative h-12 w-16 sm:h-14 sm:w-20 p-0",
-          "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
-          "border border-zinc-700/50 hover:border-amber-400/50",
+          "relative h-12 w-12 sm:h-14 sm:w-14 p-0",
+          "bg-zinc-800/50 hover:bg-zinc-800 active:bg-zinc-700",
+          "border border-zinc-700/30 hover:border-zinc-600",
           "group transition-all duration-200",
-          "rounded-lg shadow-md hover:shadow-lg",
+          "rounded-lg shadow-sm hover:shadow-md",
           "flex items-center justify-center"
         )}
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <Skip10ForwardIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <Skip10ForwardIcon className="h-8 w-8 sm:h-9 sm:w-9 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
       </Button>
     </div>
   );
