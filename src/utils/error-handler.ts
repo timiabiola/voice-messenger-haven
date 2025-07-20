@@ -35,6 +35,8 @@ const ERROR_MAPPINGS: Record<string, string> = {
   'Password should be at least': 'Password does not meet security requirements.',
   'Invalid email': 'Please enter a valid email address.',
   'Invalid phone': 'Please enter a valid phone number.',
+  'Please select at least one recipient': 'No recipient selected. Please type a name or email and select from the dropdown.',
+  'recipient is not valid': 'The recipient is not valid. Please select a user from the dropdown suggestions.',
   
   // Permission errors
   'new row violates row-level security': 'You do not have permission to perform this action.',

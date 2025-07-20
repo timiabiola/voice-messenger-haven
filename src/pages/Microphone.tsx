@@ -81,6 +81,7 @@ const Microphone = () => {
           isProcessing={isProcessing}
           hasRecording={hasRecording}
           onSend={handleSendRecording}
+          disabled={recipients.length === 0}
         />
       </div>
 

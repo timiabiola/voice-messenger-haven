@@ -66,6 +66,65 @@ export const useMessages = () => {
 
   useEffect(() => {
     fetchMessages();
+
+    // Set up real-time subscription for new messages
+    const setupSubscriptions = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) return;
+
+      // Subscribe to changes in voice_message_recipients for this user
+      const recipientSubscription = supabase
+        .channel('recipient-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'voice_message_recipients',
+            filter: `recipient_id=eq.${session.user.id}`
+          },
+          (payload) => {
+            console.log('New message received:', payload);
+            // Refetch messages when a new recipient entry is added
+            fetchMessages();
+          }
+        )
+        .subscribe();
+
+      // Subscribe to message updates (for urgent status, etc.)
+      const messageSubscription = supabase
+        .channel('message-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'voice_messages'
+          },
+          (payload) => {
+            console.log('Message updated:', payload);
+            // Check if this message is in our list
+            const messageId = payload.new.id;
+            if (messages.some(m => m.id === messageId)) {
+              fetchMessages();
+            }
+          }
+        )
+        .subscribe();
+
+      // Cleanup subscriptions on unmount
+      return () => {
+        recipientSubscription.unsubscribe();
+        messageSubscription.unsubscribe();
+      };
+    };
+
+    const cleanup = setupSubscriptions();
+
+    return () => {
+      cleanup.then(fn => fn && fn());
+    };
   }, []);
 
   return { messages, loading, fetchMessages };

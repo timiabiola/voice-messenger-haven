@@ -7,9 +7,10 @@ interface HeaderProps {
   isProcessing: boolean;
   hasRecording: boolean;
   onSend: () => void;
+  disabled?: boolean;
 }
 
-export const Header = ({ isRecording, isProcessing, hasRecording, onSend }: HeaderProps) => {
+export const Header = ({ isRecording, isProcessing, hasRecording, onSend, disabled = false }: HeaderProps) => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -24,10 +25,11 @@ export const Header = ({ isRecording, isProcessing, hasRecording, onSend }: Head
       <h1 className="text-base font-medium text-foreground">New Voice Message</h1>
       <button 
         className={`text-primary font-medium px-3 py-2 rounded-lg transition-colors ${
-          !hasRecording || isProcessing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/10'
+          !hasRecording || isProcessing || disabled ? 'opacity-50 cursor-not-allowed' : 'hover:bg-primary/10'
         }`}
-        disabled={!hasRecording || isProcessing}
+        disabled={!hasRecording || isProcessing || disabled}
         onClick={onSend}
+        title={disabled ? 'Please select at least one recipient' : undefined}
       >
         {isProcessing ? 'Sending...' : 'Send'}
       </button>
