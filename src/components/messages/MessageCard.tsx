@@ -90,19 +90,17 @@ export const MessageCard = ({ message }: MessageCardProps) => {
           </button>
         </div>
 
-        {/* Playback controls - show when audio has been started */}
-        {hasStarted && (
-          <PlaybackControls
-            currentTime={currentTime}
-            duration={duration}
-            playbackRate={playbackRate}
-            onSeek={handleSeek}
-            onSkipBackward={handleSkipBackward}
-            onSkipForward={handleSkipForward}
-            onSpeedChange={handleSpeedChange}
-            isLoading={isLoading}
-          />
-        )}
+        {/* Playback controls - always visible for better UX */}
+        <PlaybackControls
+          currentTime={currentTime}
+          duration={duration}
+          playbackRate={playbackRate}
+          onSeek={handleSeek}
+          onSkipBackward={handleSkipBackward}
+          onSkipForward={handleSkipForward}
+          onSpeedChange={handleSpeedChange}
+          isLoading={isLoading}
+        />
 
         {/* Action buttons */}
         <MessageActions 

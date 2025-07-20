@@ -15,21 +15,27 @@ export const useAudioPlayback = (audio_url: string) => {
   const [hasStarted, setHasStarted] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const retryTimeoutRef = useRef<number>();
+  const previousUrlRef = useRef<string>(audio_url);
   const navigate = useNavigate();
   
   const { validateAndRefreshSession } = useAuthSession();
   const { userInteracted, setUserInteracted, isMobile } = useMobileInteraction();
   const { audioBlob, createBlob, clearBlob } = useAudioBlob();
 
-  // Reset playback rate to 1x when audio URL changes (new message)
+  // Reset playback rate to 1x when audio URL actually changes (new message)
   useEffect(() => {
-    setPlaybackRate(1);
-    setCurrentTime(0);
-    setDuration(0);
-    setHasStarted(false);
-    setIsPlaying(false);
-    if (audioRef.current) {
-      audioRef.current.playbackRate = 1;
+    // Only reset if the URL actually changed (not just a re-render)
+    if (previousUrlRef.current !== audio_url) {
+      setPlaybackRate(1);
+      setCurrentTime(0);
+      setDuration(0);
+      setIsPlaying(false);
+      if (audioRef.current) {
+        audioRef.current.playbackRate = 1;
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      previousUrlRef.current = audio_url;
     }
   }, [audio_url]);
 
