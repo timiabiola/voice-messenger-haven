@@ -8,9 +8,6 @@ import { Play, Pause, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export const MessageCard = ({ message }: MessageCardProps) => {
-  // Add cache buster to audio URL
-  const audioUrlWithCache = `${message.audio_url}?t=${Date.now()}`;
-  
   const {
     isPlaying,
     isLoading,
@@ -26,7 +23,7 @@ export const MessageCard = ({ message }: MessageCardProps) => {
     handleSkipBackward,
     handleSkipForward,
     handleSeek
-  } = useAudioPlayback(audioUrlWithCache);
+  } = useAudioPlayback(message.audio_url);
 
   return (
     <div className="bg-gradient-to-br from-zinc-900/90 to-zinc-900/70 rounded-xl border border-zinc-800/50 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden group">
@@ -42,22 +39,22 @@ export const MessageCard = ({ message }: MessageCardProps) => {
       >
         {/* Primary format - MP4 with AAC codec */}
         <source 
-          src={audioUrlWithCache} 
+          src={message.audio_url} 
           type="audio/mp4;codecs=mp4a.40.2"
         />
         {/* Secondary format - AAC */}
         <source 
-          src={audioUrlWithCache} 
+          src={message.audio_url} 
           type="audio/aac"
         />
         {/* Fallback format - WebM with Opus codec */}
         <source 
-          src={audioUrlWithCache} 
+          src={message.audio_url} 
           type="audio/webm;codecs=opus"
         />
         {/* Generic fallback */}
         <source 
-          src={audioUrlWithCache} 
+          src={message.audio_url} 
           type="audio/*"
         />
       </audio>

@@ -60,9 +60,26 @@ export const useAudioPlayback = (audio_url: string) => {
 
   // Apply playback rate when audio element is ready
   useEffect(() => {
-    if (audioRef.current && audioRef.current.readyState >= 1) {
-      audioRef.current.playbackRate = playbackRate;
-    }
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const applyPlaybackRate = () => {
+      if (audio.readyState >= 1) {
+        audio.playbackRate = playbackRate;
+      }
+    };
+
+    // Apply immediately if ready
+    applyPlaybackRate();
+
+    // Also apply when audio loads
+    audio.addEventListener('loadeddata', applyPlaybackRate);
+    audio.addEventListener('canplay', applyPlaybackRate);
+
+    return () => {
+      audio.removeEventListener('loadeddata', applyPlaybackRate);
+      audio.removeEventListener('canplay', applyPlaybackRate);
+    };
   }, [playbackRate]);
 
   // Cleanup on unmount
@@ -114,6 +131,9 @@ export const useAudioPlayback = (audio_url: string) => {
 
       if (audioRef.current) {
         // Let the browser handle format selection through source elements
+        // Apply current playback rate
+        audioRef.current.playbackRate = playbackRate;
+        // Load the new audio
         await audioRef.current.load();
       }
     } catch (error) {
@@ -174,6 +194,9 @@ export const useAudioPlayback = (audio_url: string) => {
       if (!hasStarted && audioRef.current.currentTime > 0) {
         audioRef.current.currentTime = 0;
       }
+
+      // Ensure playback rate is applied before playing
+      audioRef.current.playbackRate = playbackRate;
 
       await audioRef.current.play();
       setIsPlaying(true);
