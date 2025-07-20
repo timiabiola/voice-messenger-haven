@@ -44,15 +44,19 @@ export default function TestMessageUpload() {
     }
   };
 
-  // Test 2: Database Insert (without audio_url first)
+  // Test 2: Database Insert with proper audio_url
   const testDbInsert = async () => {
-    addResult('=== Testing Database Insert (no audio_url) ===');
+    addResult('=== Testing Database Insert (with dummy audio_url) ===');
     try {
+      // Use a dummy URL for testing - in production this would be from storage
+      const dummyAudioUrl = `https://example.com/test-audio-${Date.now()}.m4a`;
+      
       const result = await supabase
         .from('voice_messages')
         .insert({
           title: 'Test Message',
           subject: 'Test Subject',
+          audio_url: dummyAudioUrl,
           sender_id: session?.user?.id,
           duration: 10,
           is_urgent: false,
@@ -74,18 +78,21 @@ export default function TestMessageUpload() {
     }
   };
 
-  // Test 3: Database Insert with audio_url
+  // Test 3: Database Insert with storage-pattern audio_url
   const testDbInsertWithAudio = async () => {
-    addResult('=== Testing Database Insert (with audio_url) ===');
+    addResult('=== Testing Database Insert (with storage URL pattern) ===');
     try {
-      const audioUrl = `recordings/${session?.user?.id}/test-audio.m4a`;
+      // Use the actual storage URL pattern
+      const { data: { publicUrl } } = supabase.storage
+        .from('voice-recordings')
+        .getPublicUrl(`recordings/${session?.user?.id}/test-audio.m4a`);
       
       const result = await supabase
         .from('voice_messages')
         .insert({
-          title: 'Test Message with Audio',
+          title: 'Test Message with Storage URL',
           subject: 'Test Subject',
-          audio_url: audioUrl,
+          audio_url: publicUrl,
           sender_id: session?.user?.id,
           duration: 10,
           is_urgent: false,
@@ -135,7 +142,80 @@ export default function TestMessageUpload() {
     }
   };
 
-  // Test 5: Check table columns
+  // Test 5: Complete Flow Test (mimics actual upload)
+  const testCompleteFlow = async () => {
+    addResult('=== Testing Complete Voice Message Flow ===');
+    try {
+      // Step 1: Create test audio blob
+      const audioBlob = new Blob(['test audio content'], { type: 'audio/mp4;codecs=mp4a.40.2' });
+      const fileName = `recordings/${session?.user?.id}/test-complete-${Date.now()}.m4a`;
+      addResult('📦 Created test audio blob');
+      
+      // Step 2: Upload to storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('voice-recordings')
+        .upload(fileName, audioBlob, {
+          contentType: 'audio/mp4;codecs=mp4a.40.2',
+          cacheControl: '3600',
+          upsert: false
+        });
+      
+      if (uploadError) {
+        addResult(`❌ Storage Upload Error: ${JSON.stringify(uploadError)}`);
+        return;
+      }
+      addResult(`✅ Storage Upload Success: ${uploadData.path}`);
+      
+      // Step 3: Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('voice-recordings')
+        .getPublicUrl(fileName);
+      addResult(`🔗 Public URL: ${publicUrl}`);
+      
+      // Step 4: Create voice message
+      const { data: messageData, error: messageError } = await supabase
+        .from('voice_messages')
+        .insert({
+          title: 'Complete Flow Test',
+          subject: 'Testing full upload flow',
+          audio_url: publicUrl,
+          sender_id: session?.user?.id,
+          duration: 15,
+          is_urgent: false,
+          is_private: false
+        })
+        .select()
+        .single();
+      
+      if (messageError) {
+        addResult(`❌ Message Creation Error: ${JSON.stringify(messageError)}`);
+        return;
+      }
+      addResult(`✅ Message Created: ID ${messageData.id}`);
+      setMessageId(messageData.id);
+      
+      // Step 5: Add recipient using RPC
+      const testRecipientId = session?.user?.id; // Use self as recipient for testing
+      const { error: recipientError } = await supabase.rpc('safe_recipient_insert', {
+        message_id: messageData.id,
+        recipient_id: testRecipientId,
+        sender_id: session?.user?.id
+      });
+      
+      if (recipientError) {
+        addResult(`❌ Recipient Add Error: ${JSON.stringify(recipientError)}`);
+      } else {
+        addResult(`✅ Recipient Added Successfully`);
+      }
+      
+      addResult('✅ COMPLETE FLOW TEST PASSED!');
+      
+    } catch (error) {
+      addResult(`❌ Complete Flow Exception: ${error}`);
+    }
+  };
+
+  // Test 6: Check table columns
   const checkTableStructure = async () => {
     addResult('=== Checking Table Structure ===');
     try {
@@ -214,23 +294,27 @@ export default function TestMessageUpload() {
           </Button>
           
           <Button onClick={testDbInsert} className="w-full">
-            Test 2: Database Insert (no audio_url)
+            Test 2: Database Insert (with dummy audio_url)
           </Button>
           
           <Button onClick={testDbInsertWithAudio} className="w-full">
-            Test 3: Database Insert (with audio_url)
+            Test 3: Database Insert (with storage URL pattern)
           </Button>
           
           <Button onClick={testRPC} className="w-full" disabled={!messageId}>
             Test 4: RPC Function {messageId ? `(Message: ${messageId})` : '(Run Test 2 or 3 first)'}
           </Button>
           
+          <Button onClick={testCompleteFlow} className="w-full bg-green-600 hover:bg-green-700">
+            Test 5: Complete Flow Test (Recommended)
+          </Button>
+          
           <Button onClick={checkTableStructure} className="w-full">
-            Test 5: Check Table Structure
+            Test 6: Check Table Structure
           </Button>
           
           <Button onClick={checkRPCFunction} className="w-full">
-            Test 6: Check RPC Function
+            Test 7: Check RPC Function
           </Button>
           
           <Button 
