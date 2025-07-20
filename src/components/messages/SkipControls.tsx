@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { SkipBack, SkipForward } from "lucide-react";
 
 interface SkipControlsProps {
   onSkipBackward: () => void;
@@ -8,71 +9,6 @@ interface SkipControlsProps {
   className?: string;
 }
 
-// Custom icon components with maximum legibility - text-first design
-const Skip10BackIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 32 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    {/* Simple left arrow */}
-    <path
-      d="M12 16 L6 16 M6 16 L10 12 M6 16 L10 20"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    
-    {/* Large "10s" text */}
-    <text
-      x="19"
-      y="20"
-      textAnchor="middle"
-      fontSize="16"
-      fontWeight="800"
-      fill="currentColor"
-      fontFamily="system-ui, -apple-system, sans-serif"
-      className="select-none"
-    >
-      10s
-    </text>
-  </svg>
-);
-
-const Skip10ForwardIcon = ({ className }: { className?: string }) => (
-  <svg
-    viewBox="0 0 32 32"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className={className}
-  >
-    {/* Large "10s" text */}
-    <text
-      x="13"
-      y="20"
-      textAnchor="middle"
-      fontSize="16"
-      fontWeight="800"
-      fill="currentColor"
-      fontFamily="system-ui, -apple-system, sans-serif"
-      className="select-none"
-    >
-      10s
-    </text>
-    
-    {/* Simple right arrow */}
-    <path
-      d="M20 16 L26 16 M26 16 L22 12 M26 16 L22 20"
-      stroke="currentColor"
-      strokeWidth="3"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-  </svg>
-);
-
 export function SkipControls({
   onSkipBackward,
   onSkipForward,
@@ -80,17 +16,30 @@ export function SkipControls({
   className
 }: SkipControlsProps) {
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div className={cn("flex items-center gap-2", className)}>
       <Button
         variant="ghost"
         size="sm"
         onClick={onSkipBackward}
         disabled={disabled}
-        className="h-10 w-14 p-1 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
+        className={cn(
+          "relative h-12 w-16 sm:h-14 sm:w-20 p-0",
+          "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
+          "border border-zinc-700/50 hover:border-amber-400/50",
+          "group transition-all duration-200",
+          "rounded-lg shadow-md hover:shadow-lg",
+          "flex items-center justify-center gap-1"
+        )}
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <Skip10BackIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <SkipBack 
+          className="h-6 w-6 sm:h-7 sm:w-7 text-zinc-300 group-hover:text-amber-400 transition-colors" 
+          strokeWidth={2.5}
+        />
+        <span className="text-xs sm:text-sm font-bold text-zinc-300 group-hover:text-amber-400 transition-colors">
+          10
+        </span>
       </Button>
       
       <Button
@@ -98,12 +47,25 @@ export function SkipControls({
         size="sm"
         onClick={onSkipForward}
         disabled={disabled}
-        className="h-10 w-14 p-1 group hover:bg-amber-400/15 active:bg-amber-400/25 transition-all duration-150 rounded-md"
+        className={cn(
+          "relative h-12 w-16 sm:h-14 sm:w-20 p-0",
+          "bg-zinc-800/80 hover:bg-zinc-700 active:bg-zinc-600",
+          "border border-zinc-700/50 hover:border-amber-400/50",
+          "group transition-all duration-200",
+          "rounded-lg shadow-md hover:shadow-lg",
+          "flex items-center justify-center gap-1"
+        )}
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <Skip10ForwardIcon className="h-full w-full text-zinc-300 group-hover:text-amber-400 transition-colors" />
+        <span className="text-xs sm:text-sm font-bold text-zinc-300 group-hover:text-amber-400 transition-colors">
+          10
+        </span>
+        <SkipForward 
+          className="h-6 w-6 sm:h-7 sm:w-7 text-zinc-300 group-hover:text-amber-400 transition-colors" 
+          strokeWidth={2.5}
+        />
       </Button>
     </div>
   );
-} 
+}
