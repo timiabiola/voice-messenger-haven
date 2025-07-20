@@ -61,8 +61,8 @@ export function SkipControls({
         aria-label="Skip backward 10 seconds"
         title="Skip backward 10 seconds"
       >
-        <SkipBackIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-        <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors">
+        <SkipBackIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors pointer-events-none" />
+        <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors pointer-events-none">
           10s
         </span>
       </Button>
@@ -83,8 +83,8 @@ export function SkipControls({
         aria-label="Skip forward 10 seconds"
         title="Skip forward 10 seconds"
       >
-        <SkipForwardIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-        <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors">
+        <SkipForwardIcon className="h-5 w-5 text-zinc-400 group-hover:text-zinc-200 transition-colors pointer-events-none" />
+        <span className="text-[10px] font-medium text-zinc-500 group-hover:text-zinc-300 transition-colors pointer-events-none">
           10s
         </span>
       </Button>
