@@ -21,7 +21,6 @@ import VoiceDebug from '@/pages/VoiceDebug';
 import Settings from '@/pages/Settings';
 import AuthDebug from '@/pages/AuthDebug';
 import MessageThread from '@/pages/MessageThread';
-import TestMessageUpload from '@/pages/TestMessageUpload';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -61,8 +60,6 @@ function App() {
               <Route path="/auth-debug" element={<AuthDebug />} />
             </>
           )}
-          {/* Temporarily expose test route in production for debugging */}
-          <Route path="/test-message-upload" element={<TestMessageUpload />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />

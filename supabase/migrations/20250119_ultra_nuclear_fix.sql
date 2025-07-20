@@ -143,7 +143,7 @@ BEGIN
     RAISE NOTICE '=== TESTING ULTRA SIMPLE POLICIES ===';
     
     -- Get a test user or use auth.uid()
-    test_user_id := COALESCE(auth.uid(), '00e07e97-7081-4a83-852f-c9693a16a8bc'::uuid);
+    test_user_id := COALESCE(auth.uid(), '11111111-1111-1111-1111-111111111111'::uuid); -- PLACEHOLDER: Replace with actual user ID
     
     -- Test insert (RLS disabled for test)
     ALTER TABLE voice_messages DISABLE ROW LEVEL SECURITY;

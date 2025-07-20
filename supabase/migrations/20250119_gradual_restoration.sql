@@ -59,8 +59,8 @@ BEGIN
     RAISE NOTICE '';
     RAISE NOTICE '=== TESTING RESTORED RECIPIENT ACCESS ===';
     
-    -- Use known test user
-    test_user_id := '00e07e97-7081-4a83-852f-c9693a16a8bc'::uuid;
+    -- Use a test user ID (replace with actual user ID from your database)
+    test_user_id := '11111111-1111-1111-1111-111111111111'::uuid; -- PLACEHOLDER: Replace with actual user ID
     test_recipient_id := gen_random_uuid();
     
     -- Temporarily disable RLS for setup
