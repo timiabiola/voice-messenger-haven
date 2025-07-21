@@ -267,15 +267,42 @@ export const useAudioPlayback = (audio_url: string) => {
   };
 
   const handleSkipBackward = (seconds: number = 10) => {
-    if (audioRef.current) {
-      audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - seconds);
-    }
+    // Handle async loading without changing function signature
+    const performSkip = async () => {
+      // Ensure audio is loaded before skipping
+      if (!audioBlob) {
+        await loadAudio();
+      }
+      
+      if (audioRef.current && audioRef.current.readyState > 0) {
+        audioRef.current.currentTime = Math.max(0, audioRef.current.currentTime - seconds);
+      }
+    };
+    
+    performSkip().catch(error => {
+      console.error('Error skipping backward:', error);
+    });
   };
 
   const handleSkipForward = (seconds: number = 10) => {
-    if (audioRef.current && duration > 0) {
-      audioRef.current.currentTime = Math.min(audioRef.current.currentTime + seconds, duration);
-    }
+    // Handle async loading without changing function signature
+    const performSkip = async () => {
+      // Ensure audio is loaded before skipping
+      if (!audioBlob) {
+        await loadAudio();
+      }
+      
+      if (audioRef.current && audioRef.current.readyState > 0) {
+        const audioDuration = audioRef.current.duration;
+        if (audioDuration && !isNaN(audioDuration)) {
+          audioRef.current.currentTime = Math.min(audioRef.current.currentTime + seconds, audioDuration);
+        }
+      }
+    };
+    
+    performSkip().catch(error => {
+      console.error('Error skipping forward:', error);
+    });
   };
 
   const handleSeek = (time: number) => {
